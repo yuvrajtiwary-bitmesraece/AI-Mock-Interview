@@ -1,0 +1,124 @@
+Root: c:\Users\Dell\Downloads\AI-Mock-Interview\AI-Mock-Interview
+
+.gitignore
+README.md
+package.json
+package-lock.json
+next.config.mjs
+tailwind.config.mjs
+postcss.config.mjs
+drizzle.config.js
+jsconfig.json
+middleware.js
+components.json
+add-details.png
+ai-mock-excalidraw.png
+auth.png
+Banner.png
+dashboard.png
+dashboard-new.png
+del.png
+edit.png
+feedback.png
+feedback-rating.png
+feedback-rating-2.png
+ques.png
+ques-section.png
+record.png
+
+app/
+  (auth)/
+    sign-in/[[...sign-in]]/page.jsx
+    sign-up/[[...sign-up]]/page.jsx
+  dashboard/
+    _components/
+      AddNewInterview.jsx
+      Header.jsx
+      InterviewItemCard.jsx
+      InterviewList.jsx
+    interview/
+      [interviewId]/
+        start/
+          _components/
+            QuestionsSection.jsx
+            RecordAnsSection.jsx
+          page.jsx
+        feedback/page.jsx
+        page.jsx
+    layout.jsx
+    page.jsx
+  favicon.ico
+  globals.css
+  layout.js
+  page.js
+
+components/
+  ClientUserButton.jsx
+  ui/
+    button.jsx
+    card.jsx
+    collapsible.jsx
+    dialog.jsx
+    Footer.jsx
+    input.jsx
+    sonner.jsx
+    textarea.jsx
+
+lib/
+  utils.js
+
+public/
+  authImg.png
+  bg.png
+  file.svg
+  globe.svg
+  logo.svg
+  next.svg
+  vercel.svg
+  webcam.png
+  window.svg
+  fonts/
+    Gilroy-Black.woff
+    Gilroy-Black.woff2
+    Gilroy-Bold.woff
+    Gilroy-Bold.woff2
+    Gilroy-BoldItalic.woff
+    Gilroy-BoldItalic.woff2
+    Gilroy-ExtraBold.woff
+    Gilroy-ExtraBold.woff2
+    Gilroy-ExtraBoldItalic.woff
+    Gilroy-ExtraBoldItalic.woff2
+    Gilroy-Heavy.woff
+    Gilroy-Heavy.woff2
+    Gilroy-HeavyItalic.woff
+    Gilroy-HeavyItalic.woff2
+    Gilroy-Light.woff
+    Gilroy-Light.woff2
+    Gilroy-LightItalic.woff
+    Gilroy-LightItalic.woff2
+    Gilroy-Medium.woff
+    Gilroy-Medium.woff2
+    Gilroy-MediumItalic.woff
+    Gilroy-MediumItalic.woff2
+    Gilroy-Regular.woff
+    Gilroy-Regular.woff2
+    Gilroy-RegularItalic.woff
+    Gilroy-RegularItalic.woff2
+    Gilroy-SemiBold.woff
+    Gilroy-SemiBold.woff2
+    Gilroy-SemiBoldItalic.woff
+    Gilroy-SemiBoldItalic.woff2
+    Gilroy-Thin.woff
+    Gilroy-Thin.woff2
+    Gilroy-ThinItalic.woff
+    Gilroy-ThinItalic.woff2
+    Gilroy-UltraLight.woff
+    Gilroy-UltraLight.woff2
+    Gilroy-UltraLightItalic.woff
+    Gilroy-UltraLightItalic.woff2
+
+utils/
+  db.js
+  GeminiAiModel.js
+  interviewUtils.js
+  schema.js
