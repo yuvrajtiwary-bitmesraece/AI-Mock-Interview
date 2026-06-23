@@ -36,19 +36,21 @@ A cutting-edge AI-powered mock interview platform designed to revolutionize inte
 ## 🛠 Tech Stack
 
 ### Frontend
-- Next.js 14
-- Tailwind CSS
+- Next.js 15.3.9
+- React 19.0.0
+- Tailwind CSS 3.4.1
 - Shadcn UI
-- Framer Motion
+- Framer Motion 12.5.0
 - Lucide React Icons
 
 ### Backend
-- Drizzle ORM
-- Gemini AI
+- Drizzle ORM 0.40.0
+- Neon serverless database via `@neondatabase/serverless`
+- Gemini AI via `@google/generative-ai`
 - Speech Recognition API
 
 ### Authentication
-- Clerk Authentication
+- Clerk Authentication 6.12.2
 
 ### Deployment
 - Vercel
@@ -66,36 +68,52 @@ A cutting-edge AI-powered mock interview platform designed to revolutionize inte
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js (v18+)
-- npm or yarn
+- Node.js v18 or newer
+- npm
 - Gemini AI API Key
-- Clerk Authentication Setup
+- Clerk project credentials
+- Neon / Drizzle database URL
 
 ### Installation
 
 1. Clone the repository
 ```bash
-git clone https://github.com/your-username/ai-mock-interview.git
+git clone https://github.com/yuvrajtiwary-bitmesraece/AI-Mock-Interview.git
 ```
 
 2. Install dependencies
 ```bash
-cd ai-mock-interview
+cd AI-Mock-Interview
 npm install
 ```
 
-3. Set up environment variables
+3. Create a `.env` file at the project root
 ```bash
-# .env file
+copy conda NUL .env
+```
+
+4. Add the required environment variables
+```bash
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
 CLERK_SECRET_KEY=
 NEXT_PUBLIC_GEMINI_API_KEY=
-DATABASE_URL=
+NEXT_PUBLIC_DRIZZLE_DB_URL=
 ```
 
-4. Run the development server
+5. Run the development server
 ```bash
 npm run dev
+```
+
+6. Build for production
+```bash
+npm run build
+```
+
+### Optional database commands
+```bash
+npm run db:push
+npm run db:studio
 ```
 
 ## 🔍 How It Works
