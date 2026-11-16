@@ -4,7 +4,7 @@ Thanks for taking the time to contribute! This document explains how changes mov
 
 ## Development setup
 
-See the [README](README.md) for prerequisites, environment variables and how to run the app locally.
+See [Getting started in the README](README.md#getting-started) for prerequisites, environment variables and how to run the app locally.
 
 ## Workflow
 
