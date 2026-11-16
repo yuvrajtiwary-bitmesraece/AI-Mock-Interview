@@ -92,10 +92,12 @@ import RecordAnsSection from './_components/RecordAnsSection';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft, ArrowRight, StopCircle } from 'lucide-react';
+import { notFound } from 'next/navigation';
 import { getInterview } from '@/actions/interview';
 import { parseInterviewQuestions } from '@/utils/questions';
 
 function StartInterview({params}) {
+    // undefined = still loading, null = not found (or not yours).
     const [interviewData, setInterviewData] = useState();
     const [mockInterviewQues, setMockInterviewQues] = useState([]);
     const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
@@ -113,9 +115,13 @@ function StartInterview({params}) {
             setMockInterviewQues(parseInterviewQuestions(interview?.jsonMockResp));
             setInterviewData(interview);
         } catch (error) {
-            console.error("❌ Error fetching interview details:", error);
+            console.error("Error fetching interview details:", error);
         }
     };
+
+    if (interviewData === null) {
+        notFound();
+    }
 
     return (
         <div className="fixed inset-0 bg-gradient-to-br from-slate-700 via-black to-slate-800 text-white overflow-hidden">
@@ -164,7 +170,8 @@ function StartInterview({params}) {
                                 </Button>
                             )}
                             
-                            <Link href={`/dashboard/interview/${interviewData?.mockId}/feedback`}>
+                            {/* Use the URL's ID: interviewData is undefined until it loads, which made this link /undefined/feedback. */}
+                            <Link href={`/dashboard/interview/${resolvedParams.interviewId}/feedback`}>
                                 <Button 
                                     className='bg-red-500/20 border-red-500/30 
                                     hover:bg-red-500/40 text-red-400 

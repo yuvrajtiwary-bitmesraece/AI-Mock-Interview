@@ -93,11 +93,14 @@ import { Button } from '@/components/ui/button';
 import { Lightbulb, WebcamIcon, ArrowLeft, Play, CameraOff } from 'lucide-react';
 import Link from 'next/link';
 import React, { useEffect, useState, useRef } from 'react'
+import { notFound } from 'next/navigation';
 import Webcam from 'react-webcam';
 import { getInterview } from '@/actions/interview';
+import { parseInterviewQuestions } from '@/utils/questions';
 
 function Interview({params}) {
     const resolvedParams = React.use(params);
+    // undefined = still loading, null = not found (or not yours).
     const [interviewData, setInterviewData] = useState();
     const [webcamEnabled, setWebcamEnabled] = useState(false);
     const webcamRef = useRef(null);
@@ -113,13 +116,16 @@ function Interview({params}) {
     }
 
     const disableWebcam = () => {
-        if (webcamRef.current) {
-            const mediaStream = webcamRef.current.stream;
-            const tracks = mediaStream.getTracks();
-            tracks.forEach(track => track.stop());
-        }
+        // `stream` is null until the camera has started, so guard against it.
+        webcamRef.current?.stream?.getTracks().forEach(track => track.stop());
         setWebcamEnabled(false);
     }
+
+    if (interviewData === null) {
+        notFound();
+    }
+
+    const questionCount = parseInterviewQuestions(interviewData?.jsonMockResp).length;
 
     return (
         <div className="fixed inset-0 bg-gradient-to-br from-slate-700 via-black to-slate-800 text-white overflow-hidden">
@@ -174,10 +180,10 @@ function Interview({params}) {
                             </div>
                             <p className='text-gray-300 text-sm text-yellow-300'>
                                 Enable your webcam and microphone for the AI-powered mock interview. 
-                                This session includes 10 questions to help assess and improve your interview skills.
+                                This session includes {questionCount || 'several'} questions to help assess and improve your interview skills.
                             </p>
                             <p className='text-xs text-yellow-600 mt-3'>
-                                <strong>Note:</strong> Your privacy is our priority. We do not record or store any personal data.
+                                <strong>Note:</strong> This app never records or stores your video or audio. Only the text of your answers is saved, so you can review your feedback.
                             </p>
                         </div>
                     </div>

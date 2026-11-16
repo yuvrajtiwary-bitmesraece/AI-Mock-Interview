@@ -51,40 +51,26 @@
 "use client";
 
 import Image from 'next/image'
+import Link from 'next/link'
 import { UserButton } from '@clerk/nextjs'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import React from 'react'
-import { 
-  LayoutDashboard, 
-  HelpCircle, 
-  Rocket, 
-  Home 
+import {
+  LayoutDashboard,
+  Home
 } from 'lucide-react'
 
 function Header() {
     const path = usePathname();
-    const router = useRouter();
 
     const navItems = [
-        { 
-            name: 'Dashboard', 
-            icon: LayoutDashboard, 
+        {
+            name: 'Dashboard',
+            icon: LayoutDashboard,
             path: '/dashboard',
             active: path === '/dashboard'
         },
-        { 
-            name: 'Questions', 
-            icon: HelpCircle, 
-            path: '/dashboard/questions',
-            active: path === '/dashboard/questions'
-        },
-        { 
-            name: 'Upgrade', 
-            icon: Rocket, 
-            path: '/dashboard/upgrade',
-            active: path === '/dashboard/upgrade'
-        },
-        { 
+        {
             name: 'Home', 
             icon: Home, 
             path: '/',
@@ -103,24 +89,27 @@ function Header() {
 
             <div className='relative z-50 flex p-4 items-center justify-between container mx-auto'>
                 {/* Logo with Hover Effect */}
-                <div 
+                <Link
+                    href='/'
+                    aria-label='AI Mock Interview home'
                     className="flex items-center space-x-3 cursor-pointer group"
-                    onClick={() => router.push('/')}
                 >
-                    <Image 
-                        src='/logo.svg' 
-                        width={50} 
-                        height={50} 
-                        alt='Logo' 
+                    <Image
+                        src='/logo.svg'
+                        width={50}
+                        height={50}
+                        alt='AI Mock Interview logo'
                         className="transition-transform group-hover:rotate-6 group-hover:scale-110"
                     />
-                </div>
+                </Link>
 
                 {/* Navigation */}
                 <nav className='hidden md:flex space-x-6'>
                     {navItems.map((item) => (
-                        <div 
+                        <Link
                             key={item.name}
+                            href={item.path}
+                            aria-current={item.active ? 'page' : undefined}
                             className={`flex items-center space-x-2 
                                 cursor-pointer 
                                 group 
@@ -129,7 +118,6 @@ function Header() {
                                 ${item.active 
                                     ? 'text-white' 
                                     : 'text-gray-200 hover:text-white'}`}
-                            onClick={() => router.push(item.path)}
                         >
                             <item.icon 
                                 className={`
@@ -153,7 +141,7 @@ function Header() {
                             `}>
                                 {item.name}
                             </span>
-                        </div>
+                        </Link>
                     ))}
                 </nav>
 
