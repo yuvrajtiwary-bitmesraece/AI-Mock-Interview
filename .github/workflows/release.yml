@@ -20,10 +20,12 @@ jobs:
       - name: Extract release notes from CHANGELOG.md
         run: |
           version="${GITHUB_REF_NAME#v}"
-          awk -v ver="$version" '
-            $0 ~ "^## \\[" ver "\\]" { found = 1; next }
-            found && /^## \[/       { exit }
-            found                   { print }
+          # Print everything between "## [X.Y.Z]" and the next "## " heading.
+          # index() does a plain-text match, so "[", "]" and "." need no escaping.
+          awk -v header="## [$version]" '
+            index($0, header) == 1 { found = 1; next }
+            found && /^## /        { exit }
+            found                  { print }
           ' CHANGELOG.md > release-notes.md
           if [ ! -s release-notes.md ]; then
             echo "::error::No section for [$version] found in CHANGELOG.md"
