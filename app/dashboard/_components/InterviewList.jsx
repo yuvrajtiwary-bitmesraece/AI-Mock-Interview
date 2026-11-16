@@ -121,30 +121,23 @@
 
 "use client"
 
-import { db } from '@/utils/db';
-import { MockInterview } from '@/utils/schema';
 import { useUser } from '@clerk/nextjs'
-import { desc, eq } from 'drizzle-orm';
 import React, { useEffect, useState } from 'react'
 import InterviewItemCard from './InterviewItemCard';
-import { Zap, PlusCircle } from 'lucide-react';
-import AddNewInterview from './AddNewInterview';
+import { Zap } from 'lucide-react';
+import { listInterviews } from '@/actions/interview';
 
 function InterviewList() {
     const {user} = useUser();
     const [interviewList, setInterviewList] = useState([]);
-    
+
     useEffect(() => {
         user && getInterviewList();
     }, [user])
-    
-    const getInterviewList = async () => {
-        const result = await db.select()
-        .from(MockInterview)
-        .where(eq(MockInterview.createdBy, user?.primaryEmailAddress?.emailAddress))
-        .orderBy(desc(MockInterview.id))
 
-        console.log(result);
+    const getInterviewList = async () => {
+        // The server works out who is signed in; the browser can't ask for someone else's list.
+        const result = await listInterviews();
         setInterviewList(result);
     }
 

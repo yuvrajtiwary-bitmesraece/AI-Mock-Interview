@@ -29,6 +29,13 @@ See the [README](README.md) for prerequisites, environment variables and how to 
    merge them in order with **Create a merge commit** and delete each branch after merging; GitHub
    then retargets the next PR to `main` automatically.
 
+## Code guidelines
+
+- Database and Gemini access stays on the server, in the server actions in [`actions/`](actions/).
+  `utils/db.js` and `utils/GeminiAiModel.js` import `server-only`, so the build fails if a client component imports them.
+- Never put secrets in variables prefixed with `NEXT_PUBLIC_`. Those are bundled into browser JavaScript.
+- Every server action must check the signed-in user and only touch rows that user owns.
+
 ## Releasing
 
 This project follows [Semantic Versioning](https://semver.org/):

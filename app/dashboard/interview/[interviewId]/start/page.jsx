@@ -86,15 +86,14 @@
 
 "use client"
 
-import { db } from '@/utils/db';
-import { MockInterview } from '@/utils/schema';
-import { eq } from 'drizzle-orm';
 import React, { useEffect, useState } from 'react'
 import QuestionsSection from './_components/QuestionsSection';
 import RecordAnsSection from './_components/RecordAnsSection';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft, ArrowRight, StopCircle } from 'lucide-react';
+import { getInterview } from '@/actions/interview';
+import { parseInterviewQuestions } from '@/utils/questions';
 
 function StartInterview({params}) {
     const [interviewData, setInterviewData] = useState();
@@ -103,40 +102,16 @@ function StartInterview({params}) {
     const resolvedParams = React.use(params);
 
     useEffect(() => {
-        console.log("🔄 Updated mockInterviewQues:", mockInterviewQues);
-    }, [mockInterviewQues]); 
-
-    useEffect(() => {
         getInterviewDetails();
-        console.log("mockInterviewQues after fetching:", mockInterviewQues);
     }, []);
 
     const getInterviewDetails = async () => {
         try {
-            const result = await db.select().from(MockInterview)
-                .where(eq(MockInterview.mockId, resolvedParams.interviewId));
-            
-    
-            console.log("✅ Raw DB Result:", result);
+            // Returns null unless the signed-in user owns this interview.
+            const interview = await getInterview(resolvedParams.interviewId);
 
-            const extractJson = (rawText) => {
-                const fenceMatch = rawText.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
-                return fenceMatch?.[1]?.trim() ?? rawText.trim();
-            };
-
-            const rawJson = result[0].jsonMockResp || "";
-            const parsedResponse = JSON.parse(extractJson(rawJson) || "[]");
-            console.log("🛠 Parsed JSON Response:", parsedResponse);
-            console.log("🛠 Type of parsedResponse:", typeof parsedResponse);
-
-            const extractedQuestions = Array.isArray(parsedResponse)
-                ? parsedResponse
-                : parsedResponse?.interview_questions || parsedResponse?.interviewQuestions || parsedResponse?.questions || parsedResponse?.questionsList || parsedResponse?.questions_list || [];
-
-            console.log("✅ Extracted Questions:", extractedQuestions);
-
-            setMockInterviewQues(Array.isArray(extractedQuestions) ? extractedQuestions : []);
-            setInterviewData(result[0]);
+            setMockInterviewQues(parseInterviewQuestions(interview?.jsonMockResp));
+            setInterviewData(interview);
         } catch (error) {
             console.error("❌ Error fetching interview details:", error);
         }

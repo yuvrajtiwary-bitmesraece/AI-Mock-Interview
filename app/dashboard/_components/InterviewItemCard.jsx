@@ -143,7 +143,7 @@ import {
 import { Zap, FileText, Trash2, AlertTriangle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import React, { useState } from 'react'
-import { deleteInterview } from '@/utils/interviewUtils'
+import { deleteInterview } from '@/actions/interview'
 import { toast } from 'sonner'
 
 function InterviewItemCard({interview, onDelete}) {

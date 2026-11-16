@@ -90,13 +90,11 @@
 "use client"
 
 import { Button } from '@/components/ui/button';
-import { db } from '@/utils/db';
-import { MockInterview } from '@/utils/schema';
-import { eq } from 'drizzle-orm';
 import { Lightbulb, WebcamIcon, ArrowLeft, Play, CameraOff } from 'lucide-react';
 import Link from 'next/link';
 import React, { useEffect, useState, useRef } from 'react'
 import Webcam from 'react-webcam';
+import { getInterview } from '@/actions/interview';
 
 function Interview({params}) {
     const resolvedParams = React.use(params);
@@ -105,16 +103,13 @@ function Interview({params}) {
     const webcamRef = useRef(null);
 
     useEffect(() => {
-        console.log('Params:', resolvedParams.interviewId);
         getInterviewDetails();
     }, [])
 
     const getInterviewDetails = async () => {
-        const result = await db.select().from(MockInterview)
-            .where(eq(MockInterview.mockId, resolvedParams.interviewId)); 
-
-        console.log(result);
-        setInterviewData(result[0]);
+        // Returns null unless the signed-in user owns this interview.
+        const interview = await getInterview(resolvedParams.interviewId);
+        setInterviewData(interview);
     }
 
     const disableWebcam = () => {
