@@ -14,6 +14,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The server looks up the question being answered, instead of trusting the question text the browser sends.
 - Each Gemini request is now independent. Before, the app shared one chat session, so each prompt carried earlier prompts as history.
 - `drizzle.config.js` reads the connection string from the environment instead of a hard-coded value.
+- Updated dependencies to patched versions. `npm audit` went from 29 findings (4 critical, 16 high) to 6 (0 critical, 1 high). Notable fixes:
+  - `@clerk/nextjs` 6.12 → 6.39: fixes a bypass of middleware-based route protection (critical).
+  - `next` 15.3 → 15.5: fixes several Image Optimization advisories (critical).
+  - `drizzle-orm` 0.40 → 0.45: fixes SQL injection via improperly escaped identifiers.
+  - `moment`, `uuid` and transitive packages: patch releases.
+
+  The 6 that remain are build- or dev-time only and can't be triggered by app users: PostCSS bundled inside Next.js (fix requires Next 16) and esbuild inside the `drizzle-kit` CLI.
 
 ### Changed
 
@@ -24,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   The old names still work but log a deprecation warning. They will be removed in v2.0.0.
 - Deleting an interview removes its answers and the interview in one database transaction.
 - Creating an interview now shows an error toast when it fails, instead of failing silently.
+- `afterSignOutUrl` is set once on `<ClerkProvider>` instead of on `<UserButton>`, where Clerk deprecated it.
 
 ### Added
 
@@ -38,6 +46,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - `PROJECT_TREE.txt`, which was out of date and contained a local machine path.
+- Unused dependencies: `stripe`, `@stripe/react-stripe-js`, `@stripe/stripe-js`, `@types/stripe`, `react-hook-speech-to-text`, `next-themes` and `shadcn`. `shadcn` is a CLI and can be run with `npx shadcn@latest` when needed.
+- Unused `components/ui/sonner.jsx` wrapper. The app uses `sonner` directly.
 
 ## [0.1.0] - 2026-06-23
 

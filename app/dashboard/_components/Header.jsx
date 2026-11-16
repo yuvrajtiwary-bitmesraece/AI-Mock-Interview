@@ -160,8 +160,7 @@ function Header() {
                 {/* User Profile */}
                 <div className="flex items-center space-x-4">
                     <div className="relative z-[99999]">
-                    <UserButton 
-                        afterSignOutUrl="/"
+                    <UserButton
                         appearance={{
                         elements: {
                             userButtonAvatarBox: 'w-12 h-12 hover:ring-blue-500 transition-all',
