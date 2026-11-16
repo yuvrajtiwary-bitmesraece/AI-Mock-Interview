@@ -111,9 +111,7 @@
 
 // ------------------------------------------------------------------------------
 
-import { db } from '@/utils/db'
-import { UserAnswer } from '@/utils/schema'
-import { eq } from 'drizzle-orm'
+import { getInterviewAnswers } from '@/actions/interview'
 import Link from 'next/link'
 import {
     Collapsible,
@@ -126,15 +124,8 @@ import { Button } from '@/components/ui/button'
 async function Feedback({ params }) {
     const { interviewId } = await params;
 
-    console.log("🔍 Feedback Page - interviewId:", interviewId);
-
-    const feedbackList = await db.select()
-        .from(UserAnswer)
-        .where(eq(UserAnswer.mockIdRef, interviewId))
-        .orderBy(UserAnswer.id);
-
-    console.log("📊 Feedback List:", feedbackList);
-    console.log("📊 Feedback Count:", feedbackList.length);
+    // Empty unless the signed-in user owns this interview.
+    const feedbackList = await getInterviewAnswers(interviewId);
 
     // Calculate Overall Rating (out of 5)
     const overallRating = feedbackList.length > 0

@@ -150,28 +150,20 @@
 // ----------------------------------------------------------------
 "use client"
 import React, { useState } from 'react'
-import { v4 as uuidv4 } from 'uuid';
 import {
     Dialog,
     DialogContent,
     DialogDescription,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,  // Keep this if you were using it
 } from "@/components/ui/dialog"
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { chatSession } from '@/utils/GeminiAiModel';
-import { LoaderCircle } from 'lucide-react';
-import { db } from '@/utils/db';
-import { MockInterview } from '@/utils/schema';
-import { useUser } from '@clerk/nextjs';
-import moment from 'moment';
+import { LoaderCircle, Zap, PlusCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-
-// Newly added imports
-import { Zap, PlusCircle } from 'lucide-react';
+import { toast } from 'sonner';
+import { createInterview } from '@/actions/interview';
 
 function AddNewInterview() {
     const [openDialog, setOpenDialog]=useState(false);
@@ -181,66 +173,29 @@ function AddNewInterview() {
     const [duration, setDuration]=useState();
     const [loading, setLoading]=useState(false);
     const router=useRouter();
-    const [jsonResponse, setJsonResponse]=useState([]);
-    const {user}=useUser();
-  
+
     const onSubmit = async (event) => {
-      setLoading(true);
       event.preventDefault();
-      console.log(jobTitle, jobDescription, techStacks, duration);
-  
-      const inputPrompt = `
-      Job Title: ${jobTitle}, Job Description: ${jobDescription}, Tech Stacks: ${techStacks}, Years of Experience: ${duration}.
-      Based on this job, generate ${process.env.NEXT_PUBLIC_INTERVIEW_QUES_COUNT} interview questions along with answers in **valid JSON format**.
-  
-      Strictly follow these JSON rules:
-      1. **Do not include any markdown formatting** (like \`\`\`json or \`\`\`).
-      2. Ensure that all answers are **single-line or properly escaped**.
-      3. Do **not** use line breaks (\\n) or extra spaces inside the JSON values.
-      4. Provide output as a **valid JSON object**, where each question has "ques" and "ans" fields.
-      `;
-  
+      setLoading(true);
+
       try {
-          const result = await chatSession.sendMessage(inputPrompt);
-          const rawResponse = await result.response.text();
-          console.log("Raw Response:", rawResponse);
+          // Runs on the server: generates the questions with Gemini and saves the interview.
+          const result = await createInterview({
+              jobPosition: jobTitle,
+              jobDescription,
+              techStacks,
+              jobExperience: duration,
+          });
 
-          const extractJson = (text) => {
-              const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
-              if (fenceMatch?.[1]) return fenceMatch[1].trim();
-              const jsonMatch = text.match(/({[\s\S]*}|\[[\s\S]*\])/);
-              return jsonMatch ? jsonMatch[0].trim() : text.trim();
-          };
-
-          const mockJsonResponse = extractJson(rawResponse);
-          setJsonResponse(mockJsonResponse);
-
-          if (mockJsonResponse) {
-              const resp = await db.insert(MockInterview)
-              .values({
-                  mockId: uuidv4(),
-                  jsonMockResp: mockJsonResponse,
-                  jobPosition: jobTitle,
-                  jobDescription: jobDescription,
-                  techStacks: techStacks,
-                  jobExperience: duration,
-                  createdBy: user?.primaryEmailAddress?.emailAddress,
-                  createdAt: moment().format('DD-MM-YYYY')
-              }).returning({mockId: MockInterview.mockId});
-
-              console.log("Inserted ID:", resp);
-              if (resp) {
-                  setOpenDialog(false);
-                  router.push('/dashboard/interview/'+resp[0]?.mockId);
-              }
+          if (result.success) {
+              setOpenDialog(false);
+              router.push('/dashboard/interview/' + result.mockId);
           } else {
-              console.log("ERROR: Response does not contain JSON");
+              toast.error(result.error);
           }
-
-          const parsedResponse = JSON.parse(mockJsonResponse);
-          console.log("Parsed JSON:", parsedResponse);
       } catch (error) {
-          console.error("JSON Parsing Error:", error);
+          console.error("Failed to create interview:", error);
+          toast.error("Could not generate the interview. Please try again.");
       } finally {
           setLoading(false);
       }

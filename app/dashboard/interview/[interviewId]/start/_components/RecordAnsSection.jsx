@@ -573,22 +573,17 @@
 
 "use client"
 import { Button } from '@/components/ui/button'
-import { db } from '@/utils/db';
-import { chatSession } from '@/utils/GeminiAiModel';
-import { UserAnswer } from '@/utils/schema';
-import { useUser } from '@clerk/nextjs';
 import { Mic, StopCircle, CameraOff, Edit, Check, Camera } from 'lucide-react';
-import moment from 'moment';
 import Image from 'next/image'
 import React, { useEffect, useRef, useState } from 'react'
 import Webcam from 'react-webcam'
 import { toast } from 'sonner';
+import { saveAnswer } from '@/actions/interview';
 
 function RecordAnsSection({mockInterviewQues, activeQuestionIndex, interviewData}) {
     const [userAnswer, setUserAnswer] = useState('');
     const [editableAnswer, setEditableAnswer] = useState('');
     const [isEditing, setIsEditing] = useState(false);
-    const {user} = useUser();
     const [loading, setLoading] = useState(false);
     const [isRecording, setIsRecording] = useState(false);
     const [speechError, setSpeechError] = useState(null);
@@ -762,65 +757,24 @@ function RecordAnsSection({mockInterviewQues, activeQuestionIndex, interviewData
             return;
         }
         
-        console.log("Saving answer to database:", finalTranscript);
         toast.info('Processing your answer...');
         setLoading(true);
-        
+
         try {
-            const feedbackPrompt = "Question: " + mockInterviewQues[activeQuestionIndex]?.ques +
-                ", User Answer: " + finalTranscript +
-                ", Depending on question and user answer for given interview question" +
-                " Please give us rating for answer and feedback as area of improvement if any. The rating should be upon 5." +
-                "In Just 3 to 5 lines to improve it in JSON format with rating field and feedback field." +
-                "Strictly follow these JSON rules:1. **Do not include any markdown formatting** (like ```json or ```)." +
-                "2. Ensure that all answers are **single-line or properly escaped**." +
-                "3. Do **not** use line breaks (\\n) or extra spaces inside the JSON values.";
-        
-            const result = await chatSession.sendMessage(feedbackPrompt);
-            const rawResponse = await result.response.text();
-            console.log("Raw Response:", rawResponse);
-            
-            let parsedResponse;
-            try {
-                parsedResponse = JSON.parse(rawResponse.trim());
-            } catch (e) {
-                try {
-                    const jsonMatch = rawResponse.match(/```json([\s\S]*?)```/);
-                    if (jsonMatch) {
-                        parsedResponse = JSON.parse(jsonMatch[1].trim());
-                    } else {
-                        throw new Error("Could not parse JSON response");
-                    }
-                } catch (jsonError) {
-                    console.error("JSON parsing failed:", jsonError);
-                    parsedResponse = {
-                        feedback: "Could not parse feedback. The answer was recorded.",
-                        rating: "N/A"
-                    };
-                }
-            }
-            
-            console.log("Parsed feedback:", parsedResponse);
-            
-            const resp = await db.insert(UserAnswer)
-                .values({
-                    mockIdRef: interviewData?.mockId,
-                    question: mockInterviewQues[activeQuestionIndex]?.ques,
-                    correctAns: mockInterviewQues[activeQuestionIndex]?.ans,
-                    userAnswer: finalTranscript,
-                    feedback: parsedResponse?.feedback || "No feedback available",
-                    rating: parsedResponse?.rating || "N/A",
-                    userEmail: user?.primaryEmailAddress?.emailAddress,
-                    createdAt: moment().format('DD-MM-YYYY')
-                });
-            
-            if (resp) {
+            // Runs on the server: rates the answer with Gemini and saves it.
+            // Only the question's index is sent; the server looks up the question itself.
+            const result = await saveAnswer({
+                mockId: interviewData?.mockId,
+                questionIndex: activeQuestionIndex,
+                userAnswer: finalTranscript,
+            });
+
+            if (result.success) {
                 toast.success('User Answer Recorded Successfully!');
-                console.log("🎉 Answer saved to database!");
                 setUserAnswer('');
                 transcriptRef.current = '';
             } else {
-                toast.error('⚠️ Failed to save answer to database.');
+                toast.error(result.error);
             }
         } catch (error) {
             console.error("🚨 Error updating user answer:", error);
