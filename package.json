@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "db:push": "npx drizzle-kit push",
     "db:studio": "npx drizzle-kit studio",
     "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"utils/**/*.test.mjs\""
@@ -37,8 +37,11 @@
     "uuid": "^11.1.1"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.7",
     "@next/env": "^15.5.29",
     "drizzle-kit": "^0.31.11",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^15.5.29",
     "postcss": "^8.5.33",
     "tailwindcss": "^3.4.1"
   }
