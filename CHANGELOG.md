@@ -32,6 +32,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Deleting an interview removes its answers and the interview in one database transaction.
 - Creating an interview now shows an error toast when it fails, instead of failing silently.
 - `afterSignOutUrl` is set once on `<ClerkProvider>` instead of on `<UserButton>`, where Clerk deprecated it.
+- README rewritten:
+  - Added an architecture diagram, an environment-variable reference, a scripts table and a project structure overview.
+  - Added a live demo link and acknowledgements.
+  - Fixed the setup instructions.
+  - Removed claims the project couldn't back up (Lighthouse score, WCAG compliance, multi-language support, Firefox support).
+- Screenshots moved from the repository root to `docs/images/`.
 
 ### Fixed
 
