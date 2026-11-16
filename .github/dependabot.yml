@@ -1,0 +1,25 @@
+version: 2
+updates:
+  # npm packages: one grouped PR per month for minor/patch updates.
+  # Major upgrades (e.g. Next.js, React, Tailwind) are done deliberately by hand.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
+  # Keep GitHub Actions versions current.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: "ci"
