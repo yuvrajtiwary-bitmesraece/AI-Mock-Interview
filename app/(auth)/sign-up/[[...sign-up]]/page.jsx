@@ -79,6 +79,7 @@
 
 
 import { SignUp } from '@clerk/nextjs'
+import Link from 'next/link'
 
 export default function Page() {
   return (
@@ -146,21 +147,24 @@ export default function Page() {
                 </p>
               </div>
 
-              {/* Clerk SignIn Component */}
+              {/* Clerk SignUp Component */}
               <div className="flex justify-center">
-                <SignUp 
+                {/* Set in code so sign-up always lands on the dashboard, whatever the env vars say. */}
+                <SignUp
+                  signInUrl="/sign-in"
+                  fallbackRedirectUrl="/dashboard"
                 />
               </div>
 
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  New to AI Mock Interview? 
-                  <a 
-                    href="/sign-up" 
+                  Already have an account?
+                  <Link
+                    href="/sign-in"
                     className="ml-2 text-blue-600 hover:text-blue-800 font-semibold"
                   >
-                    Create an account
-                  </a>
+                    Sign in
+                  </Link>
                 </p>
               </div>
             </div>

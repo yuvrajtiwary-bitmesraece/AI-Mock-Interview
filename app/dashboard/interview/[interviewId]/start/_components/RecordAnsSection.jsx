@@ -586,46 +586,52 @@ function RecordAnsSection({mockInterviewQues, activeQuestionIndex, interviewData
     const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(false);
     const [isRecording, setIsRecording] = useState(false);
-    const [speechError, setSpeechError] = useState(null);
     const [webcamEnabled, setWebcamEnabled] = useState(true);
     const recognitionRef = useRef(null);
     const transcriptRef = useRef('');
     const webcamRef = useRef(null);
+
+    // The speech-recognition handlers below are attached once, on mount. A handler
+    // that read `isRecording` state would forever see its first value (false), so
+    // the handlers read these refs instead, which always hold the current value.
+    const isRecordingRef = useRef(false);
+    // Text captured by earlier recognition sessions within the current recording.
+    const savedTranscriptRef = useRef('');
 
     // Initialize speech recognition
     useEffect(() => {
         if (typeof window !== 'undefined' && !recognitionRef.current) {
             try {
                 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                
+
                 if (!SpeechRecognition) {
-                    console.error("❌ Speech Recognition not supported in this browser");
                     toast.error("Speech recognition not supported in your browser");
                     return;
                 }
-                
+
                 recognitionRef.current = new SpeechRecognition();
                 recognitionRef.current.continuous = true;
                 recognitionRef.current.interimResults = true;
-                
+
                 recognitionRef.current.onresult = (event) => {
-                    let transcript = '';
+                    let sessionTranscript = '';
                     for (let i = 0; i < event.results.length; i++) {
-                        transcript += event.results[i][0].transcript + ' ';
+                        sessionTranscript += event.results[i][0].transcript + ' ';
                     }
-                    
-                    console.log("🎙 Speech Result:", transcript);
-                    transcriptRef.current = transcript.trim();
-                    
-                    setUserAnswer(transcript.trim());
+
+                    const fullTranscript = `${savedTranscriptRef.current} ${sessionTranscript}`.trim();
+                    transcriptRef.current = fullTranscript;
+                    setUserAnswer(fullTranscript);
                 };
-                
+
                 recognitionRef.current.onerror = (event) => {
-                    console.error("❌ Speech Recognition Error:", event.error);
-                    setSpeechError(event.error);
+                    // Fired when we stop recognition ourselves; not a real error.
+                    if (event.error === 'aborted') return;
+
+                    console.error("Speech recognition error:", event.error);
+                    isRecordingRef.current = false;
 
                     if (event.error === 'no-speech') {
-                        console.log("No speech detected");
                         toast.error("No speech detected. Please speak clearly.");
                     } else if (event.error === 'network') {
                         toast.error("Speech recognition network error. Check your internet connection.");
@@ -644,43 +650,63 @@ function RecordAnsSection({mockInterviewQues, activeQuestionIndex, interviewData
                 };
                 
                 recognitionRef.current.onend = () => {
-                    console.log("🔄 Speech Recognition Ended");
-
-                    if (isRecording && !speechError) {
-                        console.log("🔄 Auto-restarting recognition");
+                    // Browsers end recognition on their own after a pause or a time
+                    // limit. If the user hasn't pressed Stop, keep the text so far
+                    // and start listening again.
+                    if (isRecordingRef.current) {
+                        savedTranscriptRef.current = transcriptRef.current;
                         try {
                             recognitionRef.current.start();
                         } catch (e) {
                             console.error("Failed to restart recognition:", e);
+                            isRecordingRef.current = false;
+                            setIsRecording(false);
                         }
-                    } else if (speechError) {
-                        console.log("Speech recognition ended due to error:", speechError);
                     }
                 };
-                
-                console.log("🎤 Speech Recognition initialized successfully");
             } catch (error) {
-                console.error("❌ Failed to initialize speech recognition:", error);
+                console.error("Failed to initialize speech recognition:", error);
                 toast.error("Failed to initialize speech recognition");
             }
         }
+
+        // Stop listening if the user leaves the page mid-recording.
+        return () => {
+            isRecordingRef.current = false;
+            recognitionRef.current?.abort();
+        };
     }, []);
 
-    // Request microphone permission on component mount
+    // Ask for microphone permission up front, then release the microphone
+    // straight away. Speech recognition opens its own audio stream.
     useEffect(() => {
-        navigator.mediaDevices.getUserMedia({ audio: true })
-            .then(() => console.log("🎙️ Mic Permission Granted"))
+        navigator.mediaDevices?.getUserMedia({ audio: true })
+            .then((stream) => stream.getTracks().forEach((track) => track.stop()))
             .catch(err => {
-                console.error("❌ Mic Permission Denied:", err);
+                console.error("Microphone permission denied:", err);
                 toast.error("Microphone access denied. Please check your browser permissions.");
             });
     }, []);
 
+    // Switching questions: stop listening and clear the answer box, so text spoken
+    // for one question can't be saved against another.
+    useEffect(() => {
+        if (isRecordingRef.current) {
+            isRecordingRef.current = false;
+            recognitionRef.current?.abort();
+            setIsRecording(false);
+        }
+        transcriptRef.current = '';
+        savedTranscriptRef.current = '';
+        setUserAnswer('');
+        setEditableAnswer('');
+        setIsEditing(false);
+    }, [activeQuestionIndex]);
+
     const toggleWebcam = () => {
-        if (webcamRef.current && webcamEnabled) {
-            const mediaStream = webcamRef.current.stream;
-            const tracks = mediaStream.getTracks();
-            tracks.forEach(track => track.stop());
+        if (webcamEnabled) {
+            // `stream` is null until the camera has started, so guard against it.
+            webcamRef.current?.stream?.getTracks().forEach(track => track.stop());
         }
         setWebcamEnabled(!webcamEnabled);
     };
@@ -688,15 +714,16 @@ function RecordAnsSection({mockInterviewQues, activeQuestionIndex, interviewData
     const startRecording = () => {
         if (recognitionRef.current) {
             try {
-                console.log("🎤 Starting recording...");
                 transcriptRef.current = '';
+                savedTranscriptRef.current = '';
                 setUserAnswer('');
-                setSpeechError(null);
+                setIsEditing(false);
                 recognitionRef.current.start();
+                isRecordingRef.current = true;
                 setIsRecording(true);
                 toast.success("Recording started");
             } catch (error) {
-                console.error("❌ Failed to start recording:", error);
+                console.error("Failed to start recording:", error);
                 toast.error("Failed to start recording");
             }
         } else {
@@ -707,7 +734,8 @@ function RecordAnsSection({mockInterviewQues, activeQuestionIndex, interviewData
     const stopRecording = () => {
         if (recognitionRef.current && isRecording) {
             try {
-                console.log("🛑 Stopping recording...");
+                // Clear the flag first so onend doesn't restart recognition.
+                isRecordingRef.current = false;
                 recognitionRef.current.stop();
                 setIsRecording(false);
                 

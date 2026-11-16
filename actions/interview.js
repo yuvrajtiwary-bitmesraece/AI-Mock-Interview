@@ -17,14 +17,58 @@
  */
 
 import { currentUser } from "@clerk/nextjs/server";
+import { SchemaType } from "@google/generative-ai";
 import { and, desc, eq } from "drizzle-orm";
 import moment from "moment";
 import { v4 as uuidv4 } from "uuid";
 
 import { getDb } from "@/utils/db";
-import { generateText } from "@/utils/GeminiAiModel";
-import { parseInterviewQuestions } from "@/utils/questions";
+import { generateJson } from "@/utils/GeminiAiModel";
+import { normalizeQuestions, parseInterviewQuestions } from "@/utils/questions";
 import { MockInterview, UserAnswer } from "@/utils/schema";
+
+// ---------------------------------------------------------------------------
+// Configuration
+// ---------------------------------------------------------------------------
+
+const DEFAULT_QUESTION_COUNT = 5;
+const MAX_QUESTION_COUNT = 10;
+
+/** Number of questions per interview: INTERVIEW_QUESTION_COUNT (1-10), default 5. */
+function getQuestionCount() {
+  const value = Number.parseInt(process.env.INTERVIEW_QUESTION_COUNT ?? "", 10);
+  return Number.isInteger(value) && value >= 1 && value <= MAX_QUESTION_COUNT
+    ? value
+    : DEFAULT_QUESTION_COUNT;
+}
+
+// JSON schemas passed to Gemini so its replies always have this exact shape.
+const QUESTIONS_SCHEMA = {
+  type: SchemaType.ARRAY,
+  items: {
+    type: SchemaType.OBJECT,
+    properties: {
+      ques: { type: SchemaType.STRING, description: "The interview question." },
+      ans: { type: SchemaType.STRING, description: "A strong model answer to the question." },
+    },
+    required: ["ques", "ans"],
+  },
+};
+
+const FEEDBACK_SCHEMA = {
+  type: SchemaType.OBJECT,
+  properties: {
+    rating: {
+      type: SchemaType.INTEGER,
+      description: "Score for the answer from 1 (poor) to 5 (excellent).",
+    },
+    feedback: {
+      type: SchemaType.STRING,
+      description: "3 to 5 sentences on what was good and how to improve the answer.",
+    },
+  },
+  required: ["rating", "feedback"],
+};
 
 // ---------------------------------------------------------------------------
 // Helpers (not exported, so they can't be called from the browser)
@@ -53,13 +97,6 @@ function cleanText(value, maxLength) {
   if (typeof value !== "string") return null;
   const trimmed = value.trim();
   return trimmed.length > 0 && trimmed.length <= maxLength ? trimmed : null;
-}
-
-function extractJson(text) {
-  const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
-  if (fenceMatch?.[1]) return fenceMatch[1].trim();
-  const jsonMatch = text.match(/({[\s\S]*}|\[[\s\S]*\])/);
-  return jsonMatch ? jsonMatch[0].trim() : text.trim();
 }
 
 // ---------------------------------------------------------------------------
@@ -115,30 +152,35 @@ export async function createInterview(form) {
     return { success: false, error: "Please fill in every field." };
   }
 
-  const inputPrompt = `
-      Job Title: ${jobPosition}, Job Description: ${jobDescription}, Tech Stacks: ${techStacks}, Years of Experience: ${jobExperience}.
-      Based on this job, generate ${process.env.NEXT_PUBLIC_INTERVIEW_QUES_COUNT} interview questions along with answers in **valid JSON format**.
+  const questionCount = getQuestionCount();
 
-      Strictly follow these JSON rules:
-      1. **Do not include any markdown formatting** (like \`\`\`json or \`\`\`).
-      2. Ensure that all answers are **single-line or properly escaped**.
-      3. Do **not** use line breaks (\\n) or extra spaces inside the JSON values.
-      4. Provide output as a **valid JSON object**, where each question has "ques" and "ans" fields.
-      `;
+  const prompt = `Write ${questionCount} interview questions for the job below, each with a strong model answer.
+Match the difficulty to the candidate's years of experience.
+
+Job title: ${jobPosition}
+Job description: ${jobDescription}
+Tech stack: ${techStacks}
+Years of experience: ${jobExperience}`;
+
+  let questions;
+  try {
+    questions = normalizeQuestions(await generateJson(prompt, QUESTIONS_SCHEMA)).slice(0, questionCount);
+  } catch (error) {
+    console.error("[createInterview] Gemini request failed:", error);
+    return { success: false, error: "Could not generate the interview. Please try again." };
+  }
+
+  // Validate BEFORE saving, so a bad AI response never creates an empty interview.
+  if (questions.length === 0) {
+    return { success: false, error: "The AI didn't return any questions. Please try again." };
+  }
 
   try {
-    const rawResponse = await generateText(inputPrompt);
-    const mockJsonResponse = extractJson(rawResponse);
-
-    if (!mockJsonResponse) {
-      return { success: false, error: "The AI response did not contain any questions." };
-    }
-
     const [created] = await getDb()
       .insert(MockInterview)
       .values({
         mockId: uuidv4(),
-        jsonMockResp: mockJsonResponse,
+        jsonMockResp: JSON.stringify(questions),
         jobPosition,
         jobDescription,
         techStacks,
@@ -150,8 +192,8 @@ export async function createInterview(form) {
 
     return { success: true, mockId: created.mockId };
   } catch (error) {
-    console.error("[createInterview] failed:", error);
-    return { success: false, error: "Could not generate the interview. Please try again." };
+    console.error("[createInterview] database insert failed:", error);
+    return { success: false, error: "Could not save the interview. Please try again." };
   }
 }
 
@@ -180,7 +222,9 @@ export async function deleteInterview(mockId) {
  * Rates an answer with Gemini and stores it.
  *
  * The question and model answer are looked up on the server from
- * `questionIndex`, rather than trusted from the browser.
+ * `questionIndex`, rather than trusted from the browser. Re-recording an
+ * answer replaces the previous one for that question instead of adding a
+ * duplicate row.
  */
 export async function saveAnswer({ mockId, questionIndex, userAnswer }) {
   const email = await getCurrentUserEmail();
@@ -195,47 +239,43 @@ export async function saveAnswer({ mockId, questionIndex, userAnswer }) {
     return { success: false, error: "Answer text too short or empty!" };
   }
 
-  const feedbackPrompt =
-    "Question: " + question.ques +
-    ", User Answer: " + answer +
-    ", Depending on question and user answer for given interview question" +
-    " Please give us rating for answer and feedback as area of improvement if any. The rating should be upon 5." +
-    "In Just 3 to 5 lines to improve it in JSON format with rating field and feedback field." +
-    "Strictly follow these JSON rules:1. **Do not include any markdown formatting** (like ```json or ```)." +
-    "2. Ensure that all answers are **single-line or properly escaped**." +
-    "3. Do **not** use line breaks (\\n) or extra spaces inside the JSON values.";
+  const prompt = `You are an interviewer reviewing a candidate's answer.
+
+Question: ${question.ques}
+Candidate's answer: ${answer}
+
+Rate the answer from 1 to 5 and give 3 to 5 sentences of feedback on how to improve it.`;
+
+  let review;
+  try {
+    review = await generateJson(prompt, FEEDBACK_SCHEMA);
+  } catch (error) {
+    console.error("[saveAnswer] Gemini request failed:", error);
+    return { success: false, error: "Could not get AI feedback. Please try again." };
+  }
+
+  const rating = Number.isFinite(review?.rating) ? Math.min(5, Math.max(1, Math.round(review.rating))) : null;
 
   try {
-    const rawResponse = await generateText(feedbackPrompt);
-
-    let parsedResponse;
-    try {
-      parsedResponse = JSON.parse(rawResponse.trim());
-    } catch {
-      const jsonMatch = rawResponse.match(/```json([\s\S]*?)```/);
-      try {
-        parsedResponse = jsonMatch ? JSON.parse(jsonMatch[1].trim()) : null;
-      } catch {
-        parsedResponse = null;
-      }
-    }
-
-    await getDb()
-      .insert(UserAnswer)
-      .values({
+    const db = getDb();
+    await db.batch([
+      db.delete(UserAnswer).where(
+        and(eq(UserAnswer.mockIdRef, interview.mockId), eq(UserAnswer.question, question.ques))
+      ),
+      db.insert(UserAnswer).values({
         mockIdRef: interview.mockId,
         question: question.ques,
         correctAns: question.ans,
         userAnswer: answer,
-        feedback: parsedResponse?.feedback || "Could not parse feedback. The answer was recorded.",
-        rating: parsedResponse?.rating != null ? String(parsedResponse.rating) : "N/A",
+        feedback: review?.feedback?.trim() || "No feedback available.",
+        rating: rating === null ? "N/A" : String(rating),
         userEmail: email,
         createdAt: moment().format("DD-MM-YYYY"),
-      });
-
+      }),
+    ]);
     return { success: true };
   } catch (error) {
-    console.error("[saveAnswer] failed:", error);
-    return { success: false, error: "Something went wrong. Try again!" };
+    console.error("[saveAnswer] database write failed:", error);
+    return { success: false, error: "Could not save your answer. Please try again." };
   }
 }

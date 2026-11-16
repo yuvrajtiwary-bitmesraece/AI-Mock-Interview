@@ -33,9 +33,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Creating an interview now shows an error toast when it fails, instead of failing silently.
 - `afterSignOutUrl` is set once on `<ClerkProvider>` instead of on `<UserButton>`, where Clerk deprecated it.
 
+### Fixed
+
+- **Long answers were cut off.** Speech-recognition handlers read `isRecording` state captured on first render (always `false`), so when the browser paused recognition it never restarted. Handlers now read refs, recognition restarts automatically, and text captured before each restart is kept.
+- **Interviews were generated with "undefined" questions.** The prompt used `NEXT_PUBLIC_INTERVIEW_QUES_COUNT`, which was never defined. The count now comes from `INTERVIEW_QUESTION_COUNT` (1–10, default 5).
+- **Broken AI responses could be saved.** Gemini now runs in JSON mode with a response schema, and the questions are validated before the interview is saved.
+- **Re-recording an answer created duplicates** on the feedback page and skewed the score. Saving now replaces the previous answer to the same question. Existing duplicates show only the latest answer.
+- **Feedback page crashed** when an answer had no rating (`null.toString()`). Unrated answers now show "Not rated" and no longer drag the overall average down as zeros. Per-question bars now match the displayed score (an `8/10` rating showed a full bar).
+- Turning the camera off before it finished starting threw an error (`stream` was `null`).
+- Text-to-speech queued overlapping playback on repeated clicks and kept reading after switching question or leaving the page.
+- Switching questions while recording carried the transcript over to the next question.
+- The microphone stayed open after the initial permission check.
+- Opening an interview you don't own, or one that doesn't exist, now shows the 404 page instead of an empty screen.
+- The **End** button linked to `/dashboard/interview/undefined/feedback` if pressed before the interview loaded.
+- After signing in or up, users were sent back to the sign-in page when the fallback redirect env vars were misconfigured. The redirect target is now set in code.
+- The sign-up page's "Create an account" link pointed to itself. It now says "Sign in" and links to `/sign-in`.
+- Removed links that led to 404 pages: **Questions** and **Upgrade** (header), **About** and **Privacy** (footer). Footer GitHub links now point to this repository.
+- The interview pages said "10 questions" regardless of the real count, and claimed no personal data is stored. Both now show accurate information.
+
 ### Added
 
 - `.env.example` listing every required environment variable.
+- Unit tests for question parsing and rating normalization (`npm test`, Node's built-in test runner), run in CI.
+- Header navigation uses real links (keyboard accessible, can open in a new tab). Icon-only buttons and links have accessible labels.
 
 - Continuous integration: every pull request and push to `main` is built on GitHub Actions.
 - Automated GitHub Releases: pushing a `vX.Y.Z` tag publishes a release using the notes in this file.

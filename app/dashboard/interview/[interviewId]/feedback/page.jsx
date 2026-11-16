@@ -111,8 +111,10 @@
 
 // ------------------------------------------------------------------------------
 
-import { getInterviewAnswers } from '@/actions/interview'
+import { getInterview, getInterviewAnswers } from '@/actions/interview'
+import { averageRating, parseRating } from '@/utils/rating'
 import Link from 'next/link'
+import { notFound } from 'next/navigation'
 import {
     Collapsible,
     CollapsibleContent,
@@ -124,45 +126,32 @@ import { Button } from '@/components/ui/button'
 async function Feedback({ params }) {
     const { interviewId } = await params;
 
-    // Empty unless the signed-in user owns this interview.
-    const feedbackList = await getInterviewAnswers(interviewId);
+    // Show the 404 page for interviews that don't exist or belong to someone else.
+    const interview = await getInterview(interviewId);
+    if (!interview) notFound();
 
-    // Calculate Overall Rating (out of 5)
-    const overallRating = feedbackList.length > 0
-        ? (feedbackList.reduce((sum, item) => {
-            let rating = item.rating.toString().includes("/") 
-                ? parseFloat(item.rating.split("/")[0])  
-                : parseFloat(item.rating);
-            
-            // Normalize rating to 5-point scale if it's out of 10
-            if (rating > 5) {
-            rating = (rating / 10) * 5;
-            }
-            
-            return sum + (isNaN(rating) ? 0 : Math.min(5, rating));
-        }, 0) / feedbackList.length)
-        : null;
+    const answerRows = await getInterviewAnswers(interviewId);
 
-    
+    // Older interviews can have several saved answers for the same question
+    // (re-recording used to add a new row). Keep only the most recent one.
+    // Rows arrive oldest-first, so later rows overwrite earlier ones.
+    const latestByQuestion = new Map();
+    for (const row of answerRows) {
+        latestByQuestion.set(row.question, row);
+    }
 
-    const parseRating = (rating) => {
-        if (!rating) return 0;
-        let num = rating.toString().includes("/") 
-            ? parseFloat(rating.split("/")[0])  
-            : parseFloat(rating);
-        
-        // Normalize rating to 5-point scale
-        if (num > 5) {
-          num = (num / 10) * 5; // Convert 10-point scale to 5-point scale
-        }
-        
-        return Math.min(Math.max(num, 0), 5);
-      };
-    
+    // `score` is a number from 0 to 5, or null if the answer was never rated.
+    const feedbackList = [...latestByQuestion.values()].map((row) => ({
+        ...row,
+        score: parseRating(row.rating),
+    }));
+
+    // Unrated answers are left out of the average instead of counting as 0.
+    const overallRating = averageRating(feedbackList.map((item) => item.score));
 
     const RatingBar = ({ rating }) => {
-        const normalizedRating = Math.min(5, parseFloat(rating)); 
-        const ratingPercentage = normalizedRating > 0 ? (normalizedRating / 5) * 100 : 0;
+        const normalizedRating = rating ?? 0;
+        const ratingPercentage = (normalizedRating / 5) * 100;
 
         // Determine color gradient based on rating
         const getColorGradient = () => {
@@ -252,9 +241,9 @@ async function Feedback({ params }) {
                                     <span className="text-3xl font-bold 
                                         bg-clip-text text-transparent 
                                         bg-gradient-to-r from-cyan-300 to-blue-500">
-                                        {overallRating ? overallRating.toFixed(1) : "0.0"}/5
+                                        {overallRating !== null ? overallRating.toFixed(1) : "–"}/5
                                     </span>
-                                    <RatingBar rating={parseFloat(overallRating)} />
+                                    <RatingBar rating={overallRating} />
                                 </div>
                                 <p className="text-gray-400 mt-2">
                                     Detailed AI Analysis of your Interview
@@ -262,8 +251,8 @@ async function Feedback({ params }) {
                             </div>
 
                             <div className="space-y-4">
-                                {feedbackList.map((item, index) => (
-                                    <Collapsible key={index}>
+                                {feedbackList.map((item) => (
+                                    <Collapsible key={item.id}>
                                         <CollapsibleTrigger className='w-full'>
                                             <div className="bg-white/5 backdrop-blur-xl rounded-xl p-4 
                                                 border border-white/10 flex justify-between items-center 
@@ -277,18 +266,20 @@ async function Feedback({ params }) {
                                         <CollapsibleContent>
                                             <div className="bg-white/5 backdrop-blur-xl rounded-b-xl p-6 
                                                 border border-white/10 space-y-4">
-                                                <div className={`p-4 rounded-xl 
-                                                    ${parseRating(item.rating) > 2 
-                                                        ? 'bg-green-500/10 border-green-500/30' 
-                                                        : 'bg-red-500/10 border-red-500/30'}`}>
+                                                <div className={`p-4 rounded-xl
+                                                    ${item.score === null
+                                                        ? 'bg-white/10 border-white/20'
+                                                        : item.score > 2
+                                                            ? 'bg-green-500/10 border-green-500/30'
+                                                            : 'bg-red-500/10 border-red-500/30'}`}>
                                                     <div className="flex items-center space-x-2">
                                                         <span className="font-bold text-gray-300">Rating:</span>
-                                                        <span className="text-lg font-bold 
-                                                            bg-clip-text text-transparent 
+                                                        <span className="text-lg font-bold
+                                                            bg-clip-text text-transparent
                                                             bg-gradient-to-r from-cyan-300 to-blue-500">
-                                                            {parseRating(item.rating).toFixed(1)}/5
+                                                            {item.score === null ? 'Not rated' : `${item.score.toFixed(1)}/5`}
                                                         </span>
-                                                        <RatingBar rating={item.rating} />
+                                                        <RatingBar rating={item.score} />
                                                     </div>
                                                 </div>
 

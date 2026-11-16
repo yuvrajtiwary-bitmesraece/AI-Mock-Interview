@@ -9,7 +9,6 @@ const generationConfig = {
   topP: 0.95,
   topK: 40,
   maxOutputTokens: 8192,
-  responseMimeType: "text/plain",
 };
 
 function resolveApiKey() {
@@ -32,22 +31,29 @@ let model;
 
 function getModel() {
   if (!model) {
-    model = new GoogleGenerativeAI(resolveApiKey()).getGenerativeModel({
-      model: MODEL_NAME,
-      generationConfig,
-    });
+    model = new GoogleGenerativeAI(resolveApiKey()).getGenerativeModel({ model: MODEL_NAME });
   }
   return model;
 }
 
 /**
- * Sends one prompt to Gemini and returns the text reply.
+ * Sends one prompt to Gemini and returns its reply as a parsed JSON value.
  *
- * Every call is independent. Previously the whole app shared a single chat
- * session, so each prompt carried the full history of earlier prompts. On the
- * server that history would have mixed different users' answers together.
+ * Gemini's JSON mode (`responseMimeType: "application/json"` + `responseSchema`)
+ * makes the model return JSON that matches `responseSchema`, so we no longer
+ * have to strip markdown fences or hunt for `{...}` with regular expressions.
+ *
+ * Every call is independent: no chat history is shared between requests or users.
  */
-export async function generateText(prompt) {
-  const result = await getModel().generateContent(prompt);
-  return result.response.text();
+export async function generateJson(prompt, responseSchema) {
+  const result = await getModel().generateContent({
+    contents: [{ role: "user", parts: [{ text: prompt }] }],
+    generationConfig: {
+      ...generationConfig,
+      responseMimeType: "application/json",
+      responseSchema,
+    },
+  });
+
+  return JSON.parse(result.response.text());
 }
