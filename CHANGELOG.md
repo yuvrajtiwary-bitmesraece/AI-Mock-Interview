@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-11-22
+
+Voice answers are now transcribed by Gemini, which is far more accurate than the browser’s speech recognition for accents and technical terms, and they work in every modern browser.
+
 ### Added
 
 - **Accurate transcription with Gemini.** Voice answers are recorded and, when you stop, transcribed by Gemini (`gemini-3.5-transcribe`, with fallbacks). The question, job title and tech stack are given as context, so technical terms like "Node.js", "libuv" or "useEffect" come out right. The transcript stays editable, and the recording is never stored. The browser's speech recognition now only shows a live preview while you speak.
@@ -209,7 +213,8 @@ First stable release. This release moves all data access to the server, patches 
 - Dashboard listing past interviews, with the option to delete them.
 - Authentication with Clerk.
 
-[Unreleased]: https://github.com/yuvrajtiwary-bitmesraece/AI-Mock-Interview/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/yuvrajtiwary-bitmesraece/AI-Mock-Interview/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/yuvrajtiwary-bitmesraece/AI-Mock-Interview/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/yuvrajtiwary-bitmesraece/AI-Mock-Interview/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/yuvrajtiwary-bitmesraece/AI-Mock-Interview/compare/v0.1.0...v1.0.0
 [0.1.0]: https://github.com/yuvrajtiwary-bitmesraece/AI-Mock-Interview/releases/tag/v0.1.0
