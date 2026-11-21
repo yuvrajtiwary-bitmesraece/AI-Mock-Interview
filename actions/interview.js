@@ -20,17 +20,20 @@ import { revalidatePath } from "next/cache";
 import { getViewer } from "@/utils/auth";
 import { toLegacyDateString } from "@/utils/dates";
 import { getDb } from "@/utils/db";
-import { aiErrorMessage, generateJson } from "@/utils/gemini";
+import { readAudio } from "@/utils/audio";
+import { aiErrorMessage, generateJson, transcribeAudio } from "@/utils/gemini";
 import { parseInterviewSettings } from "@/utils/interview-options";
 import { limitReachedMessage } from "@/utils/limits";
 import {
   FEEDBACK_SCHEMA,
   INTERVIEWER_SYSTEM_PROMPT,
-  QUESTIONS_SCHEMA,
   REPORT_SCHEMA,
   buildAnswerReviewPrompt,
   buildQuestionsPrompt,
   buildReportPrompt,
+  buildTranscriptionPrompt,
+  cleanTranscript,
+  questionsSchema,
 } from "@/utils/prompts";
 import { getAllUserData, getAnswersForInterview, getOwnedInterview, ownedBy } from "@/utils/queries";
 import { normalizeQuestions, parseInterviewQuestions } from "@/utils/questions";
@@ -117,7 +120,7 @@ async function createInterviewUnguarded(formData) {
         hasResume: Boolean(resume.file),
       }),
       files: resume.file ? [resume.file] : [],
-      schema: QUESTIONS_SCHEMA,
+      schema: questionsSchema(questionCount),
       maxOutputTokens: 8192,
       timeoutMs: 40_000,
     });
@@ -189,6 +192,57 @@ async function deleteInterviewUnguarded(mockId) {
 
   revalidatePath("/dashboard");
   return { success: true };
+}
+
+/**
+ * Transcribes a recorded answer with Gemini and returns the text, which the
+ * candidate can still edit before submitting. The recording is never stored.
+ * Takes FormData with "mockId", "questionIndex" and "audio" (the recording).
+ */
+export async function transcribeAnswer(formData) {
+  return guard("transcribeAnswer", () => transcribeAnswerUnguarded(formData));
+}
+
+async function transcribeAnswerUnguarded(formData) {
+  const get = (name) => (typeof formData?.get === "function" ? formData.get(name) : null);
+
+  const viewer = await getViewer();
+  const mockId = get("mockId");
+  const interview = await getOwnedInterview(viewer, typeof mockId === "string" ? mockId : null);
+  if (!interview) return fail("Interview not found.");
+
+  const questionIndex = Number(get("questionIndex"));
+  const question = Number.isInteger(questionIndex) ? parseInterviewQuestions(interview.jsonMockResp)[questionIndex] : undefined;
+  if (!question) return fail("Question not found.");
+
+  const audio = await readAudio(get("audio"));
+  if (!audio.ok) return fail(audio.error);
+
+  const quota = await consumeDailyQuota(viewer.id, "transcription");
+  if (!quota.allowed) return fail(limitReachedMessage("transcription", quota.limit));
+
+  let transcript;
+  try {
+    transcript = cleanTranscript(
+      await transcribeAudio({
+        audio: audio.file,
+        prompt: buildTranscriptionPrompt({
+          question: question.ques,
+          jobPosition: interview.jobPosition,
+          techStacks: interview.techStacks,
+        }),
+      })
+    );
+  } catch (error) {
+    console.error("[transcribeAnswer] Gemini request failed:", error);
+    await refundDailyQuota(viewer.id, "transcription");
+    return fail(aiErrorMessage(error));
+  }
+
+  if (!transcript) {
+    return fail("We couldn't hear any speech in that recording. Check your microphone and try again.");
+  }
+  return { success: true, transcript };
 }
 
 /**

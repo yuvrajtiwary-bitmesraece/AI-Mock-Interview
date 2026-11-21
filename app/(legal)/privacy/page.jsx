@@ -40,9 +40,10 @@ export default function PrivacyPage() {
       <H2>What we never store</H2>
       <List>
         <li>
-          <strong>Video or audio.</strong> The camera preview stays in your browser and is never uploaded. Your voice never reaches our servers:
-          your browser turns speech into text. In Chrome and Edge, the browser&apos;s built-in speech recognition sends audio to Google&apos;s or
-          Microsoft&apos;s speech service to do this, under their own privacy terms.
+          <strong>Video or audio.</strong> The camera preview stays in your browser and is never uploaded. When you answer out loud, the
+          recording of that answer is sent through our server to Google Gemini once, to transcribe it, and is then discarded. It is never
+          saved. While you speak, Chrome, Edge and Safari also show a live preview using their built-in speech recognition, which sends audio
+          to Google&apos;s, Microsoft&apos;s or Apple&apos;s speech service under their own privacy terms.
         </li>
         <li>
           <strong>Your resume file.</strong> A resume you upload is sent to Google Gemini once, to write your questions, and is then discarded. We
@@ -52,8 +53,8 @@ export default function PrivacyPage() {
 
       <H2>How AI is used</H2>
       <P>
-        Questions, answer reviews and reports are generated with the Google Gemini API. The text you enter, your answers and any resume you upload
-        are sent to Google for this, and Google processes them under the{" "}
+        Questions, transcripts, answer reviews and reports are generated with the Google Gemini API. The text you enter, your answers, the
+        recordings of voice answers and any resume you upload are sent to Google for this, and Google processes them under the{" "}
         <A href="https://ai.google.dev/gemini-api/terms">Gemini API terms</A>. When the free Gemini tier is used, Google may use submitted content
         to improve its products, and human reviewers may read it. Don&apos;t include information you wouldn&apos;t want processed this way, such as
         passwords or ID numbers.

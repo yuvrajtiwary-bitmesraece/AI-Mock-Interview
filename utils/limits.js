@@ -12,12 +12,14 @@ export const DEFAULT_DAILY_LIMITS = {
   interview: 10, // new interviews generated
   answer: 100, // answers reviewed by AI
   report: 30, // interview reports generated
+  transcription: 300, // recorded answers transcribed
 };
 
 const ENV_VARS = {
   interview: "AI_DAILY_LIMIT_INTERVIEWS",
   answer: "AI_DAILY_LIMIT_ANSWERS",
   report: "AI_DAILY_LIMIT_REPORTS",
+  transcription: "AI_DAILY_LIMIT_TRANSCRIPTIONS",
 };
 
 /** The daily limit for `action`, or Infinity when the limit is turned off. */
@@ -43,6 +45,7 @@ const LIMIT_NOUNS = {
   interview: "new interviews",
   answer: "AI answer reviews",
   report: "interview reports",
+  transcription: "voice transcriptions",
 };
 
 /** The message shown when a user hits a daily limit. */

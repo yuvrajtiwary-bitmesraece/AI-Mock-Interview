@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Accurate transcription with Gemini.** Voice answers are recorded and, when you stop, transcribed by Gemini (`gemini-3.5-transcribe`, with fallbacks). The question, job title and tech stack are given as context, so technical terms like "Node.js", "libuv" or "useEffect" come out right. The transcript stays editable, and the recording is never stored. The browser's speech recognition now only shows a live preview while you speak.
+- Voice answers work in every modern browser, including Firefox, which has no live preview.
+- A daily limit for voice transcriptions (300 a day, `AI_DAILY_LIMIT_TRANSCRIPTIONS`), and `GEMINI_TRANSCRIBE_MODELS` to choose the transcription models.
+
+### Changed
+
+- The live preview uses the browser's own English variant, such as `en-IN`, instead of always `en-US`. The microphone records with echo cancellation and noise suppression.
+- Gemini always returns exactly the number of questions you choose: the response schema now fixes the list length.
+- The privacy policy, the landing page FAQ and the interview screens explain how voice recordings are handled.
+
+### Fixed
+
+- An error in the live preview, such as a network error, no longer stops a recording.
+
 ## [1.1.0] - 2026-11-22
 
 The product release. The app is now open source under the MIT license, runs on Next.js 16, and covers the whole practice loop: interview types and resume-tailored questions, spoken or typed answers with instant rubric feedback, an AI coaching report, and a progress dashboard. It also has a new design, a landing page, privacy and terms pages, daily AI limits, Gemini model fallback, versioned database migrations and 81 unit tests.

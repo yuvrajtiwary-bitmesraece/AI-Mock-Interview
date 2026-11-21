@@ -17,14 +17,14 @@ import {
 } from "lucide-react";
 
 import { MicCheck } from "@/components/interview/MicCheck";
-import { useSpeechSupport } from "@/components/interview/useSpeechSupport";
+import { useRecordingSupport, useSpeechSupport } from "@/components/interview/useSpeechSupport";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { difficultyLabel, interviewTips, interviewTypeLabel } from "@/utils/interview-options";
 
 const STEPS = [
   { title: "Hear the question", text: "Read it on screen, or have it read aloud." },
-  { title: "Answer out loud or type", text: "Speech is transcribed live, and you can edit the text before you submit." },
+  { title: "Answer out loud or type", text: "Gemini transcribes your answer when you stop, technical terms included. Edit it before you submit." },
   { title: "Get instant feedback", text: "Each answer is scored on four skills with tips, and you get a coaching report at the end." },
 ];
 
@@ -32,7 +32,8 @@ const STEPS = [
 export default function InterviewLobby({ interview, questionCount }) {
   const [cameraOn, setCameraOn] = useState(false);
   const webcamRef = useRef(null);
-  const speechSupported = useSpeechSupport();
+  const canRecord = useRecordingSupport();
+  const livePreview = useSpeechSupport();
 
   const stopCamera = () => {
     // `stream` is null until the camera has started, so guard against it.
@@ -107,7 +108,7 @@ export default function InterviewLobby({ interview, questionCount }) {
 
           <p className="flex items-start gap-2 text-sm text-muted-foreground">
             <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" aria-hidden="true" />
-            Your camera preview never leaves your device, and no audio or video is recorded. Only the text of your answers is saved, so you can review your feedback.
+            Your camera preview never leaves your device. Voice answers are sent to Google Gemini once to be transcribed and are never stored. Only the text of your answers is saved, so you can review your feedback.
           </p>
         </div>
 
@@ -156,15 +157,17 @@ export default function InterviewLobby({ interview, questionCount }) {
             </div>
 
             <div className="mt-6 border-t border-white/10 pt-6">
-              {speechSupported === false ? (
+              {canRecord === false ? (
                 <p className="flex items-start gap-2 text-sm text-amber-200">
                   <CircleAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-                  This browser can&apos;t transcribe speech, so you&apos;ll type your answers. Use Chrome or Edge to answer out loud.
+                  This browser can&apos;t record audio, so you&apos;ll type your answers.
                 </p>
-              ) : speechSupported ? (
+              ) : canRecord ? (
                 <p className="flex items-start gap-2 text-sm text-emerald-300">
                   <CircleCheck className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-                  Voice answers work in this browser. You can also type.
+                  {livePreview
+                    ? "Voice answers work in this browser, with a live preview while you speak. You can also type."
+                    : "Voice answers work in this browser. Your words appear when you stop recording. You can also type."}
                 </p>
               ) : null}
             </div>

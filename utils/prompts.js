@@ -194,3 +194,44 @@ Reviewer notes: ${sanitizeForPrompt(answer.feedback, 600)}`
 
   return [header, ...blocks].join("\n\n");
 }
+
+/** The question schema with its length fixed to `count`, so Gemini returns exactly that many. */
+export function questionsSchema(count) {
+  return { ...QUESTIONS_SCHEMA, minItems: String(count), maxItems: String(count) };
+}
+
+// --- Transcription ------------------------------------------------------------
+
+const NO_SPEECH = "[no speech]";
+
+/**
+ * Prompt for transcribing a recorded answer. The question, role and tech stack
+ * are given only so names and jargon ("Node.js", "useEffect") are spelled right.
+ */
+export function buildTranscriptionPrompt({ question, jobPosition, techStacks = "" }) {
+  return [
+    "Transcribe this recording of a candidate answering a job interview question.",
+    "Write exactly what the speaker says, in their own words. Don't correct grammar, summarize, translate or add anything.",
+    "Keep filler sounds and words, written as um, uh, like or you know.",
+    "Use the context below only to spell names and technical terms correctly.",
+    `If there is no speech, return exactly ${NO_SPEECH}.`,
+    "Return only the transcript text, without quotes, labels or formatting.",
+    "",
+    `<question>${sanitizeForPrompt(question, 2000)}</question>`,
+    `<job_title>${sanitizeForPrompt(jobPosition, 200)}</job_title>`,
+    techStacks ? `<tech_stack>${sanitizeForPrompt(techStacks, 500)}</tech_stack>` : null,
+  ]
+    .filter((line) => line !== null)
+    .join("\n");
+}
+
+/** Tidies a transcript from the model: strips labels, quotes and code fences. Empty if there was no speech. */
+export function cleanTranscript(text) {
+  let transcript = String(text ?? "")
+    .replace(/^```[a-z]*\s*|```\s*$/gi, "")
+    .replace(/^\s*transcript\s*:\s*/i, "")
+    .trim();
+  if (/^["“].*["”]$/s.test(transcript)) transcript = transcript.slice(1, -1).trim();
+  if (transcript.toLowerCase() === NO_SPEECH) return "";
+  return transcript.replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n").trim();
+}
