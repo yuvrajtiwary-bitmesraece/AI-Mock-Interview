@@ -11,6 +11,7 @@ const USAGE_ROWS = [
   { action: "interview", label: "New interviews" },
   { action: "answer", label: "Answer reviews" },
   { action: "report", label: "Coaching reports" },
+  { action: "transcription", label: "Voice transcriptions" },
 ];
 
 function Card({ icon: Icon, title, description, children }) {

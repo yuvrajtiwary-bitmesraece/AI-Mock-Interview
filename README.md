@@ -36,7 +36,7 @@ Practice job interviews with an AI interviewer. Get questions tailored to your r
 - A lobby with tips for the interview type, a live microphone level test and an optional camera preview.
 
 **Answering**
-- Answer **out loud**, with live transcription and an editable transcript, or **type** your answers. Typing works in every browser.
+- Answer **out loud** in any modern browser: Gemini transcribes the recording when you stop, accents and technical terms included, and you can edit the text before submitting. Chrome, Edge and Safari also show a live preview while you speak. Or **type** your answers.
 - Speaking timer, waveform, read-aloud questions, per-question hints, and keyboard shortcuts.
 
 **Feedback**
@@ -84,7 +84,7 @@ flowchart LR
 ```
 
 1. **Set up.** The setup form calls the `createInterview` server action. It validates the form, checks the daily limit, asks Gemini for questions in JSON mode (with the resume PDF attached, if any), and saves the interview.
-2. **Answer.** The browser turns speech into text. `saveAnswer` sends only the text and the question's number. The server looks up the question and model answer itself, computes delivery metrics, asks Gemini to score the answer on the rubric, and stores the result.
+2. **Answer.** The browser records a voice answer and `transcribeAnswer` has Gemini transcribe it, using the question and tech stack to spell jargon correctly; the recording is never stored. After you check the text, `saveAnswer` sends only the text and the question's number. The server looks up the question and model answer itself, computes delivery metrics, asks Gemini to score the answer on the rubric, and stores the result.
 3. **Review.** Pages are server components that load only your data. The report reuses a cached AI summary until your answers change.
 
 The browser never talks to the database or Gemini directly and never sees their credentials. During an interview it only receives the questions; model answers stay on the server until the report.
@@ -100,7 +100,7 @@ The browser never talks to the database or Gemini directly and never sees their 
 | Auth | [Clerk](https://clerk.com) |
 | Database | [Neon](https://neon.tech) serverless Postgres, [Drizzle ORM](https://orm.drizzle.team) with versioned migrations |
 | AI | Google Gemini via [`@google/genai`](https://www.npmjs.com/package/@google/genai), with a model fallback chain |
-| Speech | Web Speech API (speech recognition and synthesis), Web Audio API for the microphone test |
+| Speech | Gemini transcription of recorded answers (MediaRecorder), Web Speech API for the live preview and read-aloud, Web Audio API for the microphone test |
 | Hosting and analytics | Vercel, Vercel Web Analytics and Speed Insights (cookie-free) |
 | Quality | ESLint, Node's built-in test runner (81 tests), GitHub Actions, CodeQL, dependency review, Dependabot |
 
@@ -151,7 +151,8 @@ Run `npm run db:migrate` against your database once before the first deploy.
 | `GEMINI_API_KEY` | Yes | Google Gemini API key. **Server-only.** |
 | `GEMINI_MODELS` | No | Comma-separated Gemini models to try in order (default `gemini-3.5-flash-lite,gemini-2.5-flash,gemini-3.1-flash-lite`) |
 | `INTERVIEW_QUESTION_COUNT` | No | Default number of questions in the setup form, 3–10 (default `5`) |
-| `AI_DAILY_LIMIT_INTERVIEWS`, `AI_DAILY_LIMIT_ANSWERS`, `AI_DAILY_LIMIT_REPORTS` | No | Per-user daily AI limits (defaults 10, 100, 30; `0` turns a limit off) |
+| `GEMINI_TRANSCRIBE_MODELS` | No | Gemini models for transcribing voice answers (default `gemini-3.5-transcribe,gemini-3.5-flash-lite,gemini-2.5-flash`) |
+| `AI_DAILY_LIMIT_INTERVIEWS`, `AI_DAILY_LIMIT_ANSWERS`, `AI_DAILY_LIMIT_REPORTS`, `AI_DAILY_LIMIT_TRANSCRIPTIONS` | No | Per-user daily AI limits (defaults 10, 100, 30, 300; `0` turns a limit off) |
 | `NEXT_PUBLIC_SITE_URL` | No | Public URL, only needed with a custom domain |
 
 > [!WARNING]
@@ -231,7 +232,6 @@ Ideas for future versions. [Contributions are welcome](CONTRIBUTING.md):
 - Follow-up questions that react to your answer, like a real interviewer
 - Coding questions with an in-browser editor
 - Interviews in more languages
-- Server-side transcription as a fallback for browsers without speech recognition
 - End-to-end tests with Playwright
 - Shareable report links
 

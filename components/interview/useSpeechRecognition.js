@@ -99,5 +99,8 @@ export function useSpeechRecognition({ lang = "en-US", initialTranscript = "", o
     setTranscript(text);
   }, []);
 
-  return { listening, transcript, start, stop, replaceTranscript };
+  /** The latest transcript, read from refs so it is current even inside timers and old closures. */
+  const getTranscript = useCallback(() => joinText(committedRef.current, sessionRef.current), []);
+
+  return { listening, transcript, start, stop, replaceTranscript, getTranscript };
 }

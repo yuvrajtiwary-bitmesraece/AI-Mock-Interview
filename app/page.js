@@ -59,7 +59,7 @@ const FEATURES = [
   {
     icon: Keyboard,
     title: "Speak or type",
-    text: "Live speech-to-text with an editable transcript, or type your answers. Works in every modern browser.",
+    text: "Answer out loud and Gemini transcribes it accurately, technical terms included, or type. Works in every modern browser.",
   },
   {
     icon: BarChart3,
@@ -90,11 +90,11 @@ const FAQS = [
   },
   {
     q: "Which browsers work?",
-    a: "Any modern browser. Answering out loud uses the browser's speech recognition, which works best in Chrome and Edge. In other browsers, such as Firefox, you type your answers instead.",
+    a: "Any modern browser, including Chrome, Edge, Safari and Firefox. Voice answers are transcribed by Gemini when you stop recording, and Chrome, Edge and Safari also show a live preview while you speak. You can always type instead.",
   },
   {
     q: "Is my camera or voice recorded?",
-    a: "No. The camera preview stays on your device. Your browser turns speech into text, and only that text is saved, together with the AI feedback. See the privacy policy for details.",
+    a: "No. The camera preview stays on your device. To turn a voice answer into text, the recording is sent once to Google Gemini and then discarded. Only the text is saved, together with the AI feedback. See the privacy policy for details.",
   },
   {
     q: "What happens to my resume?",
