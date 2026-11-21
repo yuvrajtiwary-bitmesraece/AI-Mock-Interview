@@ -115,18 +115,25 @@ function RecordAnsSection({mockInterviewQues, activeQuestionIndex, interviewData
     }, []);
 
     // Switching questions: stop listening and clear the answer box, so text spoken
-    // for one question can't be saved against another.
+    // for one question can't be saved against another. React state is reset while
+    // rendering (React's recommended way to reset state when a prop changes)...
+    const [answerQuestionIndex, setAnswerQuestionIndex] = useState(activeQuestionIndex);
+    if (answerQuestionIndex !== activeQuestionIndex) {
+        setAnswerQuestionIndex(activeQuestionIndex);
+        setIsRecording(false);
+        setUserAnswer('');
+        setEditableAnswer('');
+        setIsEditing(false);
+    }
+
+    // ...while the recognizer and refs, which live outside React, are reset in an effect.
     useEffect(() => {
         if (isRecordingRef.current) {
             isRecordingRef.current = false;
             recognitionRef.current?.abort();
-            setIsRecording(false);
         }
         transcriptRef.current = '';
         savedTranscriptRef.current = '';
-        setUserAnswer('');
-        setEditableAnswer('');
-        setIsEditing(false);
     }, [activeQuestionIndex]);
 
     const toggleWebcam = () => {

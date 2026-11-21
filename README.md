@@ -6,7 +6,7 @@ Practice job interviews with an AI interviewer. Describe the role you're prepari
 [![Latest release](https://img.shields.io/github/v/release/yuvrajtiwary-bitmesraece/AI-Mock-Interview?sort=semver)](https://github.com/yuvrajtiwary-bitmesraece/AI-Mock-Interview/releases)
 [![CodeQL](https://github.com/yuvrajtiwary-bitmesraece/AI-Mock-Interview/actions/workflows/codeql.yml/badge.svg)](https://github.com/yuvrajtiwary-bitmesraece/AI-Mock-Interview/actions/workflows/codeql.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Next.js 15](https://img.shields.io/badge/Next.js-15-black?logo=next.js)](https://nextjs.org)
+[![Next.js 16](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org)
 
 **Live demo:** [ai-mock-interview-dev2.vercel.app](https://ai-mock-interview-dev2.vercel.app/)
 
@@ -64,7 +64,7 @@ The browser never talks to the database or Gemini directly, and never receives t
 
 | Layer | Technology |
 | --- | --- |
-| Framework | [Next.js 15](https://nextjs.org) (App Router, server actions), React 19 |
+| Framework | [Next.js 16](https://nextjs.org) (App Router, server actions, Turbopack), React 19 |
 | UI | Tailwind CSS 3, [shadcn/ui](https://ui.shadcn.com) (Radix UI), Framer Motion, Lucide icons, Sonner toasts |
 | Auth | [Clerk](https://clerk.com) |
 | Database | [Neon](https://neon.tech) serverless Postgres with [Drizzle ORM](https://orm.drizzle.team) |
@@ -154,7 +154,7 @@ utils/
   questions.js          Parses stored questions (shared)
   rating.js             Normalizes ratings (shared)
   __tests__/            Unit tests
-middleware.js           Requires sign-in for /dashboard
+proxy.js                Requires sign-in for /dashboard (Next.js 16 "proxy", formerly middleware)
 ```
 
 ### Database
@@ -169,7 +169,7 @@ middleware.js           Requires sign-in for /dashboard
 - Database and Gemini clients import [`server-only`](https://www.npmjs.com/package/server-only), so the build fails if they're ever imported into browser code.
 - Every server action looks up the signed-in user and only reads or changes that user's interviews.
 - The server looks up questions and model answers itself, so the browser can't tamper with them.
-- Middleware requires sign-in for every `/dashboard` route.
+- The Next.js proxy (`proxy.js`, formerly middleware) requires sign-in for every `/dashboard` route.
 
 To report a vulnerability, see [SECURITY.md](SECURITY.md).
 

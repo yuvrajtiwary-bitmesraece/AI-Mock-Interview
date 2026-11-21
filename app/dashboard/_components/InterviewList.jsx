@@ -11,14 +11,10 @@ function InterviewList() {
     const [interviewList, setInterviewList] = useState([]);
 
     useEffect(() => {
-        user && getInterviewList();
-    }, [user])
-
-    const getInterviewList = async () => {
+        if (!user) return;
         // The server works out who is signed in; the browser can't ask for someone else's list.
-        const result = await listInterviews();
-        setInterviewList(result);
-    }
+        listInterviews().then(setInterviewList);
+    }, [user])
 
     const handleDeleteInterview = (deletedMockId) => {
         // Remove the deleted interview from the list

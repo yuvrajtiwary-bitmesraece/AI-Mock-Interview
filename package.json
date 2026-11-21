@@ -37,7 +37,7 @@
     "framer-motion": "^12.43.0",
     "lucide-react": "^0.577.0",
     "moment": "^2.31.0",
-    "next": "^15.5.29",
+    "next": "^16.4.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-webcam": "^7.2.0",
@@ -48,11 +48,10 @@
     "uuid": "^11.1.1"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3.3.7",
-    "@next/env": "^15.5.29",
+    "@next/env": "^16.4.6",
     "drizzle-kit": "^0.31.11",
     "eslint": "^9.39.5",
-    "eslint-config-next": "^15.5.29",
+    "eslint-config-next": "^16.4.6",
     "postcss": "^8.5.33",
     "tailwindcss": "^3.4.19"
   }
