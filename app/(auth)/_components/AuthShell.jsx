@@ -46,6 +46,17 @@ export function AuthShell({ children }) {
       <section className="flex flex-col items-center justify-center px-4 py-12">
         <Logo className="mb-8 lg:hidden" />
         {children}
+        <p className="mt-6 text-center text-xs text-muted-foreground">
+          By continuing you agree to the{" "}
+          <Link href="/terms" className="underline underline-offset-4 hover:text-foreground">
+            Terms
+          </Link>{" "}
+          and{" "}
+          <Link href="/privacy" className="underline underline-offset-4 hover:text-foreground">
+            Privacy policy
+          </Link>
+          .
+        </p>
       </section>
     </main>
   );

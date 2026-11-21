@@ -144,53 +144,6 @@
   }
 }
 
-@keyframes gradient-text {
-  0% {
-    background-position: -100% 0;
-  }
-  100% {
-    background-position: 100% 0;
-  }
-}
-
-@keyframes soft-pulse {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-}
-
-@keyframes border-gradient {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-.animate-gradient-text {
-  background-size: 200% auto;
-  background-position: -100% 0;
-  animation: gradient-text 2s infinite alternate;
-}
-
-.animate-soft-pulse {
-  animation: soft-pulse 2s ease-in-out infinite;
-}
-
-.border-gradient-animated {
-  background: linear-gradient(45deg, #00c6ff, #0072ff, #00c6ff);
-  background-size: 200% 200%;
-  animation: border-gradient 2s ease infinite;
-}
-
 /* Respect the operating system's "reduce motion" setting everywhere. */
 @media (prefers-reduced-motion: reduce) {
   *,
