@@ -24,8 +24,8 @@ import { difficultyLabel, interviewTips, interviewTypeLabel } from "@/utils/inte
 
 const STEPS = [
   { title: "Hear the question", text: "Read it on screen, or have it read aloud." },
-  { title: "Answer out loud", text: "Your speech is transcribed live. Edit the text before you submit." },
-  { title: "Get feedback", text: "Each answer gets a score and tips, plus a full report at the end." },
+  { title: "Answer out loud or type", text: "Speech is transcribed live, and you can edit the text before you submit." },
+  { title: "Get instant feedback", text: "Each answer is scored on four skills with tips, and you get a coaching report at the end." },
 ];
 
 /** Pre-interview screen: what to expect, tips, and a camera and microphone check. */
@@ -159,12 +159,12 @@ export default function InterviewLobby({ interview, questionCount }) {
               {speechSupported === false ? (
                 <p className="flex items-start gap-2 text-sm text-amber-200">
                   <CircleAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-                  This browser can&apos;t transcribe speech. Use Chrome or Edge to answer out loud.
+                  This browser can&apos;t transcribe speech, so you&apos;ll type your answers. Use Chrome or Edge to answer out loud.
                 </p>
               ) : speechSupported ? (
                 <p className="flex items-start gap-2 text-sm text-emerald-300">
                   <CircleCheck className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-                  Voice answers are supported in this browser.
+                  Voice answers work in this browser. You can also type.
                 </p>
               ) : null}
             </div>

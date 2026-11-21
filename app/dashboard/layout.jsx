@@ -14,7 +14,7 @@ function DashboardLayout({ children }) {
   return (
     <div className="min-h-dvh">
       <Header />
-      <main id="main" className="container pb-20 pt-24 sm:pt-28">
+      <main id="main" className="container pb-20 pt-24 sm:pt-28 print:pt-0">
         {children}
       </main>
     </div>
