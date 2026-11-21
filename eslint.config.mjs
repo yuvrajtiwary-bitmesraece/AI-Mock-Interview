@@ -15,6 +15,15 @@ const eslintConfig = [
     },
   },
   {
+    // Generated metadata images (next/og) can only use a plain <img>.
+    // The Next.js plugin exempts these files itself on Linux but not on
+    // Windows, so turn the rule off here to get the same result everywhere.
+    files: ["app/**/{opengraph-image,twitter-image,icon,apple-icon}.{js,jsx}"],
+    rules: {
+      "@next/next/no-img-element": "off",
+    },
+  },
+  {
     ignores: ["node_modules/**", ".next/**", "out/**", "build/**", "next-env.d.ts"],
   },
 ];
