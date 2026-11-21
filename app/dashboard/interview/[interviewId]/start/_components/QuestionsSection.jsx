@@ -38,7 +38,7 @@ function QuestionsSection({mockInterviewQues, activeQuestionIndex, onQuestionCha
     }
 
   return mockInterviewQues && (
-    <div className='mt-10 bg-white/5 backdrop-blur-xl rounded-2xl p-6 border border-white/10 space-y-6'>
+    <div className='bg-white/5 backdrop-blur-xl rounded-2xl p-6 border border-white/10 space-y-6'>
         <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4'>
             {mockInterviewQues && mockInterviewQues.map((question, index)=>(
                 <button 

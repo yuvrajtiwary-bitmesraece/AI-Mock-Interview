@@ -1,17 +1,20 @@
-import React from 'react'
-import Header from './_components/Header'
+import Header from "./_components/Header";
 
-function DashboardLayout({children}) {
+export const metadata = {
+  title: "Dashboard",
+  // Signed-in pages shouldn't appear in search results.
+  robots: { index: false, follow: false },
+};
+
+function DashboardLayout({ children }) {
   return (
-    <div>
-        <Header/>
-        <div className='mx-5 md:mx-20 lg:mx-36'>
+    <div className="min-h-dvh">
+      <Header />
+      <main id="main" className="container pb-20 pt-24 sm:pt-28">
         {children}
-
-        </div>
-        
+      </main>
     </div>
-  )
+  );
 }
 
-export default DashboardLayout
+export default DashboardLayout;
