@@ -202,3 +202,28 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* -------------------------------------------------------------------------- */
+/* Printing ("Save as PDF" on the interview report)                            */
+/* -------------------------------------------------------------------------- */
+
+@media print {
+  @page {
+    margin: 12mm;
+  }
+
+  /* Keep the dark design in the PDF instead of dropping backgrounds. */
+  html,
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  body::before {
+    position: absolute;
+  }
+
+  .glass {
+    backdrop-filter: none;
+  }
+}

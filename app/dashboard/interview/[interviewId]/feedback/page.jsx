@@ -1,215 +1,227 @@
-import { getViewer } from '@/utils/auth'
-import { getAnswersForInterview, getOwnedInterview } from '@/utils/queries'
-import { averageRating, parseRating } from '@/utils/rating'
-import Link from 'next/link'
-import { notFound } from 'next/navigation'
-import {
-    Collapsible,
-    CollapsibleContent,
-    CollapsibleTrigger,
-} from "@/components/ui/collapsible"
-import { ChevronsUpDown, ArrowLeft } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { ArrowLeft, ArrowRight, ChevronDown, Gauge, MessageSquareText, Mic, Play, Timer } from "lucide-react";
 
-// Colored bar for a 0-5 score. Defined outside the page so React doesn't
-// re-create the component on every render.
-function RatingBar({ rating }) {
-    const normalizedRating = rating ?? 0;
-    const ratingPercentage = (normalizedRating / 5) * 100;
+import { CriteriaBars, DeliveryStats, ReviewDetails, ScoreBadge, scoreTone } from "@/components/interview/feedback-ui";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { getViewer } from "@/utils/auth";
+import { formatDisplayDate, getCreatedDate } from "@/utils/dates";
+import { difficultyLabel, interviewTypeLabel } from "@/utils/interview-options";
+import { getAnswersForInterview, getOwnedInterview } from "@/utils/queries";
+import { parseInterviewQuestions } from "@/utils/questions";
+import { parseRating } from "@/utils/rating";
+import { answersSignature, latestAnswersByIndex, normalizeReview, summarizeAnswers } from "@/utils/report";
+import { formatDuration } from "@/utils/speech";
 
-    // Determine color gradient based on rating
-    const getColorGradient = () => {
-        if (normalizedRating <= 1) {
-            return 'from-red-600 to-red-400'; // Very low rating - deep red
-        } else if (normalizedRating <= 2) {
-            return 'from-red-600 via-orange-500 to-orange-400'; // Low rating - red to orange
-        } else if (normalizedRating <= 3) {
-            return 'from-orange-500 via-yellow-500 to-yellow-400'; // Medium rating - orange to yellow
-        } else if (normalizedRating <= 4) {
-            return 'from-yellow-500 via-green-500 to-green-400'; // Good rating - yellow to green
-        } else {
-            return 'from-green-600 to-green-400'; // Excellent rating - full green
-        }
-    };
+import AiReport from "./_components/AiReport";
+import { PrintButton, RetakeButton } from "./_components/ReportActions";
 
-    return (
-        <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-            <div
-                className={`h-2.5 rounded-full transition-all duration-300
-                    bg-gradient-to-r ${getColorGradient()}`}
-                style={{
-                    width: `${ratingPercentage}%`,
-                }}
-            ></div>
-        </div>
-    );
+export const metadata = { title: "Interview report" };
+
+/** Circular gauge for the overall 0-5 score. */
+function ScoreRing({ score }) {
+  const radius = 52;
+  const circumference = 2 * Math.PI * radius;
+  const fraction = Number.isFinite(score) ? score / 5 : 0;
+  const color = !Number.isFinite(score) ? "#475569" : score >= 4.5 ? "#34d399" : score >= 3.5 ? "#22d3ee" : score >= 2.5 ? "#fbbf24" : "#f87171";
+
+  return (
+    <div className="relative h-36 w-36">
+      <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90" aria-hidden="true">
+        <circle cx="60" cy="60" r={radius} fill="none" stroke="rgb(255 255 255 / 0.08)" strokeWidth="10" />
+        <circle
+          cx="60"
+          cy="60"
+          r={radius}
+          fill="none"
+          stroke={color}
+          strokeWidth="10"
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={circumference * (1 - fraction)}
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="font-mono text-4xl font-bold">{Number.isFinite(score) ? score.toFixed(1) : "–"}</span>
+        <span className="text-xs text-muted-foreground">out of 5</span>
+      </div>
+    </div>
+  );
 }
 
-async function Feedback({ params }) {
-    const { interviewId } = await params;
+function Stat({ icon: Icon, label, value }) {
+  return (
+    <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
+      <dt className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <Icon className="h-3.5 w-3.5" aria-hidden="true" /> {label}
+      </dt>
+      <dd className="mt-1 font-mono text-lg font-semibold">{value}</dd>
+    </div>
+  );
+}
 
-    // Show the 404 page for interviews that don't exist or belong to someone else.
-    const interview = await getOwnedInterview(await getViewer(), interviewId);
-    if (!interview) notFound();
+/** One question: collapsed to a summary row, expanding to the full review. */
+function QuestionReport({ index, question, row, mockId }) {
+  const score = row ? parseRating(row.rating) : null;
+  const review = row ? normalizeReview({ ...row.analysis, rating: score, feedback: row.feedback }) : null;
 
-    const answerRows = await getAnswersForInterview(interview.mockId);
+  return (
+    <details className="glass group break-inside-avoid-page overflow-hidden">
+      <summary className="flex cursor-pointer list-none items-center gap-4 p-5 transition-colors hover:bg-white/[0.03]">
+        <span
+          className={cn(
+            "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border font-mono text-sm font-semibold",
+            row ? scoreTone(score) : "border-white/10 text-muted-foreground"
+          )}
+        >
+          {index + 1}
+        </span>
+        <span className="flex-1 font-medium leading-snug">{question.ques}</span>
+        {row ? <ScoreBadge score={score} className="hidden sm:inline-flex" /> : <Badge>Not answered</Badge>}
+        <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180 print:hidden" aria-hidden="true" />
+      </summary>
 
-    // Older interviews can have several saved answers for the same question
-    // (re-recording used to add a new row). Keep only the most recent one.
-    // Rows arrive oldest-first, so later rows overwrite earlier ones.
-    const latestByQuestion = new Map();
-    for (const row of answerRows) {
-        latestByQuestion.set(row.question, row);
-    }
+      <div className="space-y-6 border-t border-white/10 p-5 sm:p-6">
+        {row ? (
+          <>
+            {review.feedback && <p className="leading-relaxed text-foreground/90">{review.feedback}</p>}
+            <CriteriaBars criteria={review.criteria} compact />
 
-    // `score` is a number from 0 to 5, or null if the answer was never rated.
-    const feedbackList = [...latestByQuestion.values()].map((row) => ({
-        ...row,
-        score: parseRating(row.rating),
-    }));
-
-    // Unrated answers are left out of the average instead of counting as 0.
-    const overallRating = averageRating(feedbackList.map((item) => item.score));
-
-    return (
-        <div className="text-white">
-            <div>
-                <div className="space-y-8">
-                    {/* Desktop/Tablet Back to Dashboard Button */}
-                    <div className='hidden md:flex justify-between items-center'>
-                        <div className='flex flex-col'>
-                            <h2 className="text-4xl md:text-5xl font-bold 
-                                bg-clip-text text-transparent 
-                                bg-gradient-to-r from-cyan-300 to-blue-500 mb-2">
-                                Congratulations!
-                            </h2>
-                            <h3 className="text-2xl font-bold text-gray-300">
-                                Here is your Interview Feedback
-                            </h3>
-                        </div>
-                        <Link href='/dashboard'>
-                            <Button 
-                                className="text-lg p-6 bg-transparent border-white/20 text-white hover:bg-white/10 flex items-center space-x-2"
-                            >
-                                <ArrowLeft size={20} />
-                                <span>Back to Dashboard</span>
-                            </Button>
-                        </Link>
-                    </div>
-
-                    {/* Mobile Back to Dashboard Button */}
-                    <div className='md:hidden flex justify-between items-center mb-4'>
-                        <div>
-                            <h2 className="text-3xl font-bold 
-                                bg-clip-text text-transparent 
-                                bg-gradient-to-r from-cyan-300 to-blue-500 mb-2">
-                                Congratulations!
-                            </h2>
-                            <h3 className="text-xl font-bold text-gray-300">
-                                Interview Feedback
-                            </h3>
-                        </div>
-                    </div>
-                    
-            
-
-                    {feedbackList.length === 0 ? (
-                        <div className="text-center py-12">
-                            <h2 className="text-2xl font-bold 
-                                bg-clip-text text-transparent 
-                                bg-gradient-to-r from-pink-500 to-purple-500">
-                                No Interview Feedback Record Found
-                            </h2>
-                        </div>
-                    ) : (
-                        <>
-                            <div className=" bg-purple-500/10 border-purple-500/30 blue-500/30 backdrop-blur-xl rounded-2xl p-6 border border-white/10">
-                                <div className="flex items-center space-x-4">
-                                    <h2 className="text-xl font-bold text-gray-300">
-                                        Overall Rating:
-                                    </h2>
-                                    <span className="text-3xl font-bold 
-                                        bg-clip-text text-transparent 
-                                        bg-gradient-to-r from-cyan-300 to-blue-500">
-                                        {overallRating !== null ? overallRating.toFixed(1) : "–"}/5
-                                    </span>
-                                    <RatingBar rating={overallRating} />
-                                </div>
-                                <p className="text-gray-400 mt-2">
-                                    Detailed AI Analysis of your Interview
-                                </p>
-                            </div>
-
-                            <div className="space-y-4">
-                                {feedbackList.map((item) => (
-                                    <Collapsible key={item.id}>
-                                        <CollapsibleTrigger className='w-full'>
-                                            <div className="bg-white/5 backdrop-blur-xl rounded-xl p-4 
-                                                border border-white/10 flex justify-between items-center 
-                                                hover:bg-white/10 transition-all">
-                                                <span className="text-gray-300 font-light">
-                                                    {item.question}
-                                                </span>
-                                                <ChevronsUpDown className="text-gray-500 w-5 h-5" />
-                                            </div>
-                                        </CollapsibleTrigger>
-                                        <CollapsibleContent>
-                                            <div className="bg-white/5 backdrop-blur-xl rounded-b-xl p-6 
-                                                border border-white/10 space-y-4">
-                                                <div className={`p-4 rounded-xl
-                                                    ${item.score === null
-                                                        ? 'bg-white/10 border-white/20'
-                                                        : item.score > 2
-                                                            ? 'bg-green-500/10 border-green-500/30'
-                                                            : 'bg-red-500/10 border-red-500/30'}`}>
-                                                    <div className="flex items-center space-x-2">
-                                                        <span className="font-bold text-gray-300">Rating:</span>
-                                                        <span className="text-lg font-bold
-                                                            bg-clip-text text-transparent
-                                                            bg-gradient-to-r from-cyan-300 to-blue-500">
-                                                            {item.score === null ? 'Not rated' : `${item.score.toFixed(1)}/5`}
-                                                        </span>
-                                                        <RatingBar rating={item.score} />
-                                                    </div>
-                                                </div>
-
-                                                <div className="bg-white/10 p-4 rounded-xl">
-                                                    <h3 className="text-cyan-400 font-bold mb-2">Your Answer:</h3>
-                                                    <p className="text-gray-300">{item.userAnswer}</p>
-                                                </div>
-
-                                                <div className="bg-white/10 p-4 rounded-xl">
-                                                    <h3 className="text-green-400 font-bold mb-2">AI&apos;s Answer:</h3>
-                                                    <p className="text-gray-300">{item.correctAns}</p>
-                                                </div>
-
-                                                <div className="bg-yellow-500/10 border-yellow-500/30 p-4 rounded-xl">
-                                                    <h3 className="text-yellow-400 font-bold mb-2">Feedback:</h3>
-                                                    <p className="text-gray-300">{item.feedback}</p>
-                                                </div>
-                                            </div>
-                                        </CollapsibleContent>
-                                    </Collapsible>
-                                ))}
-                            </div>
-                        </>
-                    )}
-
-                    {/* Mobile Back to Dashboard Button */}
-                    <div className='md:hidden flex justify-end mt-6'>
-                        <Link href='/dashboard'>
-                            <Button 
-                                className="text-lg p-6 bg-transparent border-white/20 text-white hover:bg-white/10 flex items-center space-x-2"
-                            >
-                                <ArrowLeft size={20} />
-                                <span>Back to Dashboard</span>
-                            </Button>
-                        </Link>
-                    </div>
-                </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4">
+                <h4 className="mb-2 text-sm font-semibold text-cyan-200">Your answer</h4>
+                <p className="whitespace-pre-line text-sm leading-relaxed text-foreground/90">{row.userAnswer}</p>
+              </div>
+              <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4">
+                <h4 className="mb-2 text-sm font-semibold text-emerald-200">Model answer</h4>
+                <p className="whitespace-pre-line text-sm leading-relaxed text-foreground/90">{row.correctAns || "Not available."}</p>
+              </div>
             </div>
-        </div>
-    );
+
+            <ReviewDetails review={review} />
+            {row.metrics && (
+              <div className="border-t border-white/10 pt-4">
+                <DeliveryStats metrics={row.metrics} />
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm text-muted-foreground">You haven&apos;t answered this question yet.</p>
+            <Button asChild variant="glass" size="sm" className="print:hidden">
+              <Link href={`/dashboard/interview/${mockId}/start?q=${index}`}>
+                Answer now <ArrowRight />
+              </Link>
+            </Button>
+          </div>
+        )}
+      </div>
+    </details>
+  );
 }
 
-export default Feedback;
+export default async function InterviewReportPage({ params }) {
+  const { interviewId } = await params;
+
+  // 404 for interviews that don't exist or belong to someone else.
+  const interview = await getOwnedInterview(await getViewer(), interviewId);
+  if (!interview) notFound();
+
+  const questions = parseInterviewQuestions(interview.jsonMockResp);
+  const latest = latestAnswersByIndex(await getAnswersForInterview(interview.mockId), questions);
+  const rows = [...latest.values()];
+  const summary = summarizeAnswers(rows);
+  const cachedReport = interview.report?.signature === answersSignature(rows) ? interview.report : null;
+  const unanswered = questions.length - rows.length;
+
+  return (
+    <div className="mx-auto max-w-5xl space-y-8">
+      <Link
+        href="/dashboard"
+        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground print:hidden"
+      >
+        <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Dashboard
+      </Link>
+
+      <header className="flex flex-wrap items-end justify-between gap-6">
+        <div>
+          <p className="text-sm font-medium text-primary">Interview report</p>
+          <h1 className="mt-1 text-3xl font-bold sm:text-4xl">
+            {interview.jobPosition}
+            {interview.company ? <span className="text-muted-foreground"> · {interview.company}</span> : null}
+          </h1>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Badge variant="primary">{interviewTypeLabel(interview.interviewType)}</Badge>
+            <Badge variant="violet">{difficultyLabel(interview.difficulty)}</Badge>
+            <Badge>{formatDisplayDate(getCreatedDate(interview))}</Badge>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2 print:hidden">
+          {unanswered > 0 && rows.length > 0 && (
+            <Button asChild variant="gradient">
+              <Link href={`/dashboard/interview/${interview.mockId}/start`}>
+                <Play /> Continue ({unanswered} left)
+              </Link>
+            </Button>
+          )}
+          {rows.length > 0 && <PrintButton />}
+          <RetakeButton mockId={interview.mockId} />
+        </div>
+      </header>
+
+      {rows.length === 0 ? (
+        <section className="glass flex flex-col items-center px-6 py-16 text-center">
+          <Mic className="h-10 w-10 text-primary" aria-hidden="true" />
+          <h2 className="mt-4 text-xl font-semibold">No answers yet</h2>
+          <p className="mt-2 max-w-md text-muted-foreground">Answer at least one question to get scores, feedback and your AI coaching report.</p>
+          <Button asChild variant="gradient" size="lg" className="mt-6">
+            <Link href={`/dashboard/interview/${interview.mockId}/start`}>
+              <Play /> Start the interview
+            </Link>
+          </Button>
+        </section>
+      ) : (
+        <>
+          <section className="grid gap-6 md:grid-cols-3">
+            <div className="glass flex flex-col items-center justify-center gap-3 p-6 text-center">
+              <ScoreRing score={summary.overall} />
+              <p className="font-medium">Overall score</p>
+              <p className="text-sm text-muted-foreground">
+                {summary.answered} of {questions.length} questions answered
+              </p>
+            </div>
+
+            <div className="glass p-6 md:col-span-2">
+              <h2 className="mb-5 text-lg font-semibold">Skills breakdown</h2>
+              {Object.values(summary.criteria).some(Number.isFinite) ? (
+                <CriteriaBars criteria={summary.criteria} />
+              ) : (
+                <p className="text-sm text-muted-foreground">Answers given before rubric scoring existed only have an overall score.</p>
+              )}
+              {summary.delivery && (
+                <dl className="mt-6 grid grid-cols-3 gap-3 border-t border-white/10 pt-5">
+                  <Stat icon={Timer} label="Speaking time" value={formatDuration(summary.delivery.speakingSec)} />
+                  <Stat icon={Gauge} label="Avg. pace" value={summary.delivery.avgWordsPerMinute ? `${summary.delivery.avgWordsPerMinute} wpm` : "–"} />
+                  <Stat icon={MessageSquareText} label="Filler words" value={String(summary.delivery.fillerCount)} />
+                </dl>
+              )}
+            </div>
+          </section>
+
+          <AiReport mockId={interview.mockId} initialReport={cachedReport} />
+        </>
+      )}
+
+      <section aria-labelledby="questions-heading" className="space-y-4">
+        <h2 id="questions-heading" className="text-lg font-semibold">
+          Question by question
+        </h2>
+        {questions.map((question, index) => (
+          <QuestionReport key={index} index={index} question={question} row={latest.get(index)} mockId={interview.mockId} />
+        ))}
+      </section>
+    </div>
+  );
+}

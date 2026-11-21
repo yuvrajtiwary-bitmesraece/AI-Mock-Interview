@@ -1,4 +1,4 @@
-import { boolean, date, index, integer, pgTable, primaryKey, serial, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/pg-core";
+import { boolean, date, index, integer, jsonb, pgTable, primaryKey, serial, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/pg-core";
 
 // Columns added after 1.0.0 are nullable, so rows written by older versions
 // stay valid without rewriting any data. Change the schema here, then run
@@ -32,6 +32,9 @@ export const MockInterview = pgTable(
     company: varchar("company", { length: 120 }),
     // True when questions were tailored to an uploaded resume. The resume itself is never stored.
     resumeUsed: boolean("resumeUsed").notNull().default(false),
+
+    // AI coaching report, cached until the answers change (see utils/report.js).
+    report: jsonb("report"),
   },
   (table) => [
     uniqueIndex("mock_interview_mock_id_idx").on(table.mockId),
@@ -55,6 +58,13 @@ export const UserAnswer = pgTable(
     createdAt: varchar("createdAt"),
 
     createdOn: timestamp("createdOn", { withTimezone: true }),
+
+    // Position of the question in the interview (rows before 1.1 match by question text).
+    questionIndex: integer("questionIndex"),
+    // Rubric scores, strengths, improvements and an improved answer (normalizeReview in utils/report.js).
+    analysis: jsonb("analysis"),
+    // Delivery metrics: voice or text, duration, words per minute, filler words (utils/speech.js).
+    metrics: jsonb("metrics"),
   },
   (table) => [index("user_answer_mock_id_idx").on(table.mockIdRef)]
 );

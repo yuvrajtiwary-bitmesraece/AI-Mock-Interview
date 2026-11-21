@@ -20,6 +20,18 @@ Run `npm run db:migrate` against your database **before** deploying this version
   - six one-click templates, such as "Backend engineer" and "Graduate / internship",
   - how many new interviews you have left today.
 - **Resume-tailored questions.** Upload a PDF (up to 4 MB) and the interviewer asks about your real projects and claims. The server checks that the file really is a PDF, sends it to Gemini, and never stores it.
+- **Redesigned interview room:**
+  - answer out loud or by typing; browsers without speech recognition, such as Firefox, use typing,
+  - a speaking timer, a live waveform and an editable transcript,
+  - read-aloud, an optional hint per question, and Ctrl+Enter to submit,
+  - question navigation with checkmarks for answered questions, live session stats, and an optional camera preview.
+- **Instant, rubric-based feedback after every answer:** an overall score, scores for relevance, depth, structure and communication, what worked, what to improve, and a stronger version of your own answer. Reviews use the model answer as a yardstick, and behavioral answers are judged on STAR.
+- **Delivery analytics for spoken answers:** speaking time, pace in words per minute, and filler words, computed on the server from the final transcript.
+- **Interview report:**
+  - an overall score ring, a skills breakdown and delivery stats,
+  - an AI coach summary with a readiness verdict, strengths, focus areas and a three-step practice plan, cached until your answers change,
+  - question-by-question details with your answer next to the model answer, and links to finish unanswered questions,
+  - **Save as PDF**, and **Practice again**, which starts a new attempt with the same questions without an AI request.
 - Each generated question now comes with the topic it tests and a one-line tip on what a great answer covers.
 - **Redesigned pre-interview screen:** your settings at a glance, how the interview works, tips for the interview type (for example STAR for behavioral rounds), a live microphone level test, an optional camera preview, and a check that the browser supports voice answers.
 - "New interview" link in the header.
@@ -58,6 +70,7 @@ Run `npm run db:migrate` against your database **before** deploying this version
 
 ### Removed
 
+- The old question and recording components (`QuestionsSection`, `RecordAnsSection`), replaced by the new interview room.
 - The "AI Magic!" create-interview dialog, replaced by the setup page.
 - `@eslint/eslintrc`, which was only needed to load the old ESLint config format.
 - The `moment` and `uuid` dependencies. Dates use built-in APIs, and IDs come from `crypto.randomUUID()`.
