@@ -10,6 +10,40 @@ import {
 import { ChevronsUpDown, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
+// Colored bar for a 0-5 score. Defined outside the page so React doesn't
+// re-create the component on every render.
+function RatingBar({ rating }) {
+    const normalizedRating = rating ?? 0;
+    const ratingPercentage = (normalizedRating / 5) * 100;
+
+    // Determine color gradient based on rating
+    const getColorGradient = () => {
+        if (normalizedRating <= 1) {
+            return 'from-red-600 to-red-400'; // Very low rating - deep red
+        } else if (normalizedRating <= 2) {
+            return 'from-red-600 via-orange-500 to-orange-400'; // Low rating - red to orange
+        } else if (normalizedRating <= 3) {
+            return 'from-orange-500 via-yellow-500 to-yellow-400'; // Medium rating - orange to yellow
+        } else if (normalizedRating <= 4) {
+            return 'from-yellow-500 via-green-500 to-green-400'; // Good rating - yellow to green
+        } else {
+            return 'from-green-600 to-green-400'; // Excellent rating - full green
+        }
+    };
+
+    return (
+        <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+            <div
+                className={`h-2.5 rounded-full transition-all duration-300
+                    bg-gradient-to-r ${getColorGradient()}`}
+                style={{
+                    width: `${ratingPercentage}%`,
+                }}
+            ></div>
+        </div>
+    );
+}
+
 async function Feedback({ params }) {
     const { interviewId } = await params;
 
@@ -35,38 +69,6 @@ async function Feedback({ params }) {
 
     // Unrated answers are left out of the average instead of counting as 0.
     const overallRating = averageRating(feedbackList.map((item) => item.score));
-
-    const RatingBar = ({ rating }) => {
-        const normalizedRating = rating ?? 0;
-        const ratingPercentage = (normalizedRating / 5) * 100;
-
-        // Determine color gradient based on rating
-        const getColorGradient = () => {
-            if (normalizedRating <= 1) {
-                return 'from-red-600 to-red-400'; // Very low rating - deep red
-            } else if (normalizedRating <= 2) {
-                return 'from-red-600 via-orange-500 to-orange-400'; // Low rating - red to orange
-            } else if (normalizedRating <= 3) {
-                return 'from-orange-500 via-yellow-500 to-yellow-400'; // Medium rating - orange to yellow
-            } else if (normalizedRating <= 4) {
-                return 'from-yellow-500 via-green-500 to-green-400'; // Good rating - yellow to green
-            } else {
-                return 'from-green-600 to-green-400'; // Excellent rating - full green
-            }
-        };
-
-        return (
-            <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-                <div 
-                    className={`h-2.5 rounded-full transition-all duration-300 
-                        bg-gradient-to-r ${getColorGradient()}`}
-                    style={{ 
-                        width: `${ratingPercentage}%`,
-                    }}
-                ></div>
-            </div>
-        );
-    };
 
     return (
         <div className="text-white">

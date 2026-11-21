@@ -23,11 +23,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Upgraded to Next.js 16.** Builds now use Turbopack, and `eslint-config-next` 16 is loaded as a native ESLint flat config. This also removes the PostCSS advisories that `npm audit` reported for production dependencies: `npm audit --omit=dev` now finds 0 vulnerabilities.
+- `middleware.js` is renamed to `proxy.js`, the name Next.js 16 uses. It still requires sign-in for every `/dashboard` route.
 - The Gilroy font files are gone. Gilroy is a commercial typeface, so it couldn't be redistributed in an open-source repository. The app now uses Plus Jakarta Sans and Geist Mono (SIL Open Font License), which `next/font` downloads at build time and serves from the app itself. This removes 40 font files from the repository.
 - Dependencies updated within their current major versions: Radix UI, Framer Motion 12.43, Lucide 0.577, Sonner 2.0.8, tailwind-merge 3.7 and Tailwind CSS 3.4.19. GitHub Actions now use `actions/checkout@v7` and `actions/setup-node@v7`.
 
+### Fixed
+
+- Three React issues reported by the stricter React Hooks lint rules in Next.js 16: the dashboard used its data-loading function before declaring it, the feedback page re-created its rating bar component on every render, and the answer box was reset with state updates inside an effect when switching questions.
+
 ### Removed
 
+- `@eslint/eslintrc`, which was only needed to load the old ESLint config format.
 - The unused `tailwind-scrollbar-hide` plugin, and global CSS that hid every scrollbar and set `width: 100vw` on the page body, which caused sideways scrolling on some screens.
 
 ## [1.0.0] - 2026-11-16
