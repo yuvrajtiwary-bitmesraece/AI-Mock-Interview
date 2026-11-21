@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, asc, desc, eq, isNull, or } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNull, or } from "drizzle-orm";
 
 import { getDb } from "./db.js";
 import { withRetry } from "./retry.js";
@@ -37,21 +37,22 @@ export async function getOwnedInterview(viewer, mockId) {
 }
 
 /**
- * All of `viewer`'s interviews, newest first, without the generated questions.
+ * All of `viewer`'s interviews, newest first, plus every saved answer to them
+ * (oldest first): the raw material for the dashboard (see utils/progress.js).
+ *
  * Also gives older interviews (matched by email) the viewer's user ID, so
  * they stay theirs even if the account's email address changes later.
  */
-export async function listOwnedInterviews(viewer) {
-  if (!viewer) return [];
+export async function getDashboardRows(viewer) {
+  if (!viewer) return { interviews: [], answers: [] };
 
   const rows = await withRetry(() =>
     getDb()
       .select({
         mockId: MockInterview.mockId,
         jobPosition: MockInterview.jobPosition,
-        jobDescription: MockInterview.jobDescription,
-        techStacks: MockInterview.techStacks,
         jobExperience: MockInterview.jobExperience,
+        jsonMockResp: MockInterview.jsonMockResp,
         createdAt: MockInterview.createdAt,
         createdOn: MockInterview.createdOn,
         interviewType: MockInterview.interviewType,
@@ -77,7 +78,47 @@ export async function listOwnedInterviews(viewer) {
     }
   }
 
-  return rows.map(({ userId, ...interview }) => interview);
+  const interviews = rows.map(({ userId, ...interview }) => interview);
+  if (interviews.length === 0) return { interviews, answers: [] };
+
+  const answers = await withRetry(() =>
+    getDb()
+      .select({
+        mockIdRef: UserAnswer.mockIdRef,
+        questionIndex: UserAnswer.questionIndex,
+        question: UserAnswer.question,
+        rating: UserAnswer.rating,
+        analysis: UserAnswer.analysis,
+        createdAt: UserAnswer.createdAt,
+        createdOn: UserAnswer.createdOn,
+      })
+      .from(UserAnswer)
+      .where(inArray(UserAnswer.mockIdRef, interviews.map((interview) => interview.mockId)))
+      .orderBy(asc(UserAnswer.id))
+  );
+
+  return { interviews, answers };
+}
+
+/** Everything stored for `viewer`: interviews with their answers. Used for data export. */
+export async function getAllUserData(viewer) {
+  const interviews = await withRetry(() =>
+    getDb().select().from(MockInterview).where(ownedBy(viewer)).orderBy(asc(MockInterview.id))
+  );
+  if (interviews.length === 0) return [];
+
+  const answers = await withRetry(() =>
+    getDb()
+      .select()
+      .from(UserAnswer)
+      .where(inArray(UserAnswer.mockIdRef, interviews.map((interview) => interview.mockId)))
+      .orderBy(asc(UserAnswer.id))
+  );
+
+  return interviews.map((interview) => ({
+    ...interview,
+    answers: answers.filter((answer) => answer.mockIdRef === interview.mockId),
+  }));
 }
 
 /** Saved answers for an interview, oldest first. Check ownership before calling. */

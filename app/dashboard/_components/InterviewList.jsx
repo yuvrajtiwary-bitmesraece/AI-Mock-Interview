@@ -1,58 +1,76 @@
-"use client"
+"use client";
 
-import React, { useState } from 'react'
-import InterviewItemCard from './InterviewItemCard';
-import { Zap } from 'lucide-react';
+import { useMemo, useState } from "react";
+import { Search } from "lucide-react";
 
-/** Interview cards. The list is loaded on the server; deletions update it here. */
-function InterviewList({ initialInterviews }) {
-    const [interviewList, setInterviewList] = useState(initialInterviews);
+import { cn } from "@/lib/utils";
+import { INTERVIEW_TYPES, interviewTypeLabel } from "@/utils/interview-options";
 
-    const handleDeleteInterview = (deletedMockId) => {
-        // Remove the deleted interview from the list
-        setInterviewList(prevList => 
-            prevList.filter(interview => interview.mockId !== deletedMockId)
-        );
-    }
-    
-    return (
-        <div className='space-y-6'>
-            <div className='flex items-center space-x-4'>
-                <Zap 
-                    className="text-blue-400" 
-                    size={30} 
-                />
-                <h2 className='text-2xl font-bold 
-                    bg-clip-text text-transparent 
-                    bg-gradient-to-r from-cyan-300 to-blue-500'>
-                    Previous Mock Interviews
-                </h2>
-            </div>
-            
-            <div className='grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-6'>
-                {interviewList?.length == 0 ? 
-                    <div className='col-span-full text-center py-12'>
-                        <h1 className='text-4xl font-bold text-gray-600 
-                            bg-clip-text text-transparent 
-                            bg-gradient-to-r from-pink-500 to-purple-500'>
-                            No Previous Interviews Found
-                        </h1>
-                        <p className='text-gray-400 mt-4'>
-                            Click on the Button on the left to get started
-                        </p>
-                    </div>
-                    :
-                    interviewList?.map((interview) => (
-                        <InterviewItemCard 
-                            key={interview.mockId} 
-                            interview={interview}
-                            onDelete={handleDeleteInterview}
-                        />
-                    ))
-                }
-            </div>
+import InterviewItemCard from "./InterviewItemCard";
+
+/** The user's interviews with a type filter and search. Deletions update the list in place. */
+export default function InterviewList({ initialInterviews }) {
+  const [interviews, setInterviews] = useState(initialInterviews);
+  const [type, setType] = useState("all");
+  const [query, setQuery] = useState("");
+
+  // Only offer filters for types the user actually has (older interviews count as technical).
+  const types = useMemo(
+    () => Object.keys(INTERVIEW_TYPES).filter((id) => interviews.some((item) => (item.interviewType ?? "technical") === id)),
+    [interviews]
+  );
+
+  const visible = interviews.filter((item) => {
+    if (type !== "all" && (item.interviewType ?? "technical") !== type) return false;
+    const text = `${item.jobPosition} ${item.company ?? ""}`.toLowerCase();
+    return text.includes(query.trim().toLowerCase());
+  });
+
+  return (
+    <div>
+      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div role="group" aria-label="Filter by interview type" className="flex flex-wrap gap-2">
+          {["all", ...types].map((id) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setType(id)}
+              aria-pressed={type === id}
+              className={cn(
+                "rounded-full border px-3 py-1 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                type === id ? "border-primary/50 bg-primary/15 text-foreground" : "border-white/10 text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {id === "all" ? `All (${interviews.length})` : interviewTypeLabel(id)}
+            </button>
+          ))}
         </div>
-    )
-}
+        <label className="relative block sm:w-64">
+          <span className="sr-only">Search interviews</span>
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+          <input
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search by role or company"
+            className="h-9 w-full rounded-lg border border-white/10 bg-white/[0.04] pl-9 pr-3 text-sm placeholder:text-muted-foreground/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          />
+        </label>
+      </div>
 
-export default InterviewList
+      {visible.length === 0 ? (
+        <p className="glass px-6 py-10 text-center text-muted-foreground">No interviews match your filters.</p>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {visible.map((interview) => (
+            <InterviewItemCard
+              key={interview.mockId}
+              interview={interview}
+              onDeleted={(mockId) => setInterviews((current) => current.filter((item) => item.mockId !== mockId))}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

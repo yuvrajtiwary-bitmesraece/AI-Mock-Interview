@@ -1,174 +1,132 @@
-"use client"
-import { Button } from '@/components/ui/button'
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import { toast } from "sonner";
+import { ArrowRight, FileText, LoaderCircle, Play, Trash2, TriangleAlert } from "lucide-react";
+
+import { deleteInterview } from "@/actions/interview";
+import { ScoreBadge } from "@/components/interview/feedback-ui";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
   DialogDescription,
   DialogFooter,
-  DialogTrigger
-} from "@/components/ui/dialog"
-import { Zap, FileText, Trash2, AlertTriangle } from 'lucide-react'
-import { useRouter } from 'next/navigation'
-import React, { useState } from 'react'
-import { deleteInterview } from '@/actions/interview'
-import { toast } from 'sonner'
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { formatDisplayDate } from "@/utils/dates";
+import { difficultyLabel, interviewTypeLabel } from "@/utils/interview-options";
 
-function InterviewItemCard({interview, onDelete}) {
-    const router = useRouter();
-    const [isDeleting, setIsDeleting] = useState(false);
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
+/** One interview on the dashboard: settings, progress, score and next step. */
+export default function InterviewItemCard({ interview, onDeleted }) {
+  const [open, setOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
-    const onStart = () => {
-        router.push(`/dashboard/interview/${interview?.mockId}`)
+  const { mockId, answeredCount, questionCount } = interview;
+  const base = `/dashboard/interview/${mockId}`;
+  const finished = questionCount > 0 && answeredCount >= questionCount;
+
+  const remove = async () => {
+    setDeleting(true);
+    try {
+      const result = await deleteInterview(mockId);
+      if (result?.success) {
+        toast.success("Interview deleted.");
+        setOpen(false);
+        onDeleted(mockId);
+        return;
+      }
+      toast.error(result?.error ?? "Could not delete the interview.");
+    } catch {
+      toast.error("Something went wrong. Please try again.");
     }
+    setDeleting(false);
+  };
 
-    const onFeedback = () => {
-        router.push(`/dashboard/interview/${interview?.mockId}/feedback`)
-    }
+  return (
+    <article className="glass flex flex-col p-5 transition-colors hover:border-white/20">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex flex-wrap gap-1.5">
+          <Badge variant="primary">{interviewTypeLabel(interview.interviewType)}</Badge>
+          <Badge variant="violet">{difficultyLabel(interview.difficulty)}</Badge>
+          {interview.resumeUsed && <Badge variant="success">Resume</Badge>}
+        </div>
+        {answeredCount > 0 && <ScoreBadge score={interview.score} />}
+      </div>
 
-    const handleDelete = async () => {
-        setIsDeleting(true);
-        try {
-            const result = await deleteInterview(interview?.mockId);
-            
-            if (result.success) {
-                toast.success("Interview deleted successfully");
-                if (onDelete) {
-                    onDelete(interview?.mockId);
-                }
-                setIsDialogOpen(false);
-            } else {
-                toast.error("Failed to delete interview");
-            }
-        } catch (error) {
-            console.error("Deletion error:", error);
-            toast.error("An error occurred while deleting the interview");
-        } finally {
-            setIsDeleting(false);
-        }
-    }
+      <h3 className="mt-4 text-lg font-semibold leading-snug">{interview.jobPosition}</h3>
+      <p className="mt-1 text-sm text-muted-foreground">
+        {interview.company ? `${interview.company} · ` : ""}
+        {interview.jobExperience} {interview.jobExperience === "1" ? "year" : "years"} · {formatDisplayDate(interview.createdOn ? new Date(interview.createdOn) : null)}
+      </p>
 
-    return (
-        <>
-            <div 
-                className='bg-white/5 
-                backdrop-blur-xl 
-                border-2 border-transparent 
-                hover:border-blue-500/20 
-                rounded-2xl 
-                p-5
-                space-y-4 
-                transition-all 
-                duration-300 
-                transform 
-                hover:scale-105 
-                hover:shadow-2xl 
-                flex 
-                flex-col 
-                justify-between 
-                h-full w-80'
-            >
-            <div>
-                <div className='flex justify-between items-center mb-4'>
-                    <h2 className='text-xl font-bold 
-                        bg-clip-text text-transparent 
-                        bg-gradient-to-r from-cyan-300 to-blue-500'>
-                        {interview?.jobPosition}
-                    </h2>
-                    <h2 className='text-xs text-gray-400 
-                        bg-white/10 
-                        px-2 py-2
-                        rounded-lg'>
-                        {interview.jobExperience} years
-                    </h2>
-                </div>
+      <div className="mt-5">
+        <div className="mb-1.5 flex justify-between text-xs text-muted-foreground">
+          <span>
+            {answeredCount} of {questionCount} answered
+          </span>
+          {finished && <span className="text-emerald-300">Complete</span>}
+        </div>
+        <div className="h-1.5 overflow-hidden rounded-full bg-white/10" aria-hidden="true">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-blue-500"
+            style={{ width: `${questionCount ? (answeredCount / questionCount) * 100 : 0}%` }}
+          />
+        </div>
+      </div>
 
-                <div className='space-y-2'>
-                    <p className='text-sm text-gray-300 flex items-center space-x-2'>
-                        <span className='w-2 h-2 bg-blue-500 rounded-full'></span>
-                        <span>Tech Stack: {interview?.techStacks || 'Not specified'}</span>
-                    </p>
-                    <p className='text-xs text-gray-400 flex items-center space-x-2'>
-                        <span className='w-2 h-2 bg-green-500 rounded-full'></span>
-                        <span>Created: {interview.createdAt}</span>
-                    </p>
-                </div>
-            </div>
+      <div className="mt-5 flex items-center gap-2 pt-1">
+        {finished ? (
+          <Button asChild variant="gradient" size="sm" className="flex-1">
+            <Link href={`${base}/feedback`}>
+              <FileText /> View report
+            </Link>
+          </Button>
+        ) : (
+          <Button asChild variant="gradient" size="sm" className="flex-1">
+            <Link href={answeredCount > 0 ? `${base}/start` : base}>
+              <Play /> {answeredCount > 0 ? "Continue" : "Start"}
+            </Link>
+          </Button>
+        )}
+        {!finished && answeredCount > 0 && (
+          <Button asChild variant="glass" size="sm" className="flex-1">
+            <Link href={`${base}/feedback`}>
+              Report <ArrowRight />
+            </Link>
+          </Button>
+        )}
 
-            <div className='grid grid-cols-[1fr_1fr_auto] gap-3 mt-4'>
-                    <Button 
-                        variant="outline" 
-                        className='w-full flex items-center justify-center 
-                        bg-transparent border-white/20 text-white 
-                        hover:bg-white/10 hover:text-white
-                        rounded-md'
-                        onClick={onFeedback}
-                    >
-                        <FileText size={12} className="mr-1" />
-                        <span>Feedback</span>
-                    </Button>
-                    <Button 
-                        className='w-full flex items-center justify-center space-x-0
-                        bg-gradient-to-r from-cyan-500 to-blue-500 
-                        hover:from-cyan-600 hover:to-blue-600
-                        py-2 px-2
-                        rounded-md'
-                        onClick={onStart}
-                    >
-                        <Zap size={14}/>
-                        <span>Start</span>
-                    </Button>
-                    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                        <DialogTrigger asChild>
-                            <Button 
-                                variant="destructive"
-                                className='w-auto px-2
-                                bg-red-500/20 border-red-500/30 
-                                hover:bg-red-500/40 text-red-400
-                                rounded-md'
-                            >
-                                <Trash2 size={16} />
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent className="bg-slate-900 border-white/10">
-                            <DialogHeader>
-                                <DialogTitle className="flex items-center space-x-2">
-                                    <AlertTriangle className="text-yellow-500" size={24} />
-                                    <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-500 to-yellow-500">
-                                        Confirm Deletion
-                                    </span>
-                                </DialogTitle>
-                                <DialogDescription className="text-gray-400">
-                                    Are you sure you want to delete this interview?
-                                    This action cannot be undone and will permanently remove 
-                                    all associated data.
-                                </DialogDescription>
-                            </DialogHeader>
-                            <DialogFooter className="flex justify-end space-x-4">
-                                <Button 
-                                    variant="outline" 
-                                    onClick={() => setIsDialogOpen(false)}
-                                    className="bg-transparent border-white/20 text-white hover:bg-white/10 hover:text-white"
-                                >
-                                    Cancel
-                                </Button>
-                                <Button 
-                                    variant="destructive" 
-                                    onClick={handleDelete}
-                                    disabled={isDeleting}
-                                    className="bg-red-500/20 border-red-500/30 hover:bg-red-500/40 text-red-400"
-                                >
-                                    {isDeleting ? 'Deleting...' : 'Delete Interview'}
-                                </Button>
-                            </DialogFooter>
-                        </DialogContent>
-                    </Dialog>
-                </div>
-            </div>
-        </>
-    )
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <Button variant="destructive-soft" size="icon" className="h-8 w-8" aria-label={`Delete the ${interview.jobPosition} interview`}>
+              <Trash2 />
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="border-white/10 bg-[#0b1020]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <TriangleAlert className="h-5 w-5 text-amber-300" aria-hidden="true" /> Delete this interview?
+              </DialogTitle>
+              <DialogDescription>
+                &ldquo;{interview.jobPosition}&rdquo; and all of its answers and feedback will be permanently deleted. This can&apos;t be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="gap-2">
+              <Button variant="glass" onClick={() => setOpen(false)} disabled={deleting}>
+                Cancel
+              </Button>
+              <Button variant="destructive" onClick={remove} disabled={deleting}>
+                {deleting ? <LoaderCircle className="animate-spin" /> : <Trash2 />} Delete
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </article>
+  );
 }
-
-export default InterviewItemCard

@@ -14,7 +14,7 @@
  */
 
 import { randomUUID } from "node:crypto";
-import { and, eq, or } from "drizzle-orm";
+import { and, eq, inArray, or } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import { getViewer } from "@/utils/auth";
@@ -32,12 +32,12 @@ import {
   buildQuestionsPrompt,
   buildReportPrompt,
 } from "@/utils/prompts";
-import { getAnswersForInterview, getOwnedInterview } from "@/utils/queries";
+import { getAllUserData, getAnswersForInterview, getOwnedInterview, ownedBy } from "@/utils/queries";
 import { normalizeQuestions, parseInterviewQuestions } from "@/utils/questions";
 import { answersSignature, latestAnswersByIndex, normalizeReport, normalizeReview } from "@/utils/report";
 import { readResume } from "@/utils/resume";
 import { isTransientNetworkError } from "@/utils/retry";
-import { MockInterview, UserAnswer } from "@/utils/schema";
+import { MockInterview, UsageCounter, UserAnswer } from "@/utils/schema";
 import { analyzeAnswer } from "@/utils/speech";
 import { consumeDailyQuota, refundDailyQuota } from "@/utils/usage";
 
@@ -378,4 +378,72 @@ async function retakeInterviewUnguarded(mockId) {
 
   revalidatePath("/dashboard");
   return { success: true, mockId: newMockId };
+}
+
+/**
+ * Everything stored for the signed-in user, as plain JSON: interviews,
+ * questions, answers and feedback. The page turns it into a downloaded file.
+ */
+export async function exportMyData() {
+  return guard("exportMyData", async () => {
+    const viewer = await getViewer();
+    if (!viewer) return fail("Please sign in again.");
+
+    const interviews = (await getAllUserData(viewer)).map((interview) => ({
+      id: interview.mockId,
+      createdOn: interview.createdOn ?? interview.createdAt,
+      jobPosition: interview.jobPosition,
+      company: interview.company,
+      jobDescription: interview.jobDescription,
+      techStacks: interview.techStacks,
+      yearsOfExperience: interview.jobExperience,
+      interviewType: interview.interviewType,
+      difficulty: interview.difficulty,
+      resumeUsed: interview.resumeUsed,
+      questions: parseInterviewQuestions(interview.jsonMockResp),
+      report: interview.report,
+      answers: interview.answers.map((answer) => ({
+        question: answer.question,
+        answer: answer.userAnswer,
+        rating: answer.rating,
+        feedback: answer.feedback,
+        analysis: answer.analysis,
+        metrics: answer.metrics,
+        modelAnswer: answer.correctAns,
+        createdOn: answer.createdOn ?? answer.createdAt,
+      })),
+    }));
+
+    return { success: true, data: { exportedAt: new Date().toISOString(), app: "AI Mock Interview", interviews } };
+  });
+}
+
+/**
+ * Permanently deletes every interview, answer and usage record of the
+ * signed-in user. `confirmation` must be the word DELETE, so a stray
+ * request can't wipe an account. The Clerk account itself is managed by Clerk.
+ */
+export async function deleteMyData(confirmation) {
+  return guard("deleteMyData", async () => {
+    const viewer = await getViewer();
+    if (!viewer) return fail("Please sign in again.");
+    if (confirmation !== "DELETE") return fail('Type DELETE to confirm.');
+
+    const db = getDb();
+    const owned = await db.select({ mockId: MockInterview.mockId }).from(MockInterview).where(ownedBy(viewer));
+    const mockIds = owned.map((row) => row.mockId);
+
+    const statements = [db.delete(UsageCounter).where(eq(UsageCounter.userId, viewer.id))];
+    if (mockIds.length > 0) {
+      statements.unshift(
+        db.delete(UserAnswer).where(inArray(UserAnswer.mockIdRef, mockIds)),
+        db.delete(MockInterview).where(inArray(MockInterview.mockId, mockIds))
+      );
+    }
+    // One transaction: everything is deleted, or nothing is.
+    await db.batch(statements);
+
+    revalidatePath("/dashboard");
+    return { success: true, deletedInterviews: mockIds.length };
+  });
 }

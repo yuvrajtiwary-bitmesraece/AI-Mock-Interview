@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
 import { getViewer } from "@/utils/auth";
-import { QUESTION_COUNT } from "@/utils/interview-options";
+import { INTERVIEW_TYPES, QUESTION_COUNT } from "@/utils/interview-options";
 import { getUsageToday } from "@/utils/usage";
 
 import NewInterviewForm from "./_components/NewInterviewForm";
@@ -15,7 +15,8 @@ function defaultQuestionCount() {
   return Number.isInteger(value) && value >= QUESTION_COUNT.min && value <= QUESTION_COUNT.max ? value : QUESTION_COUNT.default;
 }
 
-export default async function NewInterviewPage() {
+export default async function NewInterviewPage({ searchParams }) {
+  const { type } = await searchParams;
   const viewer = await getViewer();
 
   // Show how many interviews are left today. Not critical, so a failure just hides it.
@@ -45,7 +46,11 @@ export default async function NewInterviewPage() {
         </p>
       </header>
 
-      <NewInterviewForm defaultQuestionCount={defaultQuestionCount()} remainingToday={remaining} />
+      <NewInterviewForm
+        defaultQuestionCount={defaultQuestionCount()}
+        defaultType={type in INTERVIEW_TYPES ? type : "technical"}
+        remainingToday={remaining}
+      />
     </div>
   );
 }

@@ -88,7 +88,7 @@ function progressMessages(values, hasResume) {
   ];
 }
 
-export default function NewInterviewForm({ defaultQuestionCount, remainingToday }) {
+export default function NewInterviewForm({ defaultQuestionCount, defaultType = "technical", remainingToday }) {
   const router = useRouter();
   const fileInputRef = useRef(null);
   const [values, setValues] = useState({
@@ -97,7 +97,7 @@ export default function NewInterviewForm({ defaultQuestionCount, remainingToday 
     techStacks: "",
     jobDescription: "",
     jobExperience: "",
-    interviewType: "technical",
+    interviewType: defaultType,
     difficulty: "medium",
     questionCount: defaultQuestionCount,
   });

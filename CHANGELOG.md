@@ -13,6 +13,14 @@ Run `npm run db:migrate` against your database **before** deploying this version
 
 ### Added
 
+- **Progress dashboard:**
+  - a personal greeting and stat tiles: interviews, average score, practice streak and practice days,
+  - a score-trend chart with hover and keyboard tooltips and a table view,
+  - average scores per rubric skill and a 12-week practice heatmap,
+  - "What to do next" suggestions: finish an unfinished interview, work on your weakest skill, or try a new interview type,
+  - interview cards with progress, score and the right next action, plus type filters and search.
+  New users see a short getting-started guide instead.
+- **Settings page:** manage your account, see today's AI usage against the daily limits, download all your data as JSON, and delete all your data (type DELETE to confirm, done in one transaction).
 - **New interview setup page** (`/dashboard/new`), replacing the old dialog:
   - five interview types: Technical, Behavioral, System design, HR & culture fit, and Mixed,
   - three difficulty levels (Warm-up, Standard, Challenging) and 3 to 10 questions,
@@ -70,6 +78,7 @@ Run `npm run db:migrate` against your database **before** deploying this version
 
 ### Removed
 
+- The Home link in the dashboard header, replaced by New interview and Settings. The logo still leads back to the dashboard.
 - The old question and recording components (`QuestionsSection`, `RecordAnsSection`), replaced by the new interview room.
 - The "AI Magic!" create-interview dialog, replaced by the setup page.
 - `@eslint/eslintrc`, which was only needed to load the old ESLint config format.
