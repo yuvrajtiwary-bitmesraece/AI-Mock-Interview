@@ -1,17 +1,21 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "sonner";
 import { dark } from "@clerk/themes";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Both fonts are open source (SIL Open Font License). next/font downloads them
+// at build time and serves them from this site, so no request goes to Google.
+const fontSans = Plus_Jakarta_Sans({
+  variable: "--font-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const fontMono = Geist_Mono({
+  variable: "--font-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata = {
@@ -39,7 +43,7 @@ export default function RootLayout({ children }) {
     >
       <html lang="en">
         <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+          className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased`}
         >
           <Toaster/>
           {children}

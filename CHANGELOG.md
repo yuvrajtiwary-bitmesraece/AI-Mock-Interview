@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- MIT license. The project is now open source. The copyright notice credits Aditya Srivastava, who created the original project, and Yuvraj Tiwary.
+- Code of Conduct (Contributor Covenant 2.1).
+- CodeQL code scanning for the app code and the GitHub Actions workflows, on every pull request, every push to `main` and weekly.
+- Dependency review on pull requests: a pull request that adds a dependency with a known high or critical vulnerability fails the check.
+- `license`, `repository`, `homepage` and `bugs` fields in `package.json`.
+
+### Changed
+
+- The Gilroy font files are gone. Gilroy is a commercial typeface, so it couldn't be redistributed in an open-source repository. The app now uses Plus Jakarta Sans and Geist Mono (SIL Open Font License), which `next/font` downloads at build time and serves from the app itself. This removes 40 font files from the repository.
+- Dependencies updated within their current major versions: Radix UI, Framer Motion 12.43, Lucide 0.577, Sonner 2.0.8, tailwind-merge 3.7 and Tailwind CSS 3.4.19. GitHub Actions now use `actions/checkout@v7` and `actions/setup-node@v7`.
+
 ## [1.0.0] - 2026-11-16
 
 First stable release. This release moves all data access to the server, patches vulnerable dependencies, fixes the interview flow end to end, and sets up CI, tests, linting and automated releases.

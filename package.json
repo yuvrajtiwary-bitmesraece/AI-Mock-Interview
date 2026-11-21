@@ -2,6 +2,16 @@
   "name": "ai-interview-app",
   "version": "1.0.0",
   "private": true,
+  "description": "Practice job interviews with an AI interviewer: tailored questions, spoken or typed answers, and instant feedback.",
+  "license": "MIT",
+  "homepage": "https://ai-mock-interview-dev2.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yuvrajtiwary-bitmesraece/AI-Mock-Interview.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yuvrajtiwary-bitmesraece/AI-Mock-Interview/issues"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
