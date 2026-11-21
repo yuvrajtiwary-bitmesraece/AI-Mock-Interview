@@ -36,9 +36,9 @@ function Interview({params}) {
     const questionCount = parseInterviewQuestions(interviewData?.jsonMockResp).length;
 
     return (
-        <div className="fixed inset-0 bg-gradient-to-br from-slate-700 via-black to-slate-800 text-white overflow-hidden">
-            <div className="container mx-auto px-6 py-10 h-full overflow-auto">
-                <h2 className='mt-16 text-4xl font-bold mb-8 
+        <div className="text-white">
+            <div>
+                <h2 className='text-4xl font-bold mb-8 
                     bg-clip-text text-transparent 
                     bg-gradient-to-r from-cyan-300 to-blue-500'>
                     Gear up for Your Interview!

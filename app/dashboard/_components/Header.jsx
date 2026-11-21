@@ -1,117 +1,53 @@
 "use client";
 
-import Image from 'next/image'
-import Link from 'next/link'
-import { UserButton } from '@clerk/nextjs'
-import { usePathname } from 'next/navigation'
-import React from 'react'
-import {
-  LayoutDashboard,
-  Home
-} from 'lucide-react'
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { UserButton } from "@clerk/nextjs";
+import { House, LayoutDashboard } from "lucide-react";
+
+import { Logo } from "@/components/brand/Logo";
+import { cn } from "@/lib/utils";
+
+const NAV_ITEMS = [
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, isActive: (path) => path.startsWith("/dashboard") },
+  { name: "Home", href: "/", icon: House, isActive: (path) => path === "/" },
+];
 
 function Header() {
-    const path = usePathname();
+  const pathname = usePathname();
 
-    const navItems = [
-        {
-            name: 'Dashboard',
-            icon: LayoutDashboard,
-            path: '/dashboard',
-            active: path === '/dashboard'
-        },
-        {
-            name: 'Home', 
-            icon: Home, 
-            path: '/',
-            active: path === '/'
-        }
-    ];
+  return (
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-background/70 backdrop-blur-xl">
+      <div className="container flex h-16 items-center justify-between gap-3">
+        <Logo href="/dashboard" className="[&>span]:max-[400px]:hidden" />
 
-    return (
-        <header className="fixed top-0 left-0 right-0 z-50">
-            {/* Gradient Background */}
-            <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-blue-950/30 to-black/50 backdrop-blur-xl opacity-90"></div>
-            
-            {/* Border Gradient */}
-            <div className="absolute bottom-0 left-0 right-0 h-0.5 
-                bg-gradient-to-r from-transparent via-blue-500/50 to-transparent"></div>
+        <nav aria-label="Main" className="flex items-center gap-1">
+          {NAV_ITEMS.map(({ name, href, icon: Icon, isActive }) => {
+            const active = isActive(pathname);
+            return (
+              <Link
+                key={href}
+                href={href}
+                aria-current={active ? "page" : undefined}
+                className={cn(
+                  "inline-flex h-9 items-center gap-2 rounded-lg px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-white/5 hover:text-foreground",
+                  active && "bg-white/[0.06] text-foreground"
+                )}
+              >
+                <Icon className={cn("h-4 w-4", active && "text-primary")} aria-hidden="true" />
+                {/* Icons only on small screens; the name stays available to screen readers. */}
+                <span className="sr-only sm:not-sr-only">{name}</span>
+              </Link>
+            );
+          })}
 
-            <div className='relative z-50 flex p-4 items-center justify-between container mx-auto'>
-                {/* Logo with Hover Effect */}
-                <Link
-                    href='/'
-                    aria-label='AI Mock Interview home'
-                    className="flex items-center space-x-3 cursor-pointer group"
-                >
-                    <Image
-                        src='/logo.svg'
-                        width={50}
-                        height={50}
-                        alt='AI Mock Interview logo'
-                        className="transition-transform group-hover:rotate-6 group-hover:scale-110"
-                    />
-                </Link>
-
-                {/* Navigation */}
-                <nav className='hidden md:flex space-x-6'>
-                    {navItems.map((item) => (
-                        <Link
-                            key={item.name}
-                            href={item.path}
-                            aria-current={item.active ? 'page' : undefined}
-                            className={`flex items-center space-x-2 
-                                cursor-pointer 
-                                group 
-                                transition-all 
-                                duration-300 
-                                ${item.active 
-                                    ? 'text-white' 
-                                    : 'text-gray-200 hover:text-white'}`}
-                        >
-                            <item.icon 
-                                className={`
-                                    ${item.active 
-                                        ? 'text-blue-500' 
-                                        : 'text-gray-300 group-hover:text-blue-500'}
-                                    transition-colors duration-300
-                                `} 
-                                size={20} 
-                            />
-                            <span className={`
-                                text-sm font-light
-                                ${item.active 
-                                    ? 'bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 to-blue-500' 
-                                    : ''}
-                                group-hover:bg-clip-text group-hover:text-transparent 
-                                group-hover:bg-gradient-to-r 
-                                group-hover:from-cyan-300 
-                                group-hover:to-blue-500
-                                transition-all duration-300
-                            `}>
-                                {item.name}
-                            </span>
-                        </Link>
-                    ))}
-                </nav>
-
-                {/* User Profile */}
-                <div className="flex items-center space-x-4">
-                    <div className="relative z-[99999]">
-                    <UserButton
-                        appearance={{
-                        elements: {
-                            userButtonAvatarBox: 'w-12 h-12 hover:ring-blue-500 transition-all',
-                            userButtonPopoverCard: 'z-[99999] bg-slate-900 border-white/10 shadow-2xl',
-                        }
-                        }}
-                    />
-                    </div>
-
-                </div>
-            </div>
-        </header>
-    )
+          <div className="ml-2 flex h-9 w-9 items-center justify-center">
+            <UserButton appearance={{ elements: { userButtonAvatarBox: "h-9 w-9 ring-2 ring-white/10" } }} />
+          </div>
+        </nav>
+      </div>
+    </header>
+  );
 }
 
-export default Header
+export default Header;

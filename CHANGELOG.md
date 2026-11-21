@@ -14,11 +14,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CodeQL code scanning for the app code and the GitHub Actions workflows, on every pull request, every push to `main` and weekly.
 - Dependency review on pull requests: a pull request that adds a dependency with a known high or critical vulnerability fails the check.
 - `license`, `repository`, `homepage` and `bugs` fields in `package.json`.
+- A refreshed look: one dark theme built on design tokens, a logo recolored to match the interface, a header that keeps its navigation on phones, and redesigned sign-in and sign-up pages.
+- 404, error and loading pages, instead of the Next.js defaults or a blank screen.
+- Link previews: an Open Graph image plus page titles and descriptions for social sharing, and `robots.txt` and `sitemap.xml` for search engines. Signed-in pages are marked `noindex`.
+- The app can be installed from Chrome, Edge or Android: web app manifest, app icons and an Apple touch icon. `node scripts/generate-icons.mjs` regenerates every icon from `public/logo.svg`.
+- Vercel Web Analytics and Speed Insights. Both are cookie-free and do nothing outside Vercel.
+- Security headers on every response: clickjacking protection (`X-Frame-Options` and `frame-ancestors`), `nosniff`, a strict referrer policy, HSTS, and a permissions policy that only allows the camera and microphone.
 
 ### Changed
 
 - The Gilroy font files are gone. Gilroy is a commercial typeface, so it couldn't be redistributed in an open-source repository. The app now uses Plus Jakarta Sans and Geist Mono (SIL Open Font License), which `next/font` downloads at build time and serves from the app itself. This removes 40 font files from the repository.
 - Dependencies updated within their current major versions: Radix UI, Framer Motion 12.43, Lucide 0.577, Sonner 2.0.8, tailwind-merge 3.7 and Tailwind CSS 3.4.19. GitHub Actions now use `actions/checkout@v7` and `actions/setup-node@v7`.
+
+### Removed
+
+- The unused `tailwind-scrollbar-hide` plugin, and global CSS that hid every scrollbar and set `width: 100vw` on the page body, which caused sideways scrolling on some screens.
 
 ## [1.0.0] - 2026-11-16
 

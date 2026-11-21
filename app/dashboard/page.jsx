@@ -1,60 +1,36 @@
-import { TrendingUp } from 'lucide-react'
+import { Sparkles } from 'lucide-react'
 import AddNewInterview from './_components/AddNewInterview'
 import InterviewList from './_components/InterviewList'
 
 function Dashboard() {
   return (
-    <div className="relative min-h-screen w-full overflow-hidden">
-      {/* Background Fix with -z-10 (sends it to the back) */}
-      <div className="fixed inset-0 -z-10 bg-gradient-to-br from-slate-700 via-black to-slate-800 text-white no-scrollbar"></div>
+    <div className="space-y-10">
+      <header>
+        <h1 className="text-4xl font-bold md:text-5xl">
+          <span className="text-gradient">Dashboard</span>
+        </h1>
+        <p className="mt-3 max-w-xl text-lg text-muted-foreground">
+          Create a mock interview for your next role, then review your feedback here.
+        </p>
+      </header>
 
-      <div className="relative w-full h-full overflow-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="max-w-7xl mx-auto h-full">
-          {/* Header */}
-          <header className="mb-10">
-            <div>
-              <h1 className="mt-20 text-4xl md:text-5xl font-bold 
-                bg-clip-text text-transparent 
-                bg-gradient-to-r from-cyan-300 to-blue-500 
-                ">
-                Dashboard
-              </h1>
-              <p className="text-lg text-gray-300 mt-3 max-w-xl">
-                Elevate your interview preparation with AI-powered mock interviews. 
-                Personalized, intelligent, and designed to help you succeed.
-              </p>
+      <div className="grid gap-8 md:grid-cols-3">
+        <section className="md:col-span-1">
+          <div className="glass flex flex-col p-6">
+            <div className="mb-4 flex items-center gap-3">
+              <Sparkles className="text-primary" size={26} aria-hidden="true" />
+              <h2 className="text-xl font-bold">Create a new interview</h2>
             </div>
-          </header>
-
-          {/* Main Content */}
-          <div className="grid md:grid-cols-3 gap-8 h-[calc(100%-150px)]">
-            {/* Create Interview Section */}
-            <div className="md:col-span-1">
-              <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-6 border border-white/10 h-30 flex flex-col">
-                <div className="flex items-center space-x-4 mb-4">
-                  <TrendingUp 
-                    className="text-blue-400" 
-                    size={30} 
-                  />
-                  <h2 className="text-xl font-bold 
-                    bg-clip-text text-transparent 
-                    bg-gradient-to-r from-cyan-300 to-blue-500">
-                    Create New Interview
-                  </h2>
-                </div>
-                <p className="text-gray-200 text-md mb-4">
-                  Craft a personalized AI interview experience tailored to your career aspirations.
-                </p>
-                <AddNewInterview />
-              </div>
-            </div>
-
-            {/* Interview List Section */}
-            <div className="md:col-span-2">
-              <InterviewList />
-            </div>
+            <p className="mb-4 text-muted-foreground">
+              Describe the role and AI writes interview questions to match it.
+            </p>
+            <AddNewInterview />
           </div>
-        </div>
+        </section>
+
+        <section className="md:col-span-2">
+          <InterviewList />
+        </section>
       </div>
     </div>
   )

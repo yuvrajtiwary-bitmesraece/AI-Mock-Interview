@@ -69,13 +69,13 @@ async function Feedback({ params }) {
     };
 
     return (
-        <div className="fixed inset-0 -z-10 bg-gradient-to-br from-slate-700 via-black to-slate-800 text-white overflow-hidden">
-            <div className="mt-6 container mx-auto px-6 py-10 h-full overflow-auto no-scrollbar">
+        <div className="text-white">
+            <div>
                 <div className="space-y-8">
                     {/* Desktop/Tablet Back to Dashboard Button */}
                     <div className='hidden md:flex justify-between items-center'>
                         <div className='flex flex-col'>
-                            <h2 className="mt-16 text-4xl md:text-5xl font-bold 
+                            <h2 className="text-4xl md:text-5xl font-bold 
                                 bg-clip-text text-transparent 
                                 bg-gradient-to-r from-cyan-300 to-blue-500 mb-2">
                                 Congratulations!
@@ -86,7 +86,7 @@ async function Feedback({ params }) {
                         </div>
                         <Link href='/dashboard'>
                             <Button 
-                                className="text-lg p-6 mr-2 mt-10 bg-transparent border-white/20 text-white hover:bg-white/10 flex items-center space-x-2"
+                                className="text-lg p-6 bg-transparent border-white/20 text-white hover:bg-white/10 flex items-center space-x-2"
                             >
                                 <ArrowLeft size={20} />
                                 <span>Back to Dashboard</span>
