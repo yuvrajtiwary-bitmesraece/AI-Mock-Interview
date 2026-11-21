@@ -25,7 +25,8 @@ export function parseInterviewQuestions(rawJson) {
 
 /**
  * Accepts either an array of questions or an object wrapping one, and keeps
- * only entries that have a non-empty `ques` string.
+ * only entries that have a non-empty `ques` string. Optional `topic` and
+ * `tip` strings (added in 1.1) are kept when present.
  */
 export function normalizeQuestions(value) {
   const list = Array.isArray(value)
@@ -41,8 +42,11 @@ export function normalizeQuestions(value) {
 
   return list
     .filter((item) => typeof item?.ques === "string" && item.ques.trim().length > 0)
-    .map((item) => ({
-      ques: item.ques.trim(),
-      ans: typeof item.ans === "string" ? item.ans.trim() : "",
-    }));
+    .map((item) => {
+      const question = { ques: item.ques.trim(), ans: typeof item.ans === "string" ? item.ans.trim() : "" };
+      for (const key of ["topic", "tip"]) {
+        if (typeof item[key] === "string" && item[key].trim()) question[key] = item[key].trim();
+      }
+      return question;
+    });
 }

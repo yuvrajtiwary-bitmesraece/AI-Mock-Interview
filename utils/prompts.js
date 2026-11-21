@@ -9,7 +9,9 @@
  * Pure module: no SDK imports, so it can be unit tested.
  */
 
-const DELIMITER_TAGS = ["job_title", "job_description", "tech_stack", "experience", "question", "candidate_answer"];
+import { DIFFICULTIES, INTERVIEW_TYPES } from "./interview-options.js";
+
+const DELIMITER_TAGS = ["job_title", "company", "job_description", "tech_stack", "experience", "question", "candidate_answer"];
 const DELIMITER_PATTERN = new RegExp(`<\\s*/?\\s*(?:${DELIMITER_TAGS.join("|")})\\s*>`, "gi");
 
 /**
@@ -34,21 +36,58 @@ export const QUESTIONS_SCHEMA = {
   items: {
     type: "OBJECT",
     properties: {
-      ques: { type: "STRING", description: "The interview question." },
-      ans: { type: "STRING", description: "A strong model answer to the question." },
+      ques: { type: "STRING", description: "The interview question, as the interviewer would say it." },
+      ans: { type: "STRING", description: "A strong model answer, in the first person, as the candidate would say it." },
+      topic: { type: "STRING", description: "The skill or topic the question tests, in 1 to 4 words." },
+      tip: { type: "STRING", description: "One sentence on what a great answer must cover." },
     },
-    required: ["ques", "ans"],
+    required: ["ques", "ans", "topic", "tip"],
   },
 };
 
-export function buildQuestionsPrompt({ jobPosition, jobDescription, techStacks, jobExperience, questionCount }) {
-  return `Write ${questionCount} interview questions for the role below, each with a strong model answer.
-Match the difficulty to the candidate's years of experience. Mix conceptual, practical and scenario-based questions, and don't repeat a topic.
+/**
+ * The question-generation prompt. Optional fields (company, job description,
+ * tech stack) are left out when empty. `hasResume` adds instructions to use
+ * the attached resume PDF.
+ */
+export function buildQuestionsPrompt({
+  jobPosition,
+  company = "",
+  jobDescription = "",
+  techStacks = "",
+  jobExperience,
+  questionCount,
+  interviewType = "technical",
+  difficulty = "medium",
+  hasResume = false,
+}) {
+  const type = INTERVIEW_TYPES[interviewType] ?? INTERVIEW_TYPES.technical;
+  const level = DIFFICULTIES[difficulty] ?? DIFFICULTIES.medium;
 
-<job_title>${sanitizeForPrompt(jobPosition, 200)}</job_title>
-<job_description>${sanitizeForPrompt(jobDescription, 5000)}</job_description>
-<tech_stack>${sanitizeForPrompt(techStacks, 500)}</tech_stack>
-<experience>${sanitizeForPrompt(jobExperience, 3)} years</experience>`;
+  const instructions = [
+    `Write ${questionCount} interview questions for the role below, each with a strong model answer, the topic it tests and a one-line tip.`,
+    `Interview type: ${type.prompt}.`,
+    `Difficulty: ${level.prompt}, given the candidate's years of experience.`,
+    "Order the questions the way a real interviewer would, starting with an easier opener. Don't repeat a topic.",
+  ];
+  if (company) {
+    instructions.push("Reflect the kind of questions this company is known to ask, but don't state facts about the company that you aren't sure of.");
+  }
+  if (hasResume) {
+    instructions.push(
+      "The candidate's resume is attached. Ask about their real projects, roles and claims where it fits the interview type, and refer to them specifically. Never invent experience the resume doesn't mention."
+    );
+  }
+
+  const fields = [
+    `<job_title>${sanitizeForPrompt(jobPosition, 200)}</job_title>`,
+    company && `<company>${sanitizeForPrompt(company, 120)}</company>`,
+    jobDescription && `<job_description>${sanitizeForPrompt(jobDescription, 5000)}</job_description>`,
+    techStacks && `<tech_stack>${sanitizeForPrompt(techStacks, 500)}</tech_stack>`,
+    `<experience>${sanitizeForPrompt(jobExperience, 3)} years</experience>`,
+  ].filter(Boolean);
+
+  return [instructions.join("\n"), fields.join("\n")].join("\n\n");
 }
 
 // --- Answer review ------------------------------------------------------------

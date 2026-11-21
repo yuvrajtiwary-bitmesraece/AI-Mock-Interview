@@ -54,6 +54,10 @@ export async function listOwnedInterviews(viewer) {
         jobExperience: MockInterview.jobExperience,
         createdAt: MockInterview.createdAt,
         createdOn: MockInterview.createdOn,
+        interviewType: MockInterview.interviewType,
+        difficulty: MockInterview.difficulty,
+        company: MockInterview.company,
+        resumeUsed: MockInterview.resumeUsed,
         userId: MockInterview.userId,
       })
       .from(MockInterview)

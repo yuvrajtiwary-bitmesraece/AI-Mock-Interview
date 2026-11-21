@@ -1,7 +1,8 @@
-import { Sparkles } from 'lucide-react'
+import Link from 'next/link'
+import { ArrowRight, Sparkles } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { getViewer } from '@/utils/auth'
 import { listOwnedInterviews } from '@/utils/queries'
-import AddNewInterview from './_components/AddNewInterview'
 import InterviewList from './_components/InterviewList'
 
 async function Dashboard() {
@@ -26,9 +27,13 @@ async function Dashboard() {
               <h2 className="text-xl font-bold">Create a new interview</h2>
             </div>
             <p className="mb-4 text-muted-foreground">
-              Describe the role and AI writes interview questions to match it.
+              Pick a role, interview style and difficulty. Upload your resume for questions about your own projects.
             </p>
-            <AddNewInterview />
+            <Button asChild variant="gradient" size="lg" className="w-full">
+              <Link href="/dashboard/new">
+                <Sparkles aria-hidden="true" /> New interview <ArrowRight aria-hidden="true" />
+              </Link>
+            </Button>
           </div>
         </section>
 

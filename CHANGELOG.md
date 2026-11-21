@@ -13,6 +13,16 @@ Run `npm run db:migrate` against your database **before** deploying this version
 
 ### Added
 
+- **New interview setup page** (`/dashboard/new`), replacing the old dialog:
+  - five interview types: Technical, Behavioral, System design, HR & culture fit, and Mixed,
+  - three difficulty levels (Warm-up, Standard, Challenging) and 3 to 10 questions,
+  - an optional company, plus the job description and a tech stack (required only for types that need one),
+  - six one-click templates, such as "Backend engineer" and "Graduate / internship",
+  - how many new interviews you have left today.
+- **Resume-tailored questions.** Upload a PDF (up to 4 MB) and the interviewer asks about your real projects and claims. The server checks that the file really is a PDF, sends it to Gemini, and never stores it.
+- Each generated question now comes with the topic it tests and a one-line tip on what a great answer covers.
+- **Redesigned pre-interview screen:** your settings at a glance, how the interview works, tips for the interview type (for example STAR for behavioral rounds), a live microphone level test, an optional camera preview, and a check that the browser supports voice answers.
+- "New interview" link in the header.
 - MIT license. The project is now open source. The copyright notice credits Aditya Srivastava, who created the original project, and Yuvraj Tiwary.
 - Code of Conduct (Contributor Covenant 2.1).
 - CodeQL code scanning for the app code and the GitHub Actions workflows, on every pull request, every push to `main` and weekly.
@@ -26,7 +36,8 @@ Run `npm run db:migrate` against your database **before** deploying this version
 - **Versioned database migrations** in `drizzle/`, applied with `npm run db:migrate` (`db:generate` creates new ones). `db:push` is still there for quick local experiments.
 - **Daily AI limits per user**: by default 10 new interviews, 100 answer reviews and 30 reports a day, set with the `AI_DAILY_LIMIT_*` variables (0 turns a limit off). A failed AI request doesn't count. This stops one account from using up the shared Gemini quota.
 - **Gemini model fallback.** If a model is overloaded, rate-limited, retired or too slow, the next model in `GEMINI_MODELS` is tried, within a 50-second budget per request. Error messages tell the user whether to retry now or in a minute.
-- Database reads retry transient network errors.
+- Database reads, and the daily usage counter, retry transient network errors (up to 3 times).
+- Server actions no longer throw: an unexpected error, such as the database being unreachable, comes back as a message the page shows.
 - Security headers on every response: clickjacking protection (`X-Frame-Options` and `frame-ancestors`), `nosniff`, a strict referrer policy, HSTS, and a permissions policy that only allows the camera and microphone.
 
 ### Changed
@@ -47,6 +58,7 @@ Run `npm run db:migrate` against your database **before** deploying this version
 
 ### Removed
 
+- The "AI Magic!" create-interview dialog, replaced by the setup page.
 - `@eslint/eslintrc`, which was only needed to load the old ESLint config format.
 - The `moment` and `uuid` dependencies. Dates use built-in APIs, and IDs come from `crypto.randomUUID()`.
 - The unused `tailwind-scrollbar-hide` plugin, and global CSS that hid every scrollbar and set `width: 100vw` on the page body, which caused sideways scrolling on some screens.

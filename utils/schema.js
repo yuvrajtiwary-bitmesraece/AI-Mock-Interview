@@ -1,4 +1,4 @@
-import { date, index, integer, pgTable, primaryKey, serial, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/pg-core";
+import { boolean, date, index, integer, pgTable, primaryKey, serial, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/pg-core";
 
 // Columns added after 1.0.0 are nullable, so rows written by older versions
 // stay valid without rewriting any data. Change the schema here, then run
@@ -25,6 +25,13 @@ export const MockInterview = pgTable(
     // Clerk user ID of the owner. Older rows get it the first time their owner opens the dashboard.
     userId: varchar("userId"),
     createdOn: timestamp("createdOn", { withTimezone: true }),
+
+    // Interview settings (null on interviews created before they existed).
+    interviewType: varchar("interviewType", { length: 32 }), // see INTERVIEW_TYPES in utils/interview-options.js
+    difficulty: varchar("difficulty", { length: 16 }), // easy | medium | hard
+    company: varchar("company", { length: 120 }),
+    // True when questions were tailored to an uploaded resume. The resume itself is never stored.
+    resumeUsed: boolean("resumeUsed").notNull().default(false),
   },
   (table) => [
     uniqueIndex("mock_interview_mock_id_idx").on(table.mockId),

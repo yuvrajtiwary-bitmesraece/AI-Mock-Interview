@@ -22,6 +22,10 @@ export default async function InterviewLobbyPage({ params }) {
         jobPosition: interview.jobPosition,
         techStacks: interview.techStacks,
         jobExperience: interview.jobExperience,
+        company: interview.company,
+        interviewType: interview.interviewType,
+        difficulty: interview.difficulty,
+        resumeUsed: interview.resumeUsed,
       }}
       questionCount={parseInterviewQuestions(interview.jsonMockResp).length}
     />
