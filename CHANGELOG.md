@@ -7,9 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-11-22
+
+The product release. The app is now open source under the MIT license, runs on Next.js 16, and covers the whole practice loop: interview types and resume-tailored questions, spoken or typed answers with instant rubric feedback, an AI coaching report, and a progress dashboard. It also has a new design, a landing page, privacy and terms pages, daily AI limits, Gemini model fallback, versioned database migrations and 81 unit tests.
+
 ### Upgrading
 
-Run `npm run db:migrate` against your database **before** deploying this version. The migration only adds things (a table, three nullable columns and indexes), so it's safe to run on a database created by 1.0, and rows created by 1.0 keep working.
+1. Run `npm run db:migrate` against your database **before** deploying this version. The four migrations in `drizzle/` only add things: a `usage_counter` table, new columns (all nullable, except `resumeUsed`, which defaults to `false`) and indexes. They're safe to run on a database created by 1.0, and rows created by 1.0 keep working, with only an overall score.
+2. Optionally set the new environment variables: `GEMINI_MODELS`, `AI_DAILY_LIMIT_INTERVIEWS`, `AI_DAILY_LIMIT_ANSWERS`, `AI_DAILY_LIMIT_REPORTS` and `NEXT_PUBLIC_SITE_URL` (see `.env.example`). The defaults work without them.
+3. In the Vercel project, turn on **Analytics** and **Speed Insights** if you want them.
 
 ### Added
 
@@ -187,6 +193,7 @@ First stable release. This release moves all data access to the server, patches 
 - Dashboard listing past interviews, with the option to delete them.
 - Authentication with Clerk.
 
-[Unreleased]: https://github.com/yuvrajtiwary-bitmesraece/AI-Mock-Interview/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/yuvrajtiwary-bitmesraece/AI-Mock-Interview/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/yuvrajtiwary-bitmesraece/AI-Mock-Interview/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/yuvrajtiwary-bitmesraece/AI-Mock-Interview/compare/v0.1.0...v1.0.0
 [0.1.0]: https://github.com/yuvrajtiwary-bitmesraece/AI-Mock-Interview/releases/tag/v0.1.0

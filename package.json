@@ -1,6 +1,6 @@
 {
   "name": "ai-interview-app",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "Practice job interviews with an AI interviewer: tailored questions, spoken or typed answers, and instant feedback.",
   "license": "MIT",
