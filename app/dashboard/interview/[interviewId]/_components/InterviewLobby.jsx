@@ -1,157 +1,182 @@
-"use client"
+"use client";
 
-import { Button } from '@/components/ui/button';
-import { Lightbulb, WebcamIcon, ArrowLeft, Play, CameraOff } from 'lucide-react';
-import Link from 'next/link';
-import React, { useState, useRef } from 'react'
-import Webcam from 'react-webcam';
+import { useRef, useState } from "react";
+import Link from "next/link";
+import Webcam from "react-webcam";
+import { toast } from "sonner";
+import {
+  ArrowLeft,
+  Camera,
+  CameraOff,
+  CircleAlert,
+  CircleCheck,
+  FileText,
+  Lightbulb,
+  Play,
+  ShieldCheck,
+} from "lucide-react";
 
-/** Pre-interview screen: role details and a camera check. Data comes from the server page. */
-function InterviewLobby({ interview, questionCount }) {
-    const [webcamEnabled, setWebcamEnabled] = useState(false);
-    const webcamRef = useRef(null);
-    const interviewData = interview;
+import { MicCheck } from "@/components/interview/MicCheck";
+import { useSpeechSupport } from "@/components/interview/useSpeechSupport";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { difficultyLabel, interviewTips, interviewTypeLabel } from "@/utils/interview-options";
 
-    const disableWebcam = () => {
-        // `stream` is null until the camera has started, so guard against it.
-        webcamRef.current?.stream?.getTracks().forEach(track => track.stop());
-        setWebcamEnabled(false);
-    }
+const STEPS = [
+  { title: "Hear the question", text: "Read it on screen, or have it read aloud." },
+  { title: "Answer out loud", text: "Your speech is transcribed live. Edit the text before you submit." },
+  { title: "Get feedback", text: "Each answer gets a score and tips, plus a full report at the end." },
+];
 
-    return (
-        <div className="text-white">
-            <div>
-                <h2 className='text-4xl font-bold mb-8 
-                    bg-clip-text text-transparent 
-                    bg-gradient-to-r from-cyan-300 to-blue-500'>
-                    Gear up for Your Interview!
-                </h2>
+/** Pre-interview screen: what to expect, tips, and a camera and microphone check. */
+export default function InterviewLobby({ interview, questionCount }) {
+  const [cameraOn, setCameraOn] = useState(false);
+  const webcamRef = useRef(null);
+  const speechSupported = useSpeechSupport();
 
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-12'>
-                    {/* Interview Details */}
-                    <div className='space-y-6'>
-                    <div className='bg-white/5 backdrop-blur-xl rounded-2xl p-6 border border-white/10'>
-                            <div className='space-y-4'>
-                                <div className='flex items-center space-x-3'>
-                                    <span className='w-2 h-2 bg-blue-500 rounded-full'></span>
-                                    <h2 className='text-lg font-bold'>
-                                        <span className='text-gray-400 mr-2'>Job Title:</span>
-                                        <span className='bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 to-blue-500'>
-                                            {interviewData?.jobPosition}
-                                        </span>
-                                    </h2>
-                                </div>
-                                <div className='flex items-center space-x-3'>
-                                    <span className='w-2 h-2 bg-green-500 rounded-full'></span>
-                                    <h2 className='text-lg font-bold'>
-                                        <span className='text-gray-400 mr-2'>Tech Stacks:</span>
-                                        <span className='bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 to-blue-500'>
-                                            {interviewData?.techStacks}
-                                        </span>
-                                    </h2>
-                                </div>
-                                <div className='flex items-center space-x-3'>
-                                    <span className='w-2 h-2 bg-purple-500 rounded-full'></span>
-                                    <h2 className='text-lg font-bold'>
-                                        <span className='text-gray-400 mr-2'>Job Experience:</span>
-                                        <span className='bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 to-blue-500'>
-                                            {interviewData?.jobExperience}
-                                        </span>
-                                    </h2>
-                                </div>
-                            </div>
-                        </div>
-                        {/* ... (previous interview details code remains the same) */}
-                        <div className='bg-yellow-500/10 border border-yellow-500/30 rounded-2xl p-6'>
-                            <div className='flex items-center space-x-3 mb-4'>
-                                <Lightbulb className='text-yellow-500' />
-                                <h2 className='text-xl font-bold text-yellow-500'>
-                                    Important Information
-                                </h2>
-                            </div>
-                            <p className='text-gray-300 text-sm text-yellow-300'>
-                                Enable your webcam and microphone for the AI-powered mock interview. 
-                                This session includes {questionCount || 'several'} questions to help assess and improve your interview skills.
-                            </p>
-                            <p className='text-xs text-yellow-600 mt-3'>
-                                <strong>Note:</strong> This app never records or stores your video or audio. Only the text of your answers is saved, so you can review your feedback.
-                            </p>
-                        </div>
-                    </div>
+  const stopCamera = () => {
+    // `stream` is null until the camera has started, so guard against it.
+    webcamRef.current?.stream?.getTracks().forEach((track) => track.stop());
+    setCameraOn(false);
+  };
 
-                    {/* Webcam Section */}
-                    <div className='bg-white/5 backdrop-blur-xl rounded-2xl p-6 border border-white/10'>
-                        {webcamEnabled ? 
-                            <div className='space-y-8'>
-                                <Webcam
-                                    ref={webcamRef}
-                                    onUserMedia={() => setWebcamEnabled(true)}
-                                    onUserMediaError={() => setWebcamEnabled(false)}
-                                    mirrored={true}
-                                    style={{
-                                        height: 300,
-                                        width: '100%',
-                                        // borderRadius: '12px',
-                                    }}
-                                />
-                                <Button 
-                                    variant="destructive"
-                                    onClick={disableWebcam}
-                                    className='w-full flex items-center justify-center space-x-2 
-                                    bg-red-500/20 border-red-500/30 
-                                    hover:bg-red-500/40 text-red-400'
-                                >
-                                    <CameraOff size={16} />
-                                    <span>Disable Camera</span>
-                                </Button>
-                            </div>
-                            :
-                            <div className='flex flex-col items-center space-y-6'>
-                                <div className='bg-white/10 p-12 rounded-2xl'>
-                                    <WebcamIcon 
-                                        className='w-32 h-32 text-blue-400/50' 
-                                        strokeWidth={1}
-                                    />
-                                </div>
-                                <Button 
-                                    onClick={() => setWebcamEnabled(true)}
-                                    className='bg-gradient-to-r from-cyan-500 to-blue-500 
-                                    hover:from-cyan-600 hover:to-blue-600 
-                                    flex items-center space-x-2 font-bold'
-                                >
-                                    <WebcamIcon size={20} />
-                                    <span>Enable Webcam & Microphone</span>
-                                </Button>
-                            </div>
-                        }
-                    </div>
-                </div>
+  const minutes = Math.max(5, Math.round(questionCount * 2.5));
 
-                {/* Navigation Buttons */}
-                <div className='mt-10 flex justify-end space-x-4'>
-                    <Link href='/dashboard'>
-                        <Button 
-                            variant="outline" 
-                            className='bg-transparent border-white/20 text-white hover:bg-white/10 hover:text-white flex items-center space-x-2'
-                        >
-                            <ArrowLeft size={16} />
-                            <span>Back to Dashboard</span>
-                        </Button>
-                    </Link>
-                    <Link href={`/dashboard/interview/${interview.mockId}/start`}>
-                        <Button 
-                            className='bg-gradient-to-r from-cyan-500 to-blue-500 
-                            hover:from-cyan-600 hover:to-blue-600 
-                            flex items-center space-x-2'
-                        >
-                            <Play size={16} />
-                            <span>Start Interview</span>
-                        </Button>
-                    </Link>
-                </div>
-            </div>
+  return (
+    <div className="mx-auto max-w-6xl">
+      <Link
+        href="/dashboard"
+        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+      >
+        <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Dashboard
+      </Link>
+
+      <header className="mb-8 mt-4">
+        <h1 className="text-3xl font-bold sm:text-4xl">
+          Get ready for your <span className="text-gradient">{interviewTypeLabel(interview.interviewType).toLowerCase()} interview</span>
+        </h1>
+        <p className="mt-2 text-lg text-muted-foreground">
+          {interview.jobPosition}
+          {interview.company ? ` at ${interview.company}` : ""} · {interview.jobExperience} {interview.jobExperience === "1" ? "year" : "years"} of experience
+        </p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Badge variant="primary">{interviewTypeLabel(interview.interviewType)}</Badge>
+          <Badge variant="violet">{difficultyLabel(interview.difficulty)}</Badge>
+          <Badge>{questionCount} questions</Badge>
+          <Badge>About {minutes} min</Badge>
+          {interview.resumeUsed && (
+            <Badge variant="success">
+              <FileText className="h-3 w-3" aria-hidden="true" /> Tailored to your resume
+            </Badge>
+          )}
         </div>
-    )
-}
+      </header>
 
-export default InterviewLobby
+      <div className="grid gap-6 lg:grid-cols-5">
+        <div className="space-y-6 lg:col-span-3">
+          <section className="glass p-6">
+            <h2 className="text-lg font-semibold">How it works</h2>
+            <ol className="mt-5 space-y-5">
+              {STEPS.map((step, index) => (
+                <li key={step.title} className="flex gap-4">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/15 font-mono text-sm font-semibold text-primary">
+                    {index + 1}
+                  </span>
+                  <div>
+                    <p className="font-medium">{step.title}</p>
+                    <p className="text-sm text-muted-foreground">{step.text}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </section>
+
+          <section className="rounded-2xl border border-amber-400/25 bg-amber-400/[0.06] p-6">
+            <h2 className="flex items-center gap-2 text-lg font-semibold text-amber-200">
+              <Lightbulb className="h-5 w-5" aria-hidden="true" /> Tips for this interview
+            </h2>
+            <ul className="mt-4 space-y-2.5">
+              {interviewTips(interview.interviewType).map((tip) => (
+                <li key={tip} className="flex gap-2.5 text-sm text-amber-50/90">
+                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-300" aria-hidden="true" />
+                  {tip}
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <p className="flex items-start gap-2 text-sm text-muted-foreground">
+            <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" aria-hidden="true" />
+            Your camera preview never leaves your device, and no audio or video is recorded. Only the text of your answers is saved, so you can review your feedback.
+          </p>
+        </div>
+
+        <aside className="space-y-6 lg:col-span-2">
+          <section className="glass p-6">
+            <h2 className="text-lg font-semibold">Check your setup</h2>
+
+            <div className="mt-5">
+              <p className="mb-3 text-sm font-medium">Microphone</p>
+              <MicCheck />
+            </div>
+
+            <div className="mt-6 border-t border-white/10 pt-6">
+              <div className="mb-3 flex items-center justify-between">
+                <p className="text-sm font-medium">
+                  Camera <span className="font-normal text-muted-foreground">(optional)</span>
+                </p>
+                {cameraOn ? (
+                  <Button type="button" variant="glass" size="sm" onClick={stopCamera}>
+                    <CameraOff /> Turn off
+                  </Button>
+                ) : (
+                  <Button type="button" variant="glass" size="sm" onClick={() => setCameraOn(true)}>
+                    <Camera /> Preview
+                  </Button>
+                )}
+              </div>
+              <div className="flex aspect-video items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-black/40">
+                {cameraOn ? (
+                  <Webcam
+                    ref={webcamRef}
+                    mirrored
+                    audio={false}
+                    onUserMediaError={() => {
+                      toast.error("Couldn't start the camera. Check your browser's camera permission.");
+                      setCameraOn(false);
+                    }}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <p className="px-6 text-center text-sm text-muted-foreground">
+                    A camera helps you practice eye contact and body language. It stays on your device.
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="mt-6 border-t border-white/10 pt-6">
+              {speechSupported === false ? (
+                <p className="flex items-start gap-2 text-sm text-amber-200">
+                  <CircleAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                  This browser can&apos;t transcribe speech. Use Chrome or Edge to answer out loud.
+                </p>
+              ) : speechSupported ? (
+                <p className="flex items-start gap-2 text-sm text-emerald-300">
+                  <CircleCheck className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                  Voice answers are supported in this browser.
+                </p>
+              ) : null}
+            </div>
+          </section>
+
+          <Button asChild variant="gradient" size="xl" className="w-full">
+            <Link href={`/dashboard/interview/${interview.mockId}/start`}>
+              <Play aria-hidden="true" /> Start interview
+            </Link>
+          </Button>
+        </aside>
+      </div>
+    </div>
+  );
+}

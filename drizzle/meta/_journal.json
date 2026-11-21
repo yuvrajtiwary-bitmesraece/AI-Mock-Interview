@@ -15,6 +15,13 @@
       "when": 1795282293162,
       "tag": "0001_ai_platform",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1795283671604,
+      "tag": "0002_interview_settings",
+      "breakpoints": true
     }
   ]
 }

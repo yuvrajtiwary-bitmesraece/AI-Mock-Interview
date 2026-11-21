@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
-import { House, LayoutDashboard } from "lucide-react";
+import { House, LayoutDashboard, Plus } from "lucide-react";
 
 import { Logo } from "@/components/brand/Logo";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, isActive: (path) => path.startsWith("/dashboard") },
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, isActive: (path) => path.startsWith("/dashboard") && path !== "/dashboard/new" },
+  { name: "New interview", href: "/dashboard/new", icon: Plus, isActive: (path) => path === "/dashboard/new" },
   { name: "Home", href: "/", icon: House, isActive: (path) => path === "/" },
 ];
 

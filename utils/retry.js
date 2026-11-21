@@ -1,11 +1,11 @@
 /**
  * Retries `operation` when it fails with a transient network error, waiting a
- * little longer before each attempt (250 ms, 500 ms, ...).
+ * little longer before each attempt (300 ms, 600 ms, 1.2 s).
  *
  * Only use it for operations that are safe to repeat, such as database reads:
  * a write that failed on the way back might already have been applied.
  */
-export async function withRetry(operation, { retries = 2, baseDelayMs = 250, isRetryable = isTransientNetworkError } = {}) {
+export async function withRetry(operation, { retries = 3, baseDelayMs = 300, isRetryable = isTransientNetworkError } = {}) {
   for (let attempt = 0; ; attempt++) {
     try {
       return await operation();

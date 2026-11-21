@@ -19,6 +19,11 @@ const securityHeaders = [
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   poweredByHeader: false,
+  experimental: {
+    // Server actions accept 1 MB by default. Resume uploads can be up to 4 MB
+    // (utils/resume.js), and Vercel caps request bodies at 4.5 MB.
+    serverActions: { bodySizeLimit: "5mb" },
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
