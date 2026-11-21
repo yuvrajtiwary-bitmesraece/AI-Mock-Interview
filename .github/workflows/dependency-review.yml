@@ -1,0 +1,21 @@
+name: Dependency review
+
+# Blocks pull requests that add a dependency with a known high or critical
+# vulnerability. Only dependencies changed by the pull request are checked.
+
+on: pull_request
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-review:
+    name: Dependency review
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/dependency-review-action@v5
+        with:
+          fail-on-severity: high

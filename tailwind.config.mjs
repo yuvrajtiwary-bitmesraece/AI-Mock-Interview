@@ -1,3 +1,5 @@
+import defaultTheme from "tailwindcss/defaultTheme";
+
 /** @type {import('tailwindcss').Config} */
 const config = {
     darkMode: ["class"],
@@ -8,6 +10,11 @@ const config = {
   ],
   theme: {
   	extend: {
+  		fontFamily: {
+  			// CSS variables are set by next/font in app/layout.js.
+  			sans: ['var(--font-sans)', ...defaultTheme.fontFamily.sans],
+  			mono: ['var(--font-mono)', ...defaultTheme.fontFamily.mono]
+  		},
   		colors: {
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',

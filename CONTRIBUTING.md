@@ -2,6 +2,8 @@
 
 Thanks for taking the time to contribute! This document explains how changes move from an idea to a release.
 
+By participating you agree to follow the [Code of Conduct](CODE_OF_CONDUCT.md). Contributions are accepted under the project's [MIT License](LICENSE).
+
 ## Development setup
 
 See [Getting started in the README](README.md#getting-started) for prerequisites, environment variables and how to run the app locally.

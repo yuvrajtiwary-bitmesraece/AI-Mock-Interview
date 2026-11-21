@@ -96,7 +96,16 @@ const Footer = () => {
         {/* Copyright Section */}
         <div className="mt-12 pt-8 border-t border-white/10 text-center">
           <p className="text-xs text-gray-400">
-            © {new Date().getFullYear()} AI Mock Interview. All rights reserved.
+            © {new Date().getFullYear()} AI Mock Interview. Open source under the{" "}
+            <a
+              href={`${REPO_URL}/blob/main/LICENSE`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-2 hover:text-white"
+            >
+              MIT License
+            </a>
+            .
           </p>
           <p className="text-xs text-gray-400 mt-2">
             Made with ❤️ by{" "}

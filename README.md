@@ -4,6 +4,8 @@ Practice job interviews with an AI interviewer. Describe the role you're prepari
 
 [![CI](https://github.com/yuvrajtiwary-bitmesraece/AI-Mock-Interview/actions/workflows/ci.yml/badge.svg)](https://github.com/yuvrajtiwary-bitmesraece/AI-Mock-Interview/actions/workflows/ci.yml)
 [![Latest release](https://img.shields.io/github/v/release/yuvrajtiwary-bitmesraece/AI-Mock-Interview?sort=semver)](https://github.com/yuvrajtiwary-bitmesraece/AI-Mock-Interview/releases)
+[![CodeQL](https://github.com/yuvrajtiwary-bitmesraece/AI-Mock-Interview/actions/workflows/codeql.yml/badge.svg)](https://github.com/yuvrajtiwary-bitmesraece/AI-Mock-Interview/actions/workflows/codeql.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Next.js 15](https://img.shields.io/badge/Next.js-15-black?logo=next.js)](https://nextjs.org)
 
 **Live demo:** [ai-mock-interview-dev2.vercel.app](https://ai-mock-interview-dev2.vercel.app/)
@@ -21,7 +23,9 @@ Practice job interviews with an AI interviewer. Describe the role you're prepari
 - [Versioning and releases](#versioning-and-releases)
 - [Screenshots](#screenshots)
 - [Roadmap](#roadmap)
+- [Contributing](#contributing)
 - [Acknowledgements](#acknowledgements)
+- [License](#license)
 
 ## Features
 
@@ -203,10 +207,20 @@ This project follows [Semantic Versioning](https://semver.org). Every notable ch
 - Interview types beyond technical roles (HR, behavioral, system design)
 - Progress analytics across interviews
 
+## Contributing
+
+Contributions are welcome: bug reports, feature ideas, documentation fixes and pull requests.
+
+- Read [CONTRIBUTING.md](CONTRIBUTING.md) for the development setup, branch naming and commit style.
+- Look for issues labeled `good first issue` if you are new to the codebase.
+- Please follow the [Code of Conduct](CODE_OF_CONDUCT.md).
+- Report security problems privately, as described in [SECURITY.md](SECURITY.md).
+
 ## Acknowledgements
 
 - Originally based on [AI-Mock-Interview](https://github.com/Adi1816/AI-Mock-Interview) by Aditya Srivastava.
 - [Google Gemini](https://ai.google.dev), [Clerk](https://clerk.com), [Neon](https://neon.tech), [Drizzle ORM](https://orm.drizzle.team), [shadcn/ui](https://ui.shadcn.com) and the [Next.js](https://nextjs.org) team.
+- [Plus Jakarta Sans](https://fonts.google.com/specimen/Plus+Jakarta+Sans) and [Geist Mono](https://vercel.com/font), both under the SIL Open Font License.
 
 ## Contact
 
@@ -215,8 +229,8 @@ This project follows [Semantic Versioning](https://semver.org). Every notable ch
 - LinkedIn: [yuvraj-tiwary](https://www.linkedin.com/in/yuvraj-tiwary-426279254/)
 - Email: yuvrajtiwary699@gmail.com
 
-## Copyright and licensing
+## License
 
-Copyright © 2026 Yuvraj Tiwary. All Rights Reserved.
+Released under the [MIT License](LICENSE). You are free to use, modify and distribute this project, including commercially, as long as you keep the copyright and license notice.
 
-This project's source code is provided for educational and demonstrational purposes only. You may view the code, but you are not permitted to modify, distribute, or use it in any of your own projects, whether personal or commercial, without the express written permission of the author.
+Copyright © 2025 Aditya Srivastava (original project) and © 2026 Yuvraj Tiwary.
