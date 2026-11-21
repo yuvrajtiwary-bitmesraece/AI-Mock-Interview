@@ -6,7 +6,7 @@ import Webcam from 'react-webcam'
 import { toast } from 'sonner';
 import { saveAnswer } from '@/actions/interview';
 
-function RecordAnsSection({mockInterviewQues, activeQuestionIndex, interviewData}) {
+function RecordAnsSection({mockInterviewQues, activeQuestionIndex, mockId}) {
     const [userAnswer, setUserAnswer] = useState('');
     const [editableAnswer, setEditableAnswer] = useState('');
     const [isEditing, setIsEditing] = useState(false);
@@ -225,7 +225,7 @@ function RecordAnsSection({mockInterviewQues, activeQuestionIndex, interviewData
             // Runs on the server: rates the answer with Gemini and saves it.
             // Only the question's index is sent; the server looks up the question itself.
             const result = await saveAnswer({
-                mockId: interviewData?.mockId,
+                mockId,
                 questionIndex: activeQuestionIndex,
                 userAnswer: finalTranscript,
             });

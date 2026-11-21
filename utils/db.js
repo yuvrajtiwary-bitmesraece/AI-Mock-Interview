@@ -2,7 +2,7 @@ import "server-only";
 
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
-import * as schema from "./schema";
+import * as schema from "./schema.js";
 
 // The `server-only` import above makes the build fail if a client component
 // ever imports this file, so the connection string can never reach the browser.

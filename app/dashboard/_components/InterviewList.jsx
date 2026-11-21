@@ -1,20 +1,12 @@
 "use client"
 
-import { useUser } from '@clerk/nextjs'
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import InterviewItemCard from './InterviewItemCard';
 import { Zap } from 'lucide-react';
-import { listInterviews } from '@/actions/interview';
 
-function InterviewList() {
-    const {user} = useUser();
-    const [interviewList, setInterviewList] = useState([]);
-
-    useEffect(() => {
-        if (!user) return;
-        // The server works out who is signed in; the browser can't ask for someone else's list.
-        listInterviews().then(setInterviewList);
-    }, [user])
+/** Interview cards. The list is loaded on the server; deletions update it here. */
+function InterviewList({ initialInterviews }) {
+    const [interviewList, setInterviewList] = useState(initialInterviews);
 
     const handleDeleteInterview = (deletedMockId) => {
         // Remove the deleted interview from the list
@@ -50,9 +42,9 @@ function InterviewList() {
                         </p>
                     </div>
                     :
-                    interviewList?.map((interview, index) => (
+                    interviewList?.map((interview) => (
                         <InterviewItemCard 
-                            key={index} 
+                            key={interview.mockId} 
                             interview={interview}
                             onDelete={handleDeleteInterview}
                         />

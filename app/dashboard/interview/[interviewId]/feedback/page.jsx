@@ -1,4 +1,5 @@
-import { getInterview, getInterviewAnswers } from '@/actions/interview'
+import { getViewer } from '@/utils/auth'
+import { getAnswersForInterview, getOwnedInterview } from '@/utils/queries'
 import { averageRating, parseRating } from '@/utils/rating'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -48,10 +49,10 @@ async function Feedback({ params }) {
     const { interviewId } = await params;
 
     // Show the 404 page for interviews that don't exist or belong to someone else.
-    const interview = await getInterview(interviewId);
+    const interview = await getOwnedInterview(await getViewer(), interviewId);
     if (!interview) notFound();
 
-    const answerRows = await getInterviewAnswers(interviewId);
+    const answerRows = await getAnswersForInterview(interview.mockId);
 
     // Older interviews can have several saved answers for the same question
     // (re-recording used to add a new row). Keep only the most recent one.
