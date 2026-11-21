@@ -4,7 +4,7 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { cache } from "react";
 
 /**
- * The signed-in user as `{ id, email }`, or `null` when signed out.
+ * The signed-in user as `{ id, email, firstName }`, or `null` when signed out.
  *
  * `id` is the Clerk user ID, the owner key for interviews created since 1.1.
  * `email` is the primary email address, but only if it's verified: interviews
@@ -21,5 +21,5 @@ export const getViewer = cache(async () => {
   const primary = user?.primaryEmailAddress;
   const email = primary?.verification?.status === "verified" ? primary.emailAddress : null;
 
-  return { id: userId, email };
+  return { id: userId, email, firstName: user?.firstName ?? null };
 });

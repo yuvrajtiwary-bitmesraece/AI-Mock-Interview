@@ -3,15 +3,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
-import { House, LayoutDashboard, Plus } from "lucide-react";
+import { LayoutDashboard, Plus, Settings } from "lucide-react";
 
 import { Logo } from "@/components/brand/Logo";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, isActive: (path) => path.startsWith("/dashboard") && path !== "/dashboard/new" },
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, isActive: (path) => path.startsWith("/dashboard") && path !== "/dashboard/new" && path !== "/dashboard/settings" },
   { name: "New interview", href: "/dashboard/new", icon: Plus, isActive: (path) => path === "/dashboard/new" },
-  { name: "Home", href: "/", icon: House, isActive: (path) => path === "/" },
+  { name: "Settings", href: "/dashboard/settings", icon: Settings, isActive: (path) => path === "/dashboard/settings" },
 ];
 
 function Header() {
