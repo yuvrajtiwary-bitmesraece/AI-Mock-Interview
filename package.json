@@ -17,14 +17,16 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "db:push": "npx drizzle-kit push",
-    "db:studio": "npx drizzle-kit studio",
-    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"utils/**/*.test.mjs\""
+    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"utils/**/*.test.mjs\"",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.39.9",
     "@clerk/themes": "^2.4.57",
-    "@google/generative-ai": "^0.24.1",
+    "@google/genai": "^3.6.1",
     "@neondatabase/serverless": "^0.10.4",
     "@radix-ui/react-collapsible": "^1.2.1",
     "@radix-ui/react-dialog": "^1.3.1",
@@ -36,7 +38,6 @@
     "drizzle-orm": "^0.45.4",
     "framer-motion": "^12.43.0",
     "lucide-react": "^0.577.0",
-    "moment": "^2.31.0",
     "next": "^16.4.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -44,8 +45,7 @@
     "server-only": "^0.0.1",
     "sonner": "^2.0.8",
     "tailwind-merge": "^3.7.0",
-    "tailwindcss-animate": "^1.0.7",
-    "uuid": "^11.1.1"
+    "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
     "@next/env": "^16.4.6",

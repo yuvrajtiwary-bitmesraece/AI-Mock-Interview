@@ -12,6 +12,8 @@ if (!databaseUrl) {
 
 export default defineConfig({
   schema: "./utils/schema.js",
+  // Versioned SQL migrations (npm run db:generate / npm run db:migrate).
+  out: "./drizzle",
   dialect: "postgresql",
   dbCredentials: {
     url: databaseUrl,

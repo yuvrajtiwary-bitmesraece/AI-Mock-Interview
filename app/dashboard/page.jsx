@@ -1,8 +1,12 @@
 import { Sparkles } from 'lucide-react'
+import { getViewer } from '@/utils/auth'
+import { listOwnedInterviews } from '@/utils/queries'
 import AddNewInterview from './_components/AddNewInterview'
 import InterviewList from './_components/InterviewList'
 
-function Dashboard() {
+async function Dashboard() {
+  const interviews = await listOwnedInterviews(await getViewer())
+
   return (
     <div className="space-y-10">
       <header>
@@ -29,7 +33,7 @@ function Dashboard() {
         </section>
 
         <section className="md:col-span-2">
-          <InterviewList />
+          <InterviewList initialInterviews={interviews} />
         </section>
       </div>
     </div>
