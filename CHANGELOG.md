@@ -13,6 +13,9 @@ Run `npm run db:migrate` against your database **before** deploying this version
 
 ### Added
 
+- **New landing page:** a product preview built in HTML, the interview styles, how it works, the features, an open-source section, an FAQ and a final call to action. It is static and served from the CDN; the sign-in-aware header buttons are decided in the browser.
+- **Privacy policy** (`/privacy`) and **terms of use** (`/terms`), written to match what the code does. They disclose that Chrome and Edge send audio to their own speech services, and how Gemini's free tier treats submitted content. The sign-in and sign-up pages link to both.
+- A site footer with product, open-source and legal links.
 - **Progress dashboard:**
   - a personal greeting and stat tiles: interviews, average score, practice streak and practice days,
   - a score-trend chart with hover and keyboard tooltips and a table view,
@@ -78,6 +81,7 @@ Run `npm run db:migrate` against your database **before** deploying this version
 
 ### Removed
 
+- `framer-motion` and `@radix-ui/react-collapsible`, the unused Card, Collapsible and old Footer components, and leftover animation CSS from the old landing page.
 - The Home link in the dashboard header, replaced by New interview and Settings. The logo still leads back to the dashboard.
 - The old question and recording components (`QuestionsSection`, `RecordAnsSection`), replaced by the new interview room.
 - The "AI Magic!" create-interview dialog, replaced by the setup page.
