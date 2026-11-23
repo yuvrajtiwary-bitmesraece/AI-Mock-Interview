@@ -31,7 +31,7 @@ export const metadata = {
   description: SITE.description,
   applicationName: SITE.name,
   keywords: SITE.keywords,
-  authors: [{ name: "Yuvraj Tiwary" }, { name: "Aditya Srivastava" }],
+  authors: [{ name: "Yuvraj Tiwary" }],
   creator: "Yuvraj Tiwary",
   openGraph: {
     type: "website",

@@ -69,7 +69,7 @@ export function SiteFooter() {
             © {new Date().getFullYear()} {SITE.name}. Open source under the MIT License.
           </p>
           <p>
-            Built by Yuvraj Tiwary, based on the original project by Aditya Srivastava.
+            Built by Yuvraj Tiwary.
           </p>
         </div>
       </div>

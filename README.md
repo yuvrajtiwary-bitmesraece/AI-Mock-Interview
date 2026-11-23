@@ -253,7 +253,6 @@ This project follows [Semantic Versioning](https://semver.org). Each version is 
 
 ## Acknowledgements
 
-- Originally based on [AI-Mock-Interview](https://github.com/Adi1816/AI-Mock-Interview) by Aditya Srivastava.
 - [Google Gemini](https://ai.google.dev), [Clerk](https://clerk.com), [Neon](https://neon.tech), [Drizzle ORM](https://orm.drizzle.team), [shadcn/ui](https://ui.shadcn.com) and the [Next.js](https://nextjs.org) team.
 - [Plus Jakarta Sans](https://fonts.google.com/specimen/Plus+Jakarta+Sans) and [Geist Mono](https://vercel.com/font), both under the SIL Open Font License.
 
@@ -267,5 +266,3 @@ This project follows [Semantic Versioning](https://semver.org). Each version is 
 ## License
 
 Released under the [MIT License](LICENSE). You are free to use, modify and distribute this project, including commercially, as long as you keep the copyright and license notice.
-
-Copyright © 2025 Aditya Srivastava (original project) and © 2026 Yuvraj Tiwary.
