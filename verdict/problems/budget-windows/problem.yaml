@@ -1,0 +1,5 @@
+title: Budget Windows
+difficulty: easy
+tags: [arrays, prefix-sums, hashing]
+time_ms: 1000
+memory_mb: 256

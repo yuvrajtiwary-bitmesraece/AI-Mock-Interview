@@ -3,10 +3,12 @@
 Practice job interviews with an AI interviewer. Get questions tailored to your role and resume, answer out loud or by typing, get scored on four skills after every answer, and finish with a coaching plan.
 
 [![CI](https://github.com/yuvrajtiwary-bitmesraece/AI-Mock-Interview/actions/workflows/ci.yml/badge.svg)](https://github.com/yuvrajtiwary-bitmesraece/AI-Mock-Interview/actions/workflows/ci.yml)
+[![Verdict](https://github.com/yuvrajtiwary-bitmesraece/AI-Mock-Interview/actions/workflows/verdict.yml/badge.svg)](https://github.com/yuvrajtiwary-bitmesraece/AI-Mock-Interview/actions/workflows/verdict.yml)
 [![CodeQL](https://github.com/yuvrajtiwary-bitmesraece/AI-Mock-Interview/actions/workflows/codeql.yml/badge.svg)](https://github.com/yuvrajtiwary-bitmesraece/AI-Mock-Interview/actions/workflows/codeql.yml)
 [![Latest release](https://img.shields.io/github/v/release/yuvrajtiwary-bitmesraece/AI-Mock-Interview?sort=semver)](https://github.com/yuvrajtiwary-bitmesraece/AI-Mock-Interview/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Next.js 16](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org)
+[![Go 1.27](https://img.shields.io/badge/Go-1.27-00ADD8?logo=go&logoColor=white)](verdict/)
 
 **Live demo:** [ai-mock-interview-dev2.vercel.app](https://ai-mock-interview-dev2.vercel.app/)
 
@@ -101,6 +103,7 @@ The browser never talks to the database or Gemini directly and never sees their 
 | Database | [Neon](https://neon.tech) serverless Postgres, [Drizzle ORM](https://orm.drizzle.team) with versioned migrations |
 | AI | Google Gemini via [`@google/genai`](https://www.npmjs.com/package/@google/genai), with a model fallback chain |
 | Speech | Gemini transcription of recorded answers (MediaRecorder), Web Speech API for the live preview and read-aloud, Web Audio API for the microphone test |
+| Code judge (in progress) | [Verdict](verdict/): Go 1.27, one locked-down Docker container per submission, rlimits applied through a re-exec shim, HMAC-signed results |
 | Hosting and analytics | Vercel, Vercel Web Analytics and Speed Insights (cookie-free) |
 | Quality | ESLint, Node's built-in test runner (81 tests), GitHub Actions, CodeQL, dependency review, Dependabot |
 
@@ -200,6 +203,7 @@ utils/
   report.js, progress.js, speech.js  Scoring, reports, dashboard stats, delivery metrics
   __tests__/             Unit tests
 proxy.js                 Requires sign-in for /dashboard (Next.js 16 "proxy")
+verdict/                 Verdict, the sandboxed code judge in Go (in progress; see verdict/README.md)
 ```
 
 ### Database
@@ -221,8 +225,9 @@ proxy.js                 Requires sign-in for /dashboard (Next.js 16 "proxy")
 
 ## Quality
 
-- **81 unit tests** for prompts and injection fencing, validation, scoring, reports, streaks, delivery metrics, retries and resume checks (`npm test`).
+- **91 unit tests** for prompts and injection fencing, validation, scoring, reports, streaks, delivery metrics, retries and resume checks (`npm test`).
 - CI lints, tests and builds every pull request. CodeQL scans the code and workflows, dependency review blocks vulnerable new dependencies, and Dependabot keeps packages current.
+- **Verdict**, the Go code judge, has its own CI on x64 and arm64: unit tests under the race detector, a fuzzed output checker, and integration tests that judge real C++ programs in Docker sandboxes.
 - Every change goes through a pull request and is recorded in [CHANGELOG.md](CHANGELOG.md).
 
 ## Roadmap
@@ -230,7 +235,7 @@ proxy.js                 Requires sign-in for /dashboard (Next.js 16 "proxy")
 Ideas for future versions. [Contributions are welcome](CONTRIBUTING.md):
 
 - Follow-up questions that react to your answer, like a real interviewer
-- Coding questions with an in-browser editor
+- A coding round with an in-browser editor, judged by [Verdict](verdict/) (in progress)
 - Interviews in more languages
 - End-to-end tests with Playwright
 - Shareable report links

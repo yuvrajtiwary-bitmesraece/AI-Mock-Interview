@@ -1,0 +1,3 @@
+# Verdict, the Go code judge, is not part of the Next.js app and runs on its
+# own server: keep it out of Vercel deployments.
+/verdict
