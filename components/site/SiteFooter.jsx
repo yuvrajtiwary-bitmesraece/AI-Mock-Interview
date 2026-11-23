@@ -10,6 +10,7 @@ const COLUMNS = [
       { label: "Start practicing", href: "/dashboard/new" },
       { label: "Dashboard", href: "/dashboard" },
       { label: "How it works", href: "/#how-it-works" },
+      { label: "Plans", href: "/#plans" },
       { label: "FAQ", href: "/#faq" },
     ],
   },
@@ -17,6 +18,7 @@ const COLUMNS = [
     title: "Open source",
     links: [
       { label: "Source code", href: SITE.repoUrl, external: true },
+      { label: "Code judge (Go)", href: `${SITE.repoUrl}/tree/main/verdict`, external: true },
       { label: "Report an issue", href: `${SITE.repoUrl}/issues/new/choose`, external: true },
       { label: "Contributing", href: `${SITE.repoUrl}/blob/main/CONTRIBUTING.md`, external: true },
       { label: "Changelog", href: `${SITE.repoUrl}/blob/main/CHANGELOG.md`, external: true },

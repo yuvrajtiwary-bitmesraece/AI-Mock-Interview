@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Verdict, a sandboxed code judge in Go** ([`verdict/`](verdict/), in progress). This is Stage A of [its spec](verdict/docs/SPEC.md). A runner compiles and runs C++17 submissions inside locked-down Docker containers: no network, a read-only filesystem, a non-root user without capabilities, and limits on CPU, memory, processes and output. Results come back signed with HMAC. It also adds the `verdictctl` CLI and the first problem of the bank, Budget Windows. It is tested with the race detector, fuzzing and Docker integration tests on x64 and arm64. The coding round in the app will use it in a later release.
+- **A coding-round preview on the landing page.** It shows a real local run of Verdict and links to its code. The judge isn't on the live site yet, because it needs a server that can run Docker.
+- **Plans on the landing page.** Free is everything live today. Pro (coming soon) adds coding rounds, AI review of your code, core CS packs and longer interviews. Campus (planned) is for placement cells. Pro and Campus have no price and no checkout: nothing is for sale. [docs/PLANS.md](docs/PLANS.md) has the details.
+
+### Changed
+
+- The FAQ explains the plans and when the coding round is coming. The header and footer link to the new sections, and the tech stack on the landing page lists Go and Docker.
 
 ## [1.2.0] - 2026-11-22
 
