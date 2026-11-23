@@ -3,11 +3,16 @@ import {
   ArrowRight,
   BarChart3,
   CircleCheck,
+  CircleDashed,
   CodeXml,
+  Cpu,
+  EyeOff,
   FileText,
   Github,
   HeartHandshake,
+  KeyRound,
   Keyboard,
+  Lock,
   Mic,
   Network,
   ShieldCheck,
@@ -21,8 +26,14 @@ import {
 
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SITE } from "@/utils/site";
+
+const VERDICT_CODE_URL = `${SITE.repoUrl}/tree/main/verdict`;
+const VERDICT_DESIGN_URL = `${SITE.repoUrl}/blob/main/verdict/docs/DESIGN.md`;
+const PLANS_DOC_URL = `${SITE.repoUrl}/blob/main/docs/PLANS.md`;
+const EXTERNAL = { target: "_blank", rel: "noopener noreferrer" };
 
 const INTERVIEW_STYLES = [
   { icon: CodeXml, label: "Technical" },
@@ -83,10 +94,104 @@ const FEATURES = [
   },
 ];
 
+/** How Verdict, the code judge behind the coming coding round, keeps judging fair. */
+const CODING_ROUND_POINTS = [
+  {
+    icon: Lock,
+    title: "A sealed sandbox",
+    text: "Each submission runs in its own container, with no network, no root access and hard limits on CPU time, memory and output.",
+  },
+  {
+    icon: EyeOff,
+    title: "Hidden tests stay hidden",
+    text: "Expected answers never enter the sandbox, and a program only sees the input of the test it's running.",
+  },
+  {
+    icon: KeyRound,
+    title: "Results can't be faked",
+    text: "Every result is signed with a one-time key, so a program can't print its own verdict.",
+  },
+  {
+    icon: Cpu,
+    title: "C++17 first",
+    text: "Python and Java come next, then the in-browser editor.",
+  },
+];
+
+/**
+ * Tests 17 to 20 of a real `verdictctl` run (see verdict/README.md): a
+ * solution that counts in an int passes every sample, then overflows on
+ * hidden test 18.
+ */
+const JUDGE_RUN = [
+  ["17", "AC", "40 ms", "63 ms", "4.0 MB"],
+  ["18", "WA", "104 ms", "126 ms", "4.0 MB"],
+  ["19", "AC", "328 ms", "382 ms", "12.3 MB"],
+  ["20", "AC", "73 ms", "92 ms", "4.0 MB"],
+];
+
+/**
+ * Subscription plans. Only Free exists: the others are plans, with no price
+ * and no checkout (docs/PLANS.md).
+ */
+const PLANS = [
+  {
+    name: "Free",
+    available: true,
+    badge: { label: "Available now", variant: "success" },
+    price: "₹0",
+    priceNote: "No card needed",
+    description: "Everything on the site today.",
+    features: [
+      "10 new interviews and 100 answer reviews a day",
+      "Technical, behavioral, system design, HR and mixed rounds",
+      "Questions based on your resume or the job posting",
+      "Answer by voice or by typing",
+      "Scores on four skills, model answers and a coaching report",
+      "A progress dashboard with score trends and streaks",
+    ],
+    cta: { label: "Start practicing free", href: "/dashboard/new", variant: "gradient" },
+  },
+  {
+    name: "Pro",
+    featured: true,
+    badge: { label: "Coming soon", variant: "primary" },
+    price: "Coming soon",
+    priceNote: "Not for sale yet",
+    description: "Everything in Free, plus coding rounds.",
+    features: [
+      "Coding rounds judged by Verdict: C++ first, then Python and Java",
+      "AI review of your code: complexity, missed edge cases and a cleaner approach",
+      "Core CS packs: DBMS, operating systems, networks and OOP",
+      "Longer interviews, up to 20 questions",
+      "Higher daily limits",
+    ],
+    cta: { label: "Follow progress on GitHub", href: SITE.repoUrl, external: true },
+  },
+  {
+    name: "Campus",
+    badge: { label: "Planned", variant: "violet" },
+    price: "Planned",
+    priceNote: "For colleges and bootcamps",
+    description: "For placement cells that prepare a whole batch.",
+    features: [
+      "One invite link for the whole batch",
+      "A placement-cell dashboard: who practiced, average scores, weakest skills",
+      "Your own question sets and coding problems for each drive",
+      "Batch reports to download",
+    ],
+    cta: { label: "Suggest a feature", href: `${SITE.repoUrl}/issues/new/choose`, external: true },
+  },
+];
+
 const FAQS = [
   {
     q: "Is it free?",
-    a: "Yes. There's no paid plan. To keep the shared AI service available for everyone, each account gets a generous daily allowance: 10 new interviews and 100 answer reviews a day.",
+    a: "Yes, everything on the site is free. To keep the shared AI service available for everyone, each account gets a generous daily allowance: 10 new interviews and 100 answer reviews a day. Pro and Campus plans are planned, but nothing is for sale yet and there's no checkout.",
+  },
+  {
+    q: "When is the coding round coming?",
+    a: "Its code judge, Verdict, is already built and tested. It runs every submission in a locked-down Docker container, and this site's free hosting can't run Docker, so the judge needs a server of its own first. Until then it runs locally, and its code is on GitHub.",
   },
   {
     q: "Which browsers work?",
@@ -175,6 +280,80 @@ function ProductPreview() {
 
       <div className="glass absolute -left-3 -top-5 flex items-center gap-2 rounded-full px-3 py-1.5 text-xs shadow-xl sm:-left-8">
         <FileText className="h-3.5 w-3.5 text-emerald-300" /> Tailored to your resume
+      </div>
+    </div>
+  );
+}
+
+/** Pads `value` to `width` characters, so the terminal columns line up. */
+const pad = (value, width) => value.padEnd(width);
+
+/** A real run of the judge, shown as a terminal window. */
+function JudgeRun() {
+  const header = pad(" #", 4) + pad("KIND", 8) + pad("VERDICT", 9) + pad("CPU", 8) + pad("WALL", 8) + "MEMORY";
+  return (
+    <figure className="min-w-0">
+      <div className="overflow-hidden rounded-2xl border border-white/10 bg-black/40 shadow-2xl shadow-black/40">
+        <div className="flex items-center gap-1.5 border-b border-white/10 px-4 py-3" aria-hidden="true">
+          <span className="h-2.5 w-2.5 rounded-full bg-red-400/70" />
+          <span className="h-2.5 w-2.5 rounded-full bg-amber-400/70" />
+          <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/70" />
+          <span className="ml-2 font-mono text-xs text-muted-foreground">verdictctl · local run</span>
+        </div>
+        <pre className="overflow-x-auto p-4 font-mono text-xs leading-relaxed text-foreground/90 sm:p-5 sm:text-[13px]">
+          <code>
+            <span className="text-muted-foreground">{"$ "}</span>
+            {"verdictctl submit -problem budget-windows \\\n    -mode submit overflow.cpp\n"}
+            {"Budget Windows | C++17 | submit\n\n"}
+            <span className="text-muted-foreground">{`${header}\n...\n`}</span>
+            {JUDGE_RUN.map(([test, verdict, cpu, wall, memory]) => (
+              <span key={test}>
+                {pad(test.padStart(2), 4) + pad("hidden", 8)}
+                <span className={verdict === "AC" ? "text-emerald-300" : "font-semibold text-red-300"}>{pad(verdict, 9)}</span>
+                {`${pad(cpu, 8)}${pad(wall, 8)}${memory}\n`}
+              </span>
+            ))}
+            {"\nVerdict: "}
+            <span className="font-semibold text-red-300">WA (Wrong Answer)</span>
+            {", 19/20 tests passed"}
+          </code>
+        </pre>
+      </div>
+      <figcaption className="mt-3 text-sm leading-relaxed text-muted-foreground">
+        A real run on a laptop. This solution keeps its count in an <code className="font-mono text-foreground/80">int</code>: it passes every
+        sample, and hidden test 18, whose answer needs more than 32 bits, catches it.
+      </figcaption>
+    </figure>
+  );
+}
+
+/** One subscription plan. Only the plan marked `available` exists today. */
+function PlanCard({ plan }) {
+  const { name, available, featured, badge, price, priceNote, description, features, cta } = plan;
+  const Icon = available ? CircleCheck : CircleDashed;
+  return (
+    <div className={`glass relative flex flex-col p-7 ${featured ? "border-primary/40 shadow-2xl shadow-cyan-500/10" : ""}`}>
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="text-lg font-semibold">{name}</h3>
+        <Badge variant={badge.variant}>{badge.label}</Badge>
+      </div>
+      <p className={`mt-5 text-3xl font-bold ${available ? "" : "text-gradient"}`}>{price}</p>
+      <p className="mt-1 text-sm text-muted-foreground">{priceNote}</p>
+      <p className="mt-4 text-sm leading-relaxed text-foreground/90">{description}</p>
+      <ul className="mt-6 space-y-3 text-sm">
+        {features.map((feature) => (
+          <li key={feature} className="flex gap-2.5">
+            <Icon className={`mt-0.5 h-4 w-4 shrink-0 ${available ? "text-primary" : "text-muted-foreground"}`} aria-hidden="true" />
+            <span className={available ? "text-foreground/90" : "text-muted-foreground"}>{feature}</span>
+          </li>
+        ))}
+      </ul>
+      <div className="mt-auto pt-8">
+        <Button asChild variant={cta.variant ?? "glass"} size="lg" className="w-full">
+          <Link href={cta.href} {...(cta.external ? EXTERNAL : {})}>
+            {cta.label}
+          </Link>
+        </Button>
       </div>
     </div>
   );
@@ -277,6 +456,71 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* Coding round: built and tested locally, not on the live site yet */}
+        <section id="coding-round" className="container scroll-mt-20 pb-24">
+          <div className="glass relative overflow-hidden p-8 sm:p-12">
+            <div aria-hidden="true" className="pointer-events-none absolute -bottom-24 -left-24 h-80 w-80 rounded-full bg-cyan-500/10 blur-3xl" />
+            <div className="relative grid gap-10 lg:grid-cols-2 lg:items-center">
+              <div>
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="success">Built and tested</Badge>
+                  <Badge variant="warning">Not on the live site yet</Badge>
+                </div>
+                <h2 className="mt-4 text-2xl font-bold sm:text-3xl">Coming next: a coding round with a real judge</h2>
+                <p className="mt-4 leading-relaxed text-muted-foreground">
+                  Write a solution, then have it compiled and run against hidden tests, the way competitive programming judges work. The judge,
+                  Verdict, is written in Go. It already works locally and is tested automatically on every change. It isn&apos;t on this site yet
+                  because it needs a server that can run Docker, and this site&apos;s free hosting can&apos;t.
+                </p>
+                <ul className="mt-8 grid gap-5 sm:grid-cols-2">
+                  {CODING_ROUND_POINTS.map(({ icon: Icon, title, text }) => (
+                    <li key={title}>
+                      <Icon className="h-5 w-5 text-primary" aria-hidden="true" />
+                      <h3 className="mt-2 font-semibold">{title}</h3>
+                      <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{text}</p>
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-8 flex flex-wrap gap-3">
+                  <Button asChild variant="glass" size="lg">
+                    <Link href={VERDICT_CODE_URL} {...EXTERNAL}>
+                      <Github /> Read the code
+                    </Link>
+                  </Button>
+                  <Button asChild variant="link" size="lg">
+                    <Link href={VERDICT_DESIGN_URL} {...EXTERNAL}>
+                      How it works <ArrowRight />
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+              <JudgeRun />
+            </div>
+          </div>
+        </section>
+
+        {/* Plans: only Free exists; the others are plans, with no checkout */}
+        <section id="plans" className="container scroll-mt-20 pb-24">
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="text-sm font-semibold text-primary">Plans</p>
+            <h2 className="mt-2 text-3xl font-bold sm:text-4xl">Free today. More on the way.</h2>
+            <p className="mt-4 text-muted-foreground">
+              Everything on the site is free. Pro and Campus are plans for what comes next: nothing is for sale yet, and there&apos;s no checkout or
+              payment anywhere on this site.
+            </p>
+          </div>
+          <div className="mt-14 grid gap-5 lg:grid-cols-3">
+            {PLANS.map((plan) => (
+              <PlanCard key={plan.name} plan={plan} />
+            ))}
+          </div>
+          <p className="mt-8 text-center text-sm text-muted-foreground">
+            <Link href={PLANS_DOC_URL} {...EXTERNAL} className="underline-offset-4 transition-colors hover:text-foreground hover:underline">
+              Read the full plan on GitHub
+            </Link>
+          </p>
+        </section>
+
         {/* Open source */}
         <section className="container pb-24">
           <div className="glass relative overflow-hidden p-8 sm:p-12">
@@ -296,7 +540,7 @@ export default function LandingPage() {
                 </div>
               </div>
               <ul className="flex flex-wrap gap-2 lg:justify-end">
-                {["Next.js 16", "React 19", "Google Gemini", "Clerk", "Neon Postgres", "Drizzle ORM", "Tailwind CSS", "Vercel"].map((tech) => (
+                {["Next.js 16", "React 19", "Google Gemini", "Clerk", "Neon Postgres", "Drizzle ORM", "Tailwind CSS", "Vercel", "Go", "Docker"].map((tech) => (
                   <li key={tech} className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-sm text-foreground/90">
                     {tech}
                   </li>

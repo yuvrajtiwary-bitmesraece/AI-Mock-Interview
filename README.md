@@ -236,6 +236,7 @@ Ideas for future versions. [Contributions are welcome](CONTRIBUTING.md):
 
 - Follow-up questions that react to your answer, like a real interviewer
 - A coding round with an in-browser editor, judged by [Verdict](verdict/) (in progress)
+- Pro and Campus plans: coding rounds, AI review of your code, core CS packs and a dashboard for placement cells. Nothing is for sale yet; see [docs/PLANS.md](docs/PLANS.md)
 - Interviews in more languages
 - End-to-end tests with Playwright
 - Shareable report links
