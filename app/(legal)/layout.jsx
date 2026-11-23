@@ -5,7 +5,7 @@ export default function LegalLayout({ children }) {
   return (
     <>
       <SiteHeader />
-      <main id="main" className="container max-w-3xl py-16 sm:py-20">
+      <main id="main" className="container max-w-3xl pb-24 pt-16 sm:pt-24">
         {children}
       </main>
       <SiteFooter />

@@ -8,15 +8,16 @@ export const metadata = { title: "Page not found" };
 
 export default function NotFound() {
   return (
-    <main id="main" className="flex min-h-dvh flex-col items-center justify-center px-6 py-16 text-center">
-      <Logo className="mb-12" />
-      <p className="font-mono text-sm font-semibold text-primary">404</p>
-      <h1 className="mt-3 text-4xl font-bold sm:text-5xl">This page doesn&apos;t exist</h1>
-      <p className="mt-4 max-w-md text-muted-foreground">
+    <main id="main" className="relative flex min-h-dvh flex-col items-center justify-center overflow-clip px-6 py-16 text-center">
+      <div aria-hidden="true" className="bg-dots absolute inset-0 [mask-image:radial-gradient(ellipse_at_center,black,transparent_65%)]" />
+      <Logo className="relative mb-14" />
+      <p className="relative font-serif text-[7rem] italic leading-none text-ember sm:text-[9rem]">404</p>
+      <h1 className="relative mt-4 text-3xl font-semibold tracking-[-0.03em] sm:text-4xl">This page doesn&apos;t exist</h1>
+      <p className="relative mt-4 max-w-md text-muted-foreground">
         The link may be broken, or the interview was deleted or belongs to a different account.
       </p>
-      <div className="mt-10 flex flex-wrap justify-center gap-3">
-        <Button asChild variant="gradient" size="lg">
+      <div className="relative mt-10 flex flex-wrap justify-center gap-3">
+        <Button asChild size="lg">
           <Link href="/dashboard">
             <LayoutDashboard /> Go to dashboard
           </Link>

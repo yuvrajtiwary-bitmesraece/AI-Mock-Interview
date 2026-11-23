@@ -9,16 +9,16 @@ export const alt = `${SITE.name}: ${SITE.tagline}`;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-const HEADLINE = ["Practice interviews", "Get instant AI feedback"];
 const CHIPS = ["Tailored questions", "Voice or typed answers", "Scored feedback", "Progress tracking"];
+const EMBER = "linear-gradient(100deg, #ffcd94, #ff813d 48%, #f45273)";
 
 /**
- * Fetches Plus Jakarta Sans as TTF from Google Fonts, subset to `text`.
- * Returns null on any failure so the image still renders with the default font.
+ * Downloads a Google Font as TTF, subset to `text`, while the image is built.
+ * Returns null on any failure, so the card still renders with a default font.
  */
-async function loadFont(weight, text) {
+async function loadFont(family, axes, text) {
   try {
-    const url = `https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@${weight}&text=${encodeURIComponent(text)}`;
+    const url = `https://fonts.googleapis.com/css2?family=${family}:${axes}&text=${encodeURIComponent(text)}`;
     const css = await (await fetch(url)).text();
     const fontUrl = css.match(/src: url\((.+?)\) format\('(?:opentype|truetype)'\)/)?.[1];
     if (!fontUrl) return null;
@@ -30,15 +30,21 @@ async function loadFont(weight, text) {
 }
 
 export default async function OpengraphImage() {
-  const logoSvg = await readFile(join(process.cwd(), "public/logo.svg"));
-  const logoSrc = `data:image/svg+xml;base64,${logoSvg.toString("base64")}`;
+  const logo = await readFile(join(process.cwd(), "public/logo.svg"));
+  const logoSrc = `data:image/svg+xml;base64,${logo.toString("base64")}`;
 
-  const allText = [SITE.name, ...HEADLINE, ...CHIPS, SITE.tagline].join(" ");
-  const [bold, medium] = await Promise.all([loadFont(800, allText), loadFont(500, allText)]);
+  const sansText = [SITE.name, "Practice the interview", "the interview.", ...CHIPS].join(" ");
+  const [semibold, regular, serif] = await Promise.all([
+    loadFont("Geist", "wght@600", sansText),
+    loadFont("Geist", "wght@400", sansText),
+    loadFont("Instrument+Serif", "ital@1", "before Interview"),
+  ]);
   const fonts = [
-    bold && { name: "Jakarta", data: bold, weight: 800, style: "normal" },
-    medium && { name: "Jakarta", data: medium, weight: 500, style: "normal" },
+    semibold && { name: "Geist", data: semibold, weight: 600, style: "normal" },
+    regular && { name: "Geist", data: regular, weight: 400, style: "normal" },
+    serif && { name: "Instrument Serif", data: serif, weight: 400, style: "italic" },
   ].filter(Boolean);
+  const serifFamily = serif ? "Instrument Serif" : "serif";
 
   return new ImageResponse(
     (
@@ -50,50 +56,63 @@ export default async function OpengraphImage() {
           flexDirection: "column",
           justifyContent: "space-between",
           padding: "64px 72px",
-          backgroundColor: "#05070d",
+          backgroundColor: "#09090b",
           backgroundImage:
-            "radial-gradient(circle at 0% 0%, rgba(34,211,238,0.28), transparent 45%), radial-gradient(circle at 100% 10%, rgba(139,92,246,0.28), transparent 45%)",
-          color: "#f8fafc",
-          fontFamily: fonts.length ? "Jakarta" : "sans-serif",
+            "radial-gradient(ellipse 80% 70% at 50% -20%, rgba(255,129,61,0.30), transparent 70%), radial-gradient(circle at 100% 0%, rgba(244,82,115,0.16), transparent 45%)",
+          color: "#faf8f5",
+          fontFamily: semibold ? "Geist" : "sans-serif",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-          <img src={logoSrc} width={64} height={61} alt="" />
-          <div style={{ fontSize: 34, fontWeight: 800, letterSpacing: -0.5 }}>{SITE.name}</div>
-        </div>
-
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <div style={{ fontSize: 76, fontWeight: 800, lineHeight: 1.05, letterSpacing: -2.5 }}>{HEADLINE[0]}</div>
-          <div
-            style={{
-              fontSize: 76,
-              fontWeight: 800,
-              lineHeight: 1.1,
-              letterSpacing: -2.5,
-              backgroundImage: "linear-gradient(90deg, #67e8f9, #60a5fa 50%, #a78bfa)",
-              backgroundClip: "text",
-              color: "transparent",
-            }}
-          >
-            {HEADLINE[1]}
+        <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+          <img src={logoSrc} width={56} height={56} alt="" />
+          <div style={{ display: "flex", alignItems: "baseline", gap: 10, fontSize: 32, fontWeight: 600, letterSpacing: -0.6 }}>
+            <span>AI Mock</span>
+            <span style={{ fontFamily: serifFamily, fontStyle: "italic", fontWeight: 400, fontSize: 38, letterSpacing: 0 }}>Interview</span>
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: 14 }}>
+        <div style={{ display: "flex", flexDirection: "column", fontSize: 88, fontWeight: 600, letterSpacing: -1.5, lineHeight: 1.02 }}>
+          <div style={{ display: "flex", gap: 22 }}>
+            {/* The renderer gives "Practice" a little extra width in this font; the margin evens out the gap. */}
+            <span style={{ marginRight: -14 }}>Practice</span>
+            <span>the interview</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 22 }}>
+            <span
+              style={{
+                fontFamily: serifFamily,
+                fontStyle: "italic",
+                fontWeight: 400,
+                fontSize: 100,
+                letterSpacing: 0,
+                backgroundImage: EMBER,
+                backgroundClip: "text",
+                color: "transparent",
+              }}
+            >
+              before
+            </span>
+            <span>the interview.</span>
+          </div>
+        </div>
+
+        <div style={{ display: "flex", gap: 12 }}>
           {CHIPS.map((chip) => (
             <div
               key={chip}
               style={{
                 display: "flex",
                 alignItems: "center",
-                padding: "12px 24px",
+                flexShrink: 0,
+                whiteSpace: "nowrap",
+                padding: "12px 20px",
                 lineHeight: 1,
                 borderRadius: 999,
-                border: "1px solid rgba(255,255,255,0.14)",
-                backgroundColor: "rgba(255,255,255,0.05)",
-                fontSize: 24,
-                fontWeight: 500,
-                color: "#cbd5e1",
+                border: "1px solid rgba(255,255,255,0.12)",
+                backgroundColor: "rgba(255,255,255,0.04)",
+                fontSize: 21,
+                fontWeight: 400,
+                color: "#d4d4d8",
               }}
             >
               {chip}

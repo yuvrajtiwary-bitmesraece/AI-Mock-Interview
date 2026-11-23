@@ -19,7 +19,7 @@ export const SITE = {
     "interview feedback",
     "Gemini",
   ],
-  themeColor: "#05070d",
+  themeColor: "#09090b",
 };
 
 /**

@@ -2,25 +2,23 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
+import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import { Toaster } from "sonner";
 
 import { SITE, getSiteUrl } from "@/utils/site";
 import "./globals.css";
 
-// Both fonts are open source (SIL Open Font License). next/font downloads them
-// at build time and serves them from this site, so no request goes to Google.
-const fontSans = Plus_Jakarta_Sans({
-  variable: "--font-sans",
+// Open-source fonts (SIL Open Font License). next/font downloads them at build
+// time and serves them from this site, so no request ever goes to Google.
+const sans = Geist({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
+const serif = Instrument_Serif({
   subsets: ["latin"],
+  weight: "400",
+  style: ["normal", "italic"],
+  variable: "--font-serif",
   display: "swap",
 });
-
-const fontMono = Geist_Mono({
-  variable: "--font-mono",
-  subsets: ["latin"],
-  display: "swap",
-});
+const mono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono", display: "swap" });
 
 export const metadata = {
   metadataBase: new URL(getSiteUrl()),
@@ -59,41 +57,42 @@ export const viewport = {
   colorScheme: "dark",
 };
 
-// Clerk's sign-in, sign-up and account screens, styled to match the app.
+// Clerk's sign-in, sign-up and account screens, in the Ember colours of
+// app/globals.css.
 const clerkAppearance = {
   baseTheme: dark,
   variables: {
-    colorPrimary: "#22d3ee",
-    colorPrimaryForeground: "#05070d",
-    colorBackground: "#0b1020",
-    colorInput: "#111a2e",
-    colorInputForeground: "#f8fafc",
-    colorForeground: "#f8fafc",
-    colorMutedForeground: "#a3adc2",
-    colorDanger: "#f87171",
-    borderRadius: "0.75rem",
+    colorPrimary: "#ff813d",
+    colorPrimaryForeground: "#141014",
+    colorBackground: "#111113",
+    colorInput: "#18181b",
+    colorInputForeground: "#faf8f5",
+    colorForeground: "#faf8f5",
+    colorMutedForeground: "#a1a1aa",
+    colorDanger: "#ed4556",
+    borderRadius: "0.875rem",
     fontFamily: "var(--font-sans)",
   },
   elements: {
-    card: "border border-white/10 shadow-2xl shadow-black/40",
-    userButtonPopoverCard: "border border-white/10 shadow-2xl",
+    card: "border border-white/10 shadow-2xl shadow-black/60",
+    userButtonPopoverCard: "border border-white/10 shadow-2xl shadow-black/60",
   },
 };
 
 export default function RootLayout({ children }) {
   return (
     <ClerkProvider afterSignOutUrl="/" appearance={clerkAppearance}>
-      <html lang="en" className="dark">
-        <body className={`${fontSans.variable} ${fontMono.variable} font-sans antialiased`}>
+      <html lang="en" className={`dark ${sans.variable} ${serif.variable} ${mono.variable}`}>
+        <body>
           <a
             href="#main"
-            className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground"
+            className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-full focus:bg-foreground focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-background"
           >
             Skip to content
           </a>
           {children}
           <Toaster theme="dark" position="top-center" richColors closeButton />
-          {/* Vercel Web Analytics and Speed Insights: cookie-free, and they do nothing outside Vercel. */}
+          {/* Vercel Web Analytics and Speed Insights: cookie-free, and inactive outside Vercel. */}
           <Analytics />
           <SpeedInsights />
         </body>

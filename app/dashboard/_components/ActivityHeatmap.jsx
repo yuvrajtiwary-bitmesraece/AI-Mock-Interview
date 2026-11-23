@@ -1,9 +1,9 @@
 import { formatDisplayDate } from "@/utils/dates";
 
-// One-hue sequential ramp (more practice = brighter), validated as an ordinal
-// ramp on the dark card surface. Days without practice use a neutral step.
-const RAMP = ["#155e75", "#0e7490", "#0891b2", "#22d3ee"];
-const EMPTY = "#1a1f2b";
+// A one-hue ramp in the brand orange: more practice is brighter. Days without
+// practice use a neutral step.
+const RAMP = ["#55260f", "#923d14", "#db5f1d", "#ffa060"];
+const EMPTY = "#1c1c21";
 const WEEKDAYS = ["Mon", "", "Wed", "", "Fri", "", ""];
 
 function cellColor(count) {

@@ -10,15 +10,14 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
-function DashboardLayout({ children }) {
+/** Every signed-in page: the floating header and a padded content column. */
+export default function DashboardLayout({ children }) {
   return (
     <div className="min-h-dvh">
       <Header />
-      <main id="main" className="container pb-20 pt-24 sm:pt-28 print:pt-0">
+      <main id="main" className="container pb-24 pt-28 sm:pt-32 print:pt-0">
         {children}
       </main>
     </div>
   );
 }
-
-export default DashboardLayout;
