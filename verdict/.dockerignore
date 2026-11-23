@@ -1,0 +1,7 @@
+# The images only need the Go sources of the runner.
+*
+!go.mod
+!go.sum
+!cmd/
+!internal/
+internal/**/testdata

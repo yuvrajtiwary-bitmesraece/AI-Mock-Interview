@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Verdict, a sandboxed code judge in Go** ([`verdict/`](verdict/), in progress). This is Stage A of [its spec](verdict/docs/SPEC.md). A runner compiles and runs C++17 submissions inside locked-down Docker containers: no network, a read-only filesystem, a non-root user without capabilities, and limits on CPU, memory, processes and output. Results come back signed with HMAC. It also adds the `verdictctl` CLI and the first problem of the bank, Budget Windows. It is tested with the race detector, fuzzing and Docker integration tests on x64 and arm64. The coding round in the app will use it in a later release.
+
 ## [1.2.0] - 2026-11-22
 
 Voice answers are now transcribed by Gemini, which is far more accurate than the browser’s speech recognition for accents and technical terms, and they work in every modern browser.

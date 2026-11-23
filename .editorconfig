@@ -11,3 +11,12 @@ trim_trailing_whitespace = true
 
 [*.md]
 trim_trailing_whitespace = false
+
+# Go code is formatted by gofmt, which indents with tabs.
+[*.go]
+indent_style = tab
+
+# Test data is compared byte for byte: never touch it.
+[verdict/problems/**.{in,out}]
+trim_trailing_whitespace = false
+insert_final_newline = false
