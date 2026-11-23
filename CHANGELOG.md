@@ -82,7 +82,7 @@ The product release. The app is now open source under the MIT license, runs on N
 - Each generated question now comes with the topic it tests and a one-line tip on what a great answer covers.
 - **Redesigned pre-interview screen:** your settings at a glance, how the interview works, tips for the interview type (for example STAR for behavioral rounds), a live microphone level test, an optional camera preview, and a check that the browser supports voice answers.
 - "New interview" link in the header.
-- MIT license. The project is now open source. The copyright notice credits Aditya Srivastava, who created the original project, and Yuvraj Tiwary.
+- MIT license. The project is now open source.
 - Code of Conduct (Contributor Covenant 2.1).
 - CodeQL code scanning for the app code and the GitHub Actions workflows, on every pull request, every push to `main` and weekly.
 - Dependency review on pull requests: a pull request that adds a dependency with a known high or critical vulnerability fails the check.
