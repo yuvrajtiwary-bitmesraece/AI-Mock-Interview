@@ -37,8 +37,10 @@ export default function InterviewList({ initialInterviews }) {
               onClick={() => setType(id)}
               aria-pressed={type === id}
               className={cn(
-                "rounded-full border px-3 py-1 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                type === id ? "border-primary/50 bg-primary/15 text-foreground" : "border-white/10 text-muted-foreground hover:text-foreground"
+                "rounded-full border px-3.5 py-1.5 text-[13px] transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/70",
+                type === id
+                  ? "border-white/20 bg-white/[0.08] text-foreground"
+                  : "border-white/[0.08] text-muted-foreground hover:border-white/15 hover:text-foreground"
               )}
             >
               {id === "all" ? `All (${interviews.length})` : interviewTypeLabel(id)}
@@ -53,13 +55,13 @@ export default function InterviewList({ initialInterviews }) {
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search by role or company"
-            className="h-9 w-full rounded-lg border border-white/10 bg-white/[0.04] pl-9 pr-3 text-sm placeholder:text-muted-foreground/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="h-9 w-full rounded-full border border-white/10 bg-white/[0.03] pl-9 pr-4 text-sm transition-[border-color,box-shadow] duration-300 placeholder:text-muted-foreground/70 hover:border-white/15 focus:outline-none focus-visible:border-primary/60 focus-visible:ring-4 focus-visible:ring-primary/15"
           />
         </label>
       </div>
 
       {visible.length === 0 ? (
-        <p className="glass px-6 py-10 text-center text-muted-foreground">No interviews match your filters.</p>
+        <p className="surface px-6 py-12 text-center text-muted-foreground">No interviews match your filters.</p>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {visible.map((interview) => (

@@ -15,7 +15,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **A complete redesign, "Ember".** It brings a new logo and app icons, a warm ember-on-black palette, Geist with Instrument Serif accents, and a floating header with a mobile menu. The landing page is new: a product preview, a grid of feature cards, the plans and an FAQ with smooth accordions. Every app screen is restyled too.
+- Motion is CSS-only: sections rise into view with scroll-driven animations, and there is no blur behind large areas, so scrolling stays smooth. Everything respects the reduced-motion setting.
+- The UI components (button, badge, input, text area and dialog) are rewritten from scratch. The dialog is built on the browser's native `<dialog>`.
+- The copyright notice in LICENSE now lists only the current author, because none of the original project's code remains.
 - The FAQ explains the plans and when the coding round is coming. The header and footer link to the new sections, and the tech stack on the landing page lists Go and Docker.
+
+### Removed
+
+- The `@radix-ui/react-dialog`, `class-variance-authority` and `tailwindcss-animate` dependencies, which the new components no longer need.
+
+### Fixed
+
+- The dashboard says "1 question answered" instead of "1 questions answered".
 
 ## [1.2.0] - 2026-11-22
 

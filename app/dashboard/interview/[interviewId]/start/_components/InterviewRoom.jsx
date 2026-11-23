@@ -40,12 +40,12 @@ function QuestionNav({ total, index, results, onSelect }) {
             aria-current={i === index ? "step" : undefined}
             aria-label={`Question ${i + 1}${answered ? ", answered" : ""}`}
             className={cn(
-              "flex h-9 min-w-9 items-center justify-center gap-1 rounded-lg border px-2.5 font-mono text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              "flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border px-3 font-mono text-[13px] transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/70",
               i === index
-                ? "border-primary/60 bg-primary/15 text-foreground"
+                ? "border-white/25 bg-foreground text-background"
                 : answered
-                  ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-200 hover:bg-emerald-400/20"
-                  : "border-white/10 bg-white/[0.03] text-muted-foreground hover:text-foreground"
+                  ? "border-emerald-400/25 bg-emerald-400/10 text-emerald-200 hover:bg-emerald-400/15"
+                  : "border-white/[0.08] bg-white/[0.02] text-muted-foreground hover:border-white/15 hover:text-foreground"
             )}
           >
             {answered && i !== index ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : null}
@@ -57,7 +57,7 @@ function QuestionNav({ total, index, results, onSelect }) {
   );
 }
 
-/** The current question, with read-aloud and an optional hint. Mounted fresh per question. */
+/** The current question, with read-aloud and an optional hint. Mounted fresh for each question. */
 function QuestionCard({ question, index, total }) {
   const [speaking, setSpeaking] = useState(false);
   const [showTip, setShowTip] = useState(false);
@@ -85,17 +85,17 @@ function QuestionCard({ question, index, total }) {
   };
 
   return (
-    <section className="glass animate-fade-up p-6 sm:p-7" aria-labelledby="current-question">
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+    <section className="surface animate-fade-up p-6 sm:p-8" aria-labelledby="current-question">
+      <div className="mb-5 flex flex-wrap items-center gap-2.5">
+        <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
           Question {index + 1} of {total}
         </span>
         {question.topic && <Badge variant="primary">{question.topic}</Badge>}
       </div>
-      <h2 id="current-question" className="text-xl font-semibold leading-snug sm:text-2xl">
+      <h2 id="current-question" className="text-xl font-semibold leading-snug tracking-tight sm:text-[1.65rem] sm:leading-[1.3]">
         {question.ques}
       </h2>
-      <div className="mt-5 flex flex-wrap gap-2">
+      <div className="mt-6 flex flex-wrap gap-2">
         <Button type="button" variant="glass" size="sm" onClick={toggleSpeech} aria-pressed={speaking}>
           {speaking ? <VolumeX /> : <Volume2 />} {speaking ? "Stop reading" : "Read aloud"}
         </Button>
@@ -106,21 +106,23 @@ function QuestionCard({ question, index, total }) {
         )}
       </div>
       {showTip && question.tip && (
-        <p className="mt-4 rounded-xl border border-amber-400/25 bg-amber-400/[0.07] p-4 text-sm text-amber-50/90">{question.tip}</p>
+        <p className="mt-5 animate-fade-up rounded-xl border border-amber-300/20 bg-amber-300/[0.06] p-4 text-sm leading-relaxed text-amber-50/90">
+          {question.tip}
+        </p>
       )}
     </section>
   );
 }
 
-/** The AI review of a saved answer, with next steps. */
+/** The AI review of a saved answer, with what to do next. */
 function ResultCard({ result, onRetry, onNext, nextLabel, feedbackHref }) {
   const { review, metrics, score, answer } = result;
   return (
-    <section className="glass animate-fade-up space-y-6 p-5 sm:p-6" aria-label="Feedback on your answer" aria-live="polite">
+    <section className="surface animate-fade-up space-y-7 p-6 sm:p-7" aria-label="Feedback on your answer" aria-live="polite">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h3 className="text-lg font-semibold">Feedback</h3>
-          {review?.feedback && <p className="mt-1.5 text-sm leading-relaxed text-foreground/90">{review.feedback}</p>}
+        <div className="min-w-0 flex-1">
+          <h3 className="text-lg font-semibold tracking-tight">Feedback</h3>
+          {review?.feedback && <p className="mt-2 text-sm leading-relaxed text-foreground/85">{review.feedback}</p>}
         </div>
         <ScoreBadge score={score} className="text-base" />
       </div>
@@ -128,24 +130,26 @@ function ResultCard({ result, onRetry, onNext, nextLabel, feedbackHref }) {
       <CriteriaBars criteria={review?.criteria} compact />
       <ReviewDetails review={review} />
       {metrics && (
-        <div className="border-t border-white/10 pt-4">
+        <div className="border-t border-white/[0.07] pt-5">
           <DeliveryStats metrics={metrics} />
         </div>
       )}
 
       {answer && (
-        <details className="rounded-xl border border-white/10 bg-white/[0.02] p-4">
-          <summary className="cursor-pointer text-sm font-medium text-muted-foreground">Your answer</summary>
-          <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-foreground/90">{answer}</p>
+        <details className="accordion group rounded-xl border border-white/[0.08] bg-black/20 px-4">
+          <summary className="cursor-pointer py-4 text-sm font-medium text-muted-foreground transition-colors duration-300 hover:text-foreground">
+            Your answer
+          </summary>
+          <p className="whitespace-pre-line pb-4 text-sm leading-relaxed text-foreground/90">{answer}</p>
         </details>
       )}
 
-      <div className="flex flex-wrap justify-between gap-3 border-t border-white/10 pt-5">
+      <div className="flex flex-wrap justify-between gap-3 border-t border-white/[0.07] pt-6">
         <Button type="button" variant="glass" onClick={onRetry}>
           <RotateCcw /> Answer again
         </Button>
         {onNext ? (
-          <Button type="button" variant="gradient" onClick={onNext}>
+          <Button type="button" onClick={onNext}>
             {nextLabel} <ArrowRight />
           </Button>
         ) : (
@@ -170,8 +174,8 @@ function CameraPanel() {
   };
 
   return (
-    <section className="glass overflow-hidden" aria-label="Camera">
-      <div className="flex aspect-video items-center justify-center bg-black/40">
+    <section className="surface overflow-hidden" aria-label="Camera">
+      <div className="grid aspect-video place-items-center bg-black/40">
         {on ? (
           <Webcam
             ref={webcamRef}
@@ -184,10 +188,12 @@ function CameraPanel() {
             }}
           />
         ) : (
-          <p className="px-6 text-center text-sm text-muted-foreground">Practice eye contact by watching yourself answer. Nothing is recorded.</p>
+          <p className="px-6 text-center text-sm leading-relaxed text-muted-foreground">
+            Practice eye contact by watching yourself answer. Nothing is recorded.
+          </p>
         )}
       </div>
-      <div className="flex justify-end p-3">
+      <div className="flex justify-end border-t border-white/[0.06] p-3">
         {on ? (
           <Button type="button" variant="glass" size="sm" onClick={turnOff}>
             <CameraOff /> Camera off
@@ -236,11 +242,12 @@ export default function InterviewRoom({ interview, questions, saved, initialInde
         <div>
           <Link
             href={`/dashboard/interview/${interview.mockId}`}
-            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+            className="group inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors duration-300 hover:text-foreground"
           >
-            <ArrowLeft className="h-4 w-4" aria-hidden="true" /> {interview.jobPosition}
+            <ArrowLeft className="h-4 w-4 transition-transform duration-300 ease-out-expo group-hover:-translate-x-0.5" aria-hidden="true" />{" "}
+            {interview.jobPosition}
           </Link>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1.5 text-sm text-muted-foreground">
             {interviewTypeLabel(interview.interviewType)} interview · {answeredCount} of {total} answered
           </p>
         </div>
@@ -251,15 +258,15 @@ export default function InterviewRoom({ interview, questions, saved, initialInde
         </Button>
       </div>
 
-      <div className="mb-6 h-1.5 overflow-hidden rounded-full bg-white/10" aria-hidden="true">
+      <div className="mb-8 h-1 overflow-hidden rounded-full bg-white/[0.07]" aria-hidden="true">
         <div
-          className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 transition-[width] duration-500"
+          className="h-full rounded-full bg-[linear-gradient(90deg,hsl(var(--ember-1)),hsl(var(--ember-2))_60%,hsl(var(--ember-3)))] transition-[width] duration-700 ease-out-expo"
           style={{ width: `${(answeredCount / total) * 100}%` }}
         />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-5">
-        <div className="space-y-5 lg:col-span-3">
+      <div className="grid gap-4 lg:grid-cols-5">
+        <div className="space-y-4 lg:col-span-3">
           <QuestionNav total={total} index={index} results={results} onSelect={goTo} />
           <QuestionCard key={`question-${index}`} question={question} index={index} total={total} />
 
@@ -288,33 +295,33 @@ export default function InterviewRoom({ interview, questions, saved, initialInde
           )}
         </div>
 
-        <aside className="space-y-5 lg:col-span-2">
+        <aside className="space-y-4 lg:col-span-2">
           <CameraPanel />
 
-          <section className="glass p-5">
+          <section className="surface p-6">
             <h2 className="text-sm font-semibold">Your session</h2>
-            <dl className="mt-4 grid grid-cols-2 gap-4">
+            <dl className="mt-5 grid grid-cols-2 gap-4">
               <div>
                 <dt className="text-xs text-muted-foreground">Answered</dt>
-                <dd className="mt-1 font-mono text-2xl font-semibold">
+                <dd className="mt-1.5 text-3xl font-semibold tracking-[-0.03em]">
                   {answeredCount}
-                  <span className="text-base text-muted-foreground">/{total}</span>
+                  <span className="text-lg font-normal text-muted-foreground">/{total}</span>
                 </dd>
               </div>
               <div>
                 <dt className="text-xs text-muted-foreground">Average score</dt>
-                <dd className="mt-1 font-mono text-2xl font-semibold">{average === null ? "–" : average.toFixed(1)}</dd>
+                <dd className="mt-1.5 text-3xl font-semibold tracking-[-0.03em]">{average === null ? "–" : average.toFixed(1)}</dd>
               </div>
             </dl>
           </section>
 
-          <section className="rounded-2xl border border-amber-400/25 bg-amber-400/[0.06] p-5">
-            <h2 className="flex items-center gap-2 text-sm font-semibold text-amber-200">
-              <Lightbulb className="h-4 w-4" aria-hidden="true" /> Remember
+          <section className="rounded-2xl border border-amber-300/20 bg-amber-300/[0.05] p-6">
+            <h2 className="flex items-center gap-2 text-sm font-semibold text-amber-100">
+              <Lightbulb className="h-4 w-4 text-amber-300" aria-hidden="true" /> Remember
             </h2>
-            <ul className="mt-3 space-y-2">
+            <ul className="mt-4 space-y-2.5">
               {interviewTips(interview.interviewType).map((tip) => (
-                <li key={tip} className="flex gap-2.5 text-sm text-amber-50/90">
+                <li key={tip} className="flex gap-2.5 text-sm leading-relaxed text-amber-50/85">
                   <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-300" aria-hidden="true" />
                   {tip}
                 </li>

@@ -84,8 +84,8 @@ export function MicCheck() {
             <span
               key={index}
               className={cn(
-                "w-full rounded-full bg-white/10 transition-[height,background-color] duration-75",
-                active && (index > BAR_COUNT * 0.8 ? "bg-amber-300" : "bg-gradient-to-t from-cyan-400 to-blue-500")
+                "w-full rounded-full bg-white/[0.08] transition-[height,background-color] duration-75",
+                active && (index > BAR_COUNT * 0.8 ? "bg-ember-3" : "bg-gradient-to-t from-ember-2 to-ember-1")
               )}
               style={{ height: `${20 + (index / BAR_COUNT) * 80}%` }}
             />

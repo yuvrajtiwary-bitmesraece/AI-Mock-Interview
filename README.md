@@ -98,7 +98,7 @@ The browser never talks to the database or Gemini directly and never sees their 
 | Layer | Technology |
 | --- | --- |
 | Framework | [Next.js 16](https://nextjs.org) (App Router, server components and actions, Turbopack), React 19 |
-| UI | Tailwind CSS 3 with design tokens, [shadcn/ui](https://ui.shadcn.com) and Radix UI, Lucide icons, Sonner toasts |
+| UI | Tailwind CSS 3 with "Ember", a custom design system (CSS-variable tokens, CSS-only motion), Geist and Instrument Serif fonts, Lucide icons, Sonner toasts |
 | Auth | [Clerk](https://clerk.com) |
 | Database | [Neon](https://neon.tech) serverless Postgres, [Drizzle ORM](https://orm.drizzle.team) with versioned migrations |
 | AI | Google Gemini via [`@google/genai`](https://www.npmjs.com/package/@google/genai), with a model fallback chain |
@@ -173,7 +173,7 @@ Run `npm run db:migrate` against your database once before the first deploy.
 | `npm run db:generate` | Create a migration after changing `utils/schema.js` |
 | `npm run db:push` | Sync the schema without a migration (quick local experiments only) |
 | `npm run db:studio` | Browse the database in Drizzle Studio |
-| `node scripts/generate-icons.mjs` | Regenerate the favicon and app icons from `public/logo.svg` |
+| `node scripts/generate-icons.mjs` | Draw the logo mark and regenerate the favicon and every app icon |
 
 ## Project structure
 
@@ -192,7 +192,7 @@ app/
       start/             Interview room: questions, answers, instant feedback
       feedback/          Interview report and AI coach summary
   opengraph-image.jsx    Generated social card; robots.js, sitemap.js, manifest.js for SEO and PWA
-components/              UI kit (shadcn/ui), brand, interview widgets and site chrome
+components/              UI kit, brand, landing page illustrations, interview widgets and site chrome
 drizzle/                 Versioned SQL migrations
 utils/
   gemini.js              Gemini client with model fallback and timeouts (server-only)
@@ -253,8 +253,8 @@ This project follows [Semantic Versioning](https://semver.org). Each version is 
 
 ## Acknowledgements
 
-- [Google Gemini](https://ai.google.dev), [Clerk](https://clerk.com), [Neon](https://neon.tech), [Drizzle ORM](https://orm.drizzle.team), [shadcn/ui](https://ui.shadcn.com) and the [Next.js](https://nextjs.org) team.
-- [Plus Jakarta Sans](https://fonts.google.com/specimen/Plus+Jakarta+Sans) and [Geist Mono](https://vercel.com/font), both under the SIL Open Font License.
+- [Google Gemini](https://ai.google.dev), [Clerk](https://clerk.com), [Neon](https://neon.tech), [Drizzle ORM](https://orm.drizzle.team), [Radix UI](https://www.radix-ui.com), [Lucide](https://lucide.dev) and the [Next.js](https://nextjs.org) team.
+- [Geist and Geist Mono](https://vercel.com/font) and [Instrument Serif](https://fonts.google.com/specimen/Instrument+Serif), all under the SIL Open Font License.
 
 ## Contact
 

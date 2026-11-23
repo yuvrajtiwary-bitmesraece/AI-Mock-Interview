@@ -2,70 +2,87 @@
 @tailwind components;
 @tailwind utilities;
 
-/* -------------------------------------------------------------------------- */
-/* Design tokens                                                               */
-/* The app has one dark theme. Colors are HSL channels so Tailwind can apply  */
-/* opacity, e.g. bg-primary/20. shadcn/ui components read the same variables. */
-/* -------------------------------------------------------------------------- */
+/* ========================================================================== */
+/* Ember: the design system of AI Mock Interview.                             */
+/*                                                                            */
+/* There is one dark theme. Colours are bare HSL channels, so Tailwind can    */
+/* give any of them an alpha value: bg-primary/15, border-foreground/10.      */
+/* ========================================================================== */
 
 @layer base {
   :root {
-    --background: 228 45% 4%;
-    --foreground: 210 40% 98%;
+    /* Neutrals: a deep, faintly cool black and a warm white. */
+    --background: 240 8% 4%;
+    --foreground: 36 33% 97%;
+    --card: 240 6% 7%;
+    --card-foreground: 36 33% 97%;
+    --popover: 240 6% 8%;
+    --popover-foreground: 36 33% 97%;
+    --secondary: 240 5% 11%;
+    --secondary-foreground: 36 33% 97%;
+    --muted: 240 5% 12%;
+    --muted-foreground: 240 5% 65%;
+    --accent: 240 5% 13%;
+    --accent-foreground: 36 33% 97%;
+    --border: 240 5% 15%;
+    --input: 240 5% 19%;
 
-    --card: 226 36% 8%;
-    --card-foreground: 210 40% 98%;
-    --popover: 226 36% 8%;
-    --popover-foreground: 210 40% 98%;
+    /* Ember, the brand colour: peach, orange, rose. */
+    --ember-1: 32 100% 79%;
+    --ember-2: 21 100% 62%;
+    --ember-3: 348 88% 64%;
+    --primary: var(--ember-2);
+    --primary-foreground: 240 8% 4%;
+    --ring: var(--ember-2);
 
-    --primary: 189 94% 55%;
-    --primary-foreground: 228 45% 6%;
-    --secondary: 223 30% 14%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 223 30% 13%;
-    --muted-foreground: 217 19% 68%;
-    --accent: 223 30% 16%;
-    --accent-foreground: 210 40% 98%;
+    /* Status. */
+    --destructive: 354 82% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 152 60% 52%;
+    --warning: 44 96% 62%;
 
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 98%;
-    --success: 158 64% 52%;
-    --warning: 38 92% 50%;
+    /* Charts. */
+    --chart-1: var(--ember-2);
+    --chart-2: var(--ember-3);
+    --chart-3: 263 85% 72%;
+    --chart-4: 152 60% 52%;
+    --chart-5: 199 90% 64%;
 
-    --border: 223 28% 17%;
-    --input: 223 28% 20%;
-    --ring: 189 94% 55%;
+    --radius: 0.875rem;
 
-    --chart-1: 189 94% 55%;
-    --chart-2: 217 91% 60%;
-    --chart-3: 258 90% 66%;
-    --chart-4: 158 64% 52%;
-    --chart-5: 38 92% 50%;
-
-    --radius: 0.75rem;
+    /* Motion: long, soft ease-outs are what make movement feel smooth. */
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
   }
 }
 
 @layer base {
   * {
     @apply border-border;
-    scrollbar-width: thin;
-    scrollbar-color: hsl(var(--border)) transparent;
   }
 
   html {
     color-scheme: dark;
     -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+    scrollbar-color: hsl(var(--foreground) / 0.16) transparent;
+    scrollbar-width: thin;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background font-sans text-foreground antialiased;
     min-height: 100dvh;
-    overflow-x: hidden;
+    overflow-x: clip;
   }
 
-  /* Ambient brand glow behind every page. Pages with their own background
-     simply cover it. */
+  /* Warm light from above, plus a fine grain, behind every page. The layer is
+     fixed and static, so scrolling never repaints it. */
   body::before {
     content: "";
     position: fixed;
@@ -73,46 +90,89 @@
     z-index: -1;
     pointer-events: none;
     background:
-      radial-gradient(60rem 36rem at 0% -10%, rgb(34 211 238 / 0.09), transparent 60%),
-      radial-gradient(48rem 32rem at 100% 0%, rgb(139 92 246 / 0.09), transparent 60%);
+      radial-gradient(56rem 30rem at 50% -12%, hsl(var(--ember-2) / 0.11), transparent 70%),
+      radial-gradient(34rem 22rem at 100% 0%, hsl(var(--ember-3) / 0.06), transparent 70%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
   }
 
   ::selection {
     background: hsl(var(--primary) / 0.3);
+    color: hsl(var(--foreground));
   }
 
   h1,
   h2,
-  h3 {
+  h3,
+  h4 {
     @apply tracking-tight;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
   }
 }
 
-/* -------------------------------------------------------------------------- */
-/* Reusable surfaces and text styles                                           */
-/* -------------------------------------------------------------------------- */
+/* ========================================================================== */
+/* Surfaces and text styles                                                    */
+/* ========================================================================== */
 
 @layer components {
-  /* Frosted card used across the app. */
-  .glass {
-    @apply rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl;
+  /* A card: hairline border and a faint top highlight. No backdrop blur: blur
+     behind large areas makes scrolling stutter on many devices. */
+  .surface {
+    @apply rounded-2xl border border-white/[0.07] bg-white/[0.025];
+    box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 0.04);
   }
 
-  .text-gradient {
-    @apply bg-gradient-to-r from-cyan-300 via-sky-400 to-violet-400 bg-clip-text text-transparent;
+  /* A raised card, for the panels that matter most. */
+  .surface-raised {
+    @apply rounded-2xl border border-white/10 bg-card;
+    box-shadow:
+      inset 0 1px 0 0 rgb(255 255 255 / 0.06),
+      0 30px 60px -30px rgb(0 0 0 / 0.85);
   }
 
-  /* Faint grid, used behind hero sections. */
-  .bg-grid {
-    background-image:
-      linear-gradient(to right, rgb(255 255 255 / 0.045) 1px, transparent 1px),
-      linear-gradient(to bottom, rgb(255 255 255 / 0.045) 1px, transparent 1px);
-    background-size: 48px 48px;
+  /* Hover lift for clickable cards. */
+  .surface-hover {
+    transition:
+      border-color 0.4s var(--ease-out),
+      background-color 0.4s var(--ease-out),
+      transform 0.5s var(--ease-out);
+  }
+  .surface-hover:hover {
+    @apply border-white/[0.14] bg-white/[0.04];
+    transform: translateY(-2px);
+  }
+
+  /* The brand gradient, as text. */
+  .text-ember {
+    background-image: linear-gradient(100deg, hsl(var(--ember-1)) 0%, hsl(var(--ember-2)) 48%, hsl(var(--ember-3)) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* The small uppercase label above a section title. */
+  .eyebrow {
+    @apply inline-flex items-center gap-2 font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground;
+  }
+
+  /* A 1px line that fades out at both ends. */
+  .hairline {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.12), transparent);
+  }
+
+  /* Dots behind hero sections. */
+  .bg-dots {
+    background-image: radial-gradient(rgb(255 255 255 / 0.07) 1px, transparent 1px);
+    background-size: 24px 24px;
   }
 
   /* Loading placeholder with a moving sheen. */
   .skeleton {
-    @apply relative overflow-hidden rounded-lg bg-white/[0.06];
+    @apply relative overflow-hidden rounded-lg bg-white/[0.05];
   }
   .skeleton::after {
     content: "";
@@ -120,13 +180,63 @@
     inset: 0;
     transform: translateX(-100%);
     background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.06), transparent);
-    animation: shimmer 1.6s infinite;
+    animation: sheen 1.8s var(--ease-in-out) infinite;
+  }
+
+  /* An endless horizontal scroller with soft edges. It pauses on hover. */
+  .marquee {
+    mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+  }
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    animation: marquee 48s linear infinite;
+  }
+  .marquee:hover .marquee-track {
+    animation-play-state: paused;
+  }
+
+  /* A slowly turning ember border, for the featured plan. */
+  .ember-ring {
+    position: relative;
+    isolation: isolate;
+  }
+  .ember-ring::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    z-index: -1;
+    border-radius: inherit;
+    padding: 1px;
+    background: conic-gradient(
+      from var(--ember-angle),
+      transparent 0turn,
+      hsl(var(--ember-1)) 0.08turn,
+      hsl(var(--ember-2)) 0.16turn,
+      hsl(var(--ember-3)) 0.24turn,
+      transparent 0.34turn,
+      transparent 1turn
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: ember-spin 8s linear infinite;
+    pointer-events: none;
+  }
+
+  /* Accordion rows (the FAQ) built on <details>. */
+  .accordion > summary {
+    list-style: none;
+  }
+  .accordion > summary::-webkit-details-marker {
+    display: none;
   }
 }
 
 @layer utilities {
   .no-scrollbar {
-    -ms-overflow-style: none;
     scrollbar-width: none;
   }
   .no-scrollbar::-webkit-scrollbar {
@@ -134,14 +244,138 @@
   }
 }
 
-/* -------------------------------------------------------------------------- */
-/* Animations                                                                  */
-/* -------------------------------------------------------------------------- */
+/* ========================================================================== */
+/* Motion                                                                      */
+/* ========================================================================== */
 
-@keyframes shimmer {
-  100% {
+@property --ember-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes ember-spin {
+  to {
+    --ember-angle: 360deg;
+  }
+}
+
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes sheen {
+  to {
     transform: translateX(100%);
   }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes settle {
+  from {
+    transform: perspective(1600px) rotateX(14deg) scale(0.95);
+  }
+  to {
+    transform: perspective(1600px) rotateX(0deg) scale(1);
+  }
+}
+
+/* Sections rise into place as they scroll into view. Scroll-driven
+   animations run on the compositor, so they stay smooth, and browsers without
+   them simply show everything. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal {
+      animation: rise linear both;
+      animation-timeline: view();
+      animation-range: entry 4% entry 52%;
+    }
+
+    .settle {
+      animation: settle linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 38%;
+    }
+  }
+}
+
+/* Accordions open and close smoothly where the browser can animate to
+   height: auto. */
+@supports (interpolate-size: allow-keywords) {
+  @media (prefers-reduced-motion: no-preference) {
+    :root {
+      interpolate-size: allow-keywords;
+    }
+
+    .accordion::details-content {
+      height: 0;
+      overflow: clip;
+      transition:
+        height 0.5s var(--ease-out),
+        content-visibility 0.5s allow-discrete;
+    }
+
+    .accordion[open]::details-content {
+      height: auto;
+    }
+  }
+}
+
+/* Modal dialogs (components/ui/dialog.jsx) fade and rise in, and fade out.
+   Browsers without @starting-style just show and hide them. */
+.dialog {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.3s var(--ease-out),
+    transform 0.45s var(--ease-out),
+    overlay 0.3s allow-discrete,
+    display 0.3s allow-discrete;
+}
+
+.dialog:not([open]) {
+  opacity: 0;
+  transform: translateY(10px) scale(0.97);
+}
+
+.dialog::backdrop {
+  background-color: rgb(0 0 0 / 0.65);
+  transition:
+    background-color 0.3s var(--ease-out),
+    overlay 0.3s allow-discrete,
+    display 0.3s allow-discrete;
+}
+
+.dialog:not([open])::backdrop {
+  background-color: rgb(0 0 0 / 0);
+}
+
+@starting-style {
+  .dialog[open] {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+
+  .dialog[open]::backdrop {
+    background-color: rgb(0 0 0 / 0);
+  }
+}
+
+/* The page behind an open dialog doesn't scroll. */
+html:has(.dialog[open]) {
+  overflow: hidden;
 }
 
 /* Respect the operating system's "reduce motion" setting everywhere. */
@@ -156,9 +390,9 @@
   }
 }
 
-/* -------------------------------------------------------------------------- */
+/* ========================================================================== */
 /* Printing ("Save as PDF" on the interview report)                            */
-/* -------------------------------------------------------------------------- */
+/* ========================================================================== */
 
 @media print {
   @page {
@@ -173,10 +407,24 @@
   }
 
   body::before {
-    position: absolute;
+    display: none;
   }
 
-  .glass {
-    backdrop-filter: none;
+  .surface,
+  .surface-raised {
+    box-shadow: none;
+  }
+
+  .reveal,
+  .settle {
+    animation: none !important;
+  }
+
+  /* "Save as PDF" opens every section just before printing: show them fully
+     open, without the opening animation. */
+  .accordion::details-content {
+    height: auto !important;
+    content-visibility: visible !important;
+    transition: none !important;
   }
 }

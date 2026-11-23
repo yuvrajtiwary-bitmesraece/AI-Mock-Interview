@@ -10,7 +10,7 @@ import { READINESS } from "@/utils/report";
 
 const TONES = {
   success: "border-emerald-400/30 bg-emerald-400/10 text-emerald-200",
-  warning: "border-amber-400/30 bg-amber-400/10 text-amber-200",
+  warning: "border-amber-300/30 bg-amber-300/10 text-amber-200",
   danger: "border-red-400/30 bg-red-400/10 text-red-200",
 };
 
@@ -74,14 +74,14 @@ export default function AiReport({ mockId, initialReport }) {
   const readiness = report ? (READINESS[report.readiness] ?? READINESS.almost) : null;
 
   return (
-    <section className="glass relative overflow-hidden p-6 sm:p-8" aria-labelledby="ai-report-title">
+    <section className="surface relative overflow-clip p-6 sm:p-8" aria-labelledby="ai-report-title">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-violet-500/10 blur-3xl"
+        className="pointer-events-none absolute -right-28 -top-28 h-80 w-80 rounded-full bg-[radial-gradient(circle,hsl(var(--ember-2)/0.14),transparent_65%)] print:hidden"
       />
-      <div className="relative mb-6 flex flex-wrap items-center justify-between gap-3">
-        <h2 id="ai-report-title" className="flex items-center gap-2 text-lg font-semibold">
-          <Sparkles className="h-5 w-5 text-violet-300" aria-hidden="true" /> AI coach summary
+      <div className="relative mb-7 flex flex-wrap items-center justify-between gap-3">
+        <h2 id="ai-report-title" className="flex items-center gap-2 text-lg font-semibold tracking-tight">
+          <Sparkles className="h-5 w-5 text-ember-2" aria-hidden="true" /> AI coach summary
         </h2>
         <div className="flex items-center gap-3">
           {readiness && status === "ready" && (
@@ -107,7 +107,7 @@ export default function AiReport({ mockId, initialReport }) {
         {status === "ready" && report && (
           <div className="space-y-7">
             <div>
-              <p className="text-xl font-semibold leading-snug sm:text-2xl">{report.headline}</p>
+              <p className="text-xl font-semibold leading-snug tracking-tight sm:text-2xl">{report.headline}</p>
               {report.summary && <p className="mt-3 leading-relaxed text-foreground/85">{report.summary}</p>}
             </div>
 
@@ -146,13 +146,13 @@ export default function AiReport({ mockId, initialReport }) {
 
             {report.practicePlan?.length > 0 && (
               <div>
-                <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-cyan-200">
+                <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-ember-1">
                   <Target className="h-4 w-4" aria-hidden="true" /> Your practice plan
                 </h3>
                 <ol className="grid gap-3 md:grid-cols-3">
                   {report.practicePlan.map((step, index) => (
-                    <li key={step.topic} className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
-                      <span className="font-mono text-xs text-muted-foreground">Step {index + 1}</span>
+                    <li key={step.topic} className="rounded-xl border border-white/[0.07] bg-black/20 p-5">
+                      <span className="font-serif text-2xl italic text-ember-2/80">0{index + 1}</span>
                       <p className="mt-1 font-semibold">{step.topic}</p>
                       <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{step.action}</p>
                     </li>

@@ -4,22 +4,13 @@ import { useRef, useState } from "react";
 import Link from "next/link";
 import Webcam from "react-webcam";
 import { toast } from "sonner";
-import {
-  ArrowLeft,
-  Camera,
-  CameraOff,
-  CircleAlert,
-  CircleCheck,
-  FileText,
-  Lightbulb,
-  Play,
-  ShieldCheck,
-} from "lucide-react";
+import { Camera, CameraOff, CircleAlert, CircleCheck, FileText, Lightbulb, Play, ShieldCheck } from "lucide-react";
 
 import { MicCheck } from "@/components/interview/MicCheck";
 import { useRecordingSupport, useSpeechSupport } from "@/components/interview/useSpeechSupport";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Accent, PageHeader } from "@/components/ui/page-header";
 import { difficultyLabel, interviewTips, interviewTypeLabel } from "@/utils/interview-options";
 
 const STEPS = [
@@ -28,7 +19,7 @@ const STEPS = [
   { title: "Get instant feedback", text: "Each answer is scored on four skills with tips, and you get a coaching report at the end." },
 ];
 
-/** Pre-interview screen: what to expect, tips, and a camera and microphone check. */
+/** The screen before the interview: what to expect, tips, and a camera and microphone check. */
 export default function InterviewLobby({ interview, questionCount }) {
   const [cameraOn, setCameraOn] = useState(false);
   const webcamRef = useRef(null);
@@ -42,63 +33,59 @@ export default function InterviewLobby({ interview, questionCount }) {
   };
 
   const minutes = Math.max(5, Math.round(questionCount * 2.5));
+  const years = `${interview.jobExperience} ${interview.jobExperience === "1" ? "year" : "years"} of experience`;
 
   return (
     <div className="mx-auto max-w-6xl">
-      <Link
-        href="/dashboard"
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
-      >
-        <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Dashboard
-      </Link>
+      <PageHeader
+        className="mb-10"
+        back={{ href: "/dashboard", label: "Dashboard" }}
+        eyebrow="Get ready"
+        title={
+          <>
+            Your <Accent>{interviewTypeLabel(interview.interviewType).toLowerCase()} interview</Accent>
+          </>
+        }
+        description={`${interview.jobPosition}${interview.company ? ` at ${interview.company}` : ""} · ${years}`}
+      />
+      <div className="-mt-4 mb-10 flex flex-wrap gap-2">
+        <Badge variant="primary">{interviewTypeLabel(interview.interviewType)}</Badge>
+        <Badge>{difficultyLabel(interview.difficulty)}</Badge>
+        <Badge>{questionCount} questions</Badge>
+        <Badge>About {minutes} min</Badge>
+        {interview.resumeUsed && (
+          <Badge variant="success">
+            <FileText className="h-3 w-3" aria-hidden="true" /> Tailored to your resume
+          </Badge>
+        )}
+      </div>
 
-      <header className="mb-8 mt-4">
-        <h1 className="text-3xl font-bold sm:text-4xl">
-          Get ready for your <span className="text-gradient">{interviewTypeLabel(interview.interviewType).toLowerCase()} interview</span>
-        </h1>
-        <p className="mt-2 text-lg text-muted-foreground">
-          {interview.jobPosition}
-          {interview.company ? ` at ${interview.company}` : ""} · {interview.jobExperience} {interview.jobExperience === "1" ? "year" : "years"} of experience
-        </p>
-        <div className="mt-4 flex flex-wrap gap-2">
-          <Badge variant="primary">{interviewTypeLabel(interview.interviewType)}</Badge>
-          <Badge variant="violet">{difficultyLabel(interview.difficulty)}</Badge>
-          <Badge>{questionCount} questions</Badge>
-          <Badge>About {minutes} min</Badge>
-          {interview.resumeUsed && (
-            <Badge variant="success">
-              <FileText className="h-3 w-3" aria-hidden="true" /> Tailored to your resume
-            </Badge>
-          )}
-        </div>
-      </header>
-
-      <div className="grid gap-6 lg:grid-cols-5">
-        <div className="space-y-6 lg:col-span-3">
-          <section className="glass p-6">
-            <h2 className="text-lg font-semibold">How it works</h2>
-            <ol className="mt-5 space-y-5">
+      <div className="grid gap-4 lg:grid-cols-5">
+        <div className="space-y-4 lg:col-span-3">
+          <section className="surface p-6 sm:p-7">
+            <h2 className="text-lg font-semibold tracking-tight">How it works</h2>
+            <ol className="mt-6 space-y-6">
               {STEPS.map((step, index) => (
                 <li key={step.title} className="flex gap-4">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/15 font-mono text-sm font-semibold text-primary">
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-white/10 bg-[#0c0c0f] font-mono text-sm font-medium text-ember-2">
                     {index + 1}
                   </span>
                   <div>
                     <p className="font-medium">{step.title}</p>
-                    <p className="text-sm text-muted-foreground">{step.text}</p>
+                    <p className="mt-0.5 text-sm leading-relaxed text-muted-foreground">{step.text}</p>
                   </div>
                 </li>
               ))}
             </ol>
           </section>
 
-          <section className="rounded-2xl border border-amber-400/25 bg-amber-400/[0.06] p-6">
-            <h2 className="flex items-center gap-2 text-lg font-semibold text-amber-200">
-              <Lightbulb className="h-5 w-5" aria-hidden="true" /> Tips for this interview
+          <section className="rounded-2xl border border-amber-300/20 bg-amber-300/[0.05] p-6 sm:p-7">
+            <h2 className="flex items-center gap-2 text-lg font-semibold tracking-tight text-amber-100">
+              <Lightbulb className="h-5 w-5 text-amber-300" aria-hidden="true" /> Tips for this interview
             </h2>
-            <ul className="mt-4 space-y-2.5">
+            <ul className="mt-5 space-y-3">
               {interviewTips(interview.interviewType).map((tip) => (
-                <li key={tip} className="flex gap-2.5 text-sm text-amber-50/90">
+                <li key={tip} className="flex gap-2.5 text-sm leading-relaxed text-amber-50/85">
                   <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-300" aria-hidden="true" />
                   {tip}
                 </li>
@@ -106,22 +93,23 @@ export default function InterviewLobby({ interview, questionCount }) {
             </ul>
           </section>
 
-          <p className="flex items-start gap-2 text-sm text-muted-foreground">
+          <p className="flex items-start gap-2.5 px-1 text-sm leading-relaxed text-muted-foreground">
             <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" aria-hidden="true" />
-            Your camera preview never leaves your device. Voice answers are sent to Google Gemini once to be transcribed and are never stored. Only the text of your answers is saved, so you can review your feedback.
+            Your camera preview never leaves your device. Voice answers are sent to Google Gemini once to be transcribed and are never stored. Only
+            the text of your answers is saved, so you can review your feedback.
           </p>
         </div>
 
-        <aside className="space-y-6 lg:col-span-2">
-          <section className="glass p-6">
-            <h2 className="text-lg font-semibold">Check your setup</h2>
+        <aside className="space-y-4 lg:col-span-2">
+          <section className="surface p-6 sm:p-7">
+            <h2 className="text-lg font-semibold tracking-tight">Check your setup</h2>
 
-            <div className="mt-5">
+            <div className="mt-6">
               <p className="mb-3 text-sm font-medium">Microphone</p>
               <MicCheck />
             </div>
 
-            <div className="mt-6 border-t border-white/10 pt-6">
+            <div className="mt-7 border-t border-white/[0.07] pt-7">
               <div className="mb-3 flex items-center justify-between">
                 <p className="text-sm font-medium">
                   Camera <span className="font-normal text-muted-foreground">(optional)</span>
@@ -136,7 +124,7 @@ export default function InterviewLobby({ interview, questionCount }) {
                   </Button>
                 )}
               </div>
-              <div className="flex aspect-video items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-black/40">
+              <div className="grid aspect-video place-items-center overflow-hidden rounded-xl border border-white/[0.08] bg-black/40">
                 {cameraOn ? (
                   <Webcam
                     ref={webcamRef}
@@ -149,14 +137,14 @@ export default function InterviewLobby({ interview, questionCount }) {
                     className="h-full w-full object-cover"
                   />
                 ) : (
-                  <p className="px-6 text-center text-sm text-muted-foreground">
+                  <p className="px-6 text-center text-sm leading-relaxed text-muted-foreground">
                     A camera helps you practice eye contact and body language. It stays on your device.
                   </p>
                 )}
               </div>
             </div>
 
-            <div className="mt-6 border-t border-white/10 pt-6">
+            <div className="mt-7 border-t border-white/[0.07] pt-7">
               {canRecord === false ? (
                 <p className="flex items-start gap-2 text-sm text-amber-200">
                   <CircleAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />

@@ -21,7 +21,7 @@ import {
 import { formatDisplayDate } from "@/utils/dates";
 import { difficultyLabel, interviewTypeLabel } from "@/utils/interview-options";
 
-/** One interview on the dashboard: settings, progress, score and next step. */
+/** One interview on the dashboard: its settings, progress, score and next step. */
 export default function InterviewItemCard({ interview, onDeleted }) {
   const [open, setOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -29,6 +29,9 @@ export default function InterviewItemCard({ interview, onDeleted }) {
   const { mockId, answeredCount, questionCount } = interview;
   const base = `/dashboard/interview/${mockId}`;
   const finished = questionCount > 0 && answeredCount >= questionCount;
+  const progress = questionCount ? (answeredCount / questionCount) * 100 : 0;
+  const created = formatDisplayDate(interview.createdOn ? new Date(interview.createdOn) : null);
+  const years = `${interview.jobExperience} ${interview.jobExperience === "1" ? "year" : "years"}`;
 
   const remove = async () => {
     setDeleting(true);
@@ -48,46 +51,46 @@ export default function InterviewItemCard({ interview, onDeleted }) {
   };
 
   return (
-    <article className="glass flex flex-col p-5 transition-colors hover:border-white/20">
+    <article className="surface surface-hover flex flex-col p-5 sm:p-6">
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-wrap gap-1.5">
           <Badge variant="primary">{interviewTypeLabel(interview.interviewType)}</Badge>
-          <Badge variant="violet">{difficultyLabel(interview.difficulty)}</Badge>
+          <Badge>{difficultyLabel(interview.difficulty)}</Badge>
           {interview.resumeUsed && <Badge variant="success">Resume</Badge>}
         </div>
         {answeredCount > 0 && <ScoreBadge score={interview.score} />}
       </div>
 
-      <h3 className="mt-4 text-lg font-semibold leading-snug">{interview.jobPosition}</h3>
+      <h3 className="mt-5 text-lg font-semibold leading-snug tracking-tight">{interview.jobPosition}</h3>
       <p className="mt-1 text-sm text-muted-foreground">
         {interview.company ? `${interview.company} · ` : ""}
-        {interview.jobExperience} {interview.jobExperience === "1" ? "year" : "years"} · {formatDisplayDate(interview.createdOn ? new Date(interview.createdOn) : null)}
+        {years} · {created}
       </p>
 
-      <div className="mt-5">
-        <div className="mb-1.5 flex justify-between text-xs text-muted-foreground">
+      <div className="mt-6">
+        <div className="mb-2 flex justify-between text-xs text-muted-foreground">
           <span>
             {answeredCount} of {questionCount} answered
           </span>
           {finished && <span className="text-emerald-300">Complete</span>}
         </div>
-        <div className="h-1.5 overflow-hidden rounded-full bg-white/10" aria-hidden="true">
+        <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.07]" aria-hidden="true">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-blue-500"
-            style={{ width: `${questionCount ? (answeredCount / questionCount) * 100 : 0}%` }}
+            className="h-full rounded-full bg-[linear-gradient(90deg,hsl(var(--ember-1)),hsl(var(--ember-2))_60%,hsl(var(--ember-3)))]"
+            style={{ width: `${progress}%` }}
           />
         </div>
       </div>
 
-      <div className="mt-5 flex items-center gap-2 pt-1">
+      <div className="mt-6 flex items-center gap-2">
         {finished ? (
-          <Button asChild variant="gradient" size="sm" className="flex-1">
+          <Button asChild size="sm" className="flex-1">
             <Link href={`${base}/feedback`}>
               <FileText /> View report
             </Link>
           </Button>
         ) : (
-          <Button asChild variant="gradient" size="sm" className="flex-1">
+          <Button asChild size="sm" className="flex-1">
             <Link href={answeredCount > 0 ? `${base}/start` : base}>
               <Play /> {answeredCount > 0 ? "Continue" : "Start"}
             </Link>
@@ -103,20 +106,21 @@ export default function InterviewItemCard({ interview, onDeleted }) {
 
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button variant="destructive-soft" size="icon" className="h-8 w-8" aria-label={`Delete the ${interview.jobPosition} interview`}>
+            <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-red-500/10 hover:text-red-300" aria-label={`Delete the ${interview.jobPosition} interview`}>
               <Trash2 />
             </Button>
           </DialogTrigger>
-          <DialogContent className="border-white/10 bg-[#0b1020]">
+          <DialogContent>
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <TriangleAlert className="h-5 w-5 text-amber-300" aria-hidden="true" /> Delete this interview?
-              </DialogTitle>
+              <span className="grid h-11 w-11 place-items-center rounded-xl border border-amber-300/25 bg-amber-300/10">
+                <TriangleAlert className="h-5 w-5 text-amber-200" aria-hidden="true" />
+              </span>
+              <DialogTitle className="mt-2">Delete this interview?</DialogTitle>
               <DialogDescription>
                 &ldquo;{interview.jobPosition}&rdquo; and all of its answers and feedback will be permanently deleted. This can&apos;t be undone.
               </DialogDescription>
             </DialogHeader>
-            <DialogFooter className="gap-2">
+            <DialogFooter>
               <Button variant="glass" onClick={() => setOpen(false)} disabled={deleting}>
                 Cancel
               </Button>

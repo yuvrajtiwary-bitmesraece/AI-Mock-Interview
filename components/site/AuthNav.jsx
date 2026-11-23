@@ -7,16 +7,16 @@ import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 /**
- * Header buttons for public pages. Decided in the browser, so the public pages
- * can stay static (checking the session on the server would make every
- * visit server-rendered). Signed-out buttons show until Clerk has loaded.
+ * The header buttons on public pages. They are decided in the browser, so the
+ * public pages stay static: checking the session on the server would render
+ * every visit on demand. Until Clerk loads, the signed-out buttons show.
  */
 export function AuthNav() {
   const { isLoaded, isSignedIn } = useAuth();
 
   if (isLoaded && isSignedIn) {
     return (
-      <Button asChild variant="gradient" size="sm">
+      <Button asChild size="sm" className="h-9 px-4">
         <Link href="/dashboard">
           Dashboard <ArrowRight />
         </Link>
@@ -26,10 +26,10 @@ export function AuthNav() {
 
   return (
     <>
-      <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
+      <Button asChild variant="ghost" size="sm" className="hidden h-9 px-4 sm:inline-flex">
         <Link href="/sign-in">Sign in</Link>
       </Button>
-      <Button asChild variant="gradient" size="sm">
+      <Button asChild size="sm" className="h-9 px-4">
         <Link href="/sign-up">
           Get started <ArrowRight />
         </Link>

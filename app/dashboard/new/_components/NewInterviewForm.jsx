@@ -40,21 +40,20 @@ const TYPE_ICONS = {
   mixed: Shuffle,
 };
 
-const fieldClass = "bg-white/[0.04] border-white/10 placeholder:text-muted-foreground/70 focus-visible:ring-primary";
-
 function formatBytes(bytes) {
   return bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
 
+/** A numbered card of the form. */
 function Section({ step, title, description, children }) {
   return (
-    <section className="glass p-6 sm:p-8">
-      <div className="mb-6 flex items-start gap-4">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/15 font-mono text-sm font-semibold text-primary">
+    <section className="surface p-6 sm:p-8">
+      <div className="mb-7 flex items-start gap-4">
+        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-white/10 bg-[#0c0c0f] font-mono text-sm font-medium text-ember-2 shadow-[inset_0_1px_0_rgb(255_255_255/0.06)]">
           {step}
         </span>
         <div>
-          <h2 className="text-lg font-semibold">{title}</h2>
+          <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
           {description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}
         </div>
       </div>
@@ -71,7 +70,7 @@ function Field({ id, label, hint, optional, children }) {
           {label}
           {optional && <span className="ml-1.5 font-normal text-muted-foreground">(optional)</span>}
         </span>
-        {hint && <span className="text-xs font-normal text-muted-foreground">{hint}</span>}
+        {hint && <span className="font-mono text-[11px] font-normal text-muted-foreground">{hint}</span>}
       </label>
       {children}
     </div>
@@ -110,7 +109,7 @@ export default function NewInterviewForm({ defaultQuestionCount, defaultType = "
   const type = INTERVIEW_TYPES[values.interviewType];
   const outOfInterviews = remainingToday === 0;
 
-  // Cycle through progress messages while waiting for the AI.
+  // Cycle through the progress messages while waiting for the AI.
   useEffect(() => {
     if (!submitting) return;
     const timer = setInterval(() => setProgress((step) => Math.min(step + 1, 3)), 3500);
@@ -148,7 +147,7 @@ export default function NewInterviewForm({ defaultQuestionCount, defaultType = "
     event.preventDefault();
     setError("");
 
-    // Same rules the server applies, checked here first for instant feedback.
+    // The same rules the server applies, checked here first for instant feedback.
     const check = parseInterviewSettings(values);
     if (!check.ok) {
       setError(check.error);
@@ -177,11 +176,11 @@ export default function NewInterviewForm({ defaultQuestionCount, defaultType = "
   };
 
   return (
-    <form onSubmit={onSubmit} className="space-y-6" noValidate>
+    <form onSubmit={onSubmit} className="space-y-4" noValidate>
       {/* Templates */}
-      <div>
-        <p className="mb-3 flex items-center gap-2 text-sm font-medium text-muted-foreground">
-          <Sparkles className="h-4 w-4 text-primary" aria-hidden="true" /> Start from a template
+      <div className="pb-4">
+        <p className="mb-3 flex items-center gap-2 text-sm text-muted-foreground">
+          <Sparkles className="h-4 w-4 text-ember-2" aria-hidden="true" /> Start from a template
         </p>
         <div className="flex flex-wrap gap-2">
           {TEMPLATES.map((template) => (
@@ -190,7 +189,7 @@ export default function NewInterviewForm({ defaultQuestionCount, defaultType = "
               type="button"
               onClick={() => applyTemplate(template)}
               disabled={submitting}
-              className="rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1.5 text-sm text-foreground/90 transition-colors hover:border-primary/50 hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+              className="rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-1.5 text-[13px] text-foreground/85 transition-colors duration-300 hover:border-primary/40 hover:bg-primary/[0.07] hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/70 disabled:opacity-50"
             >
               {template.name}
             </button>
@@ -208,18 +207,10 @@ export default function NewInterviewForm({ defaultQuestionCount, defaultType = "
               placeholder="e.g. Frontend Developer"
               maxLength={120}
               required
-              className={fieldClass}
             />
           </Field>
           <Field id="company" label="Company" optional>
-            <Input
-              id="company"
-              value={values.company}
-              onChange={update("company")}
-              placeholder="e.g. Atlassian"
-              maxLength={120}
-              className={fieldClass}
-            />
+            <Input id="company" value={values.company} onChange={update("company")} placeholder="e.g. Atlassian" maxLength={120} />
           </Field>
           <Field id="jobExperience" label="Years of experience">
             <Input
@@ -232,7 +223,6 @@ export default function NewInterviewForm({ defaultQuestionCount, defaultType = "
               onChange={update("jobExperience")}
               placeholder="0–50"
               required
-              className={fieldClass}
             />
           </Field>
           <Field id="techStacks" label="Tech stack or key skills" optional={!type.needsTechStack}>
@@ -242,7 +232,6 @@ export default function NewInterviewForm({ defaultQuestionCount, defaultType = "
               onChange={update("techStacks")}
               placeholder={type.needsTechStack ? "e.g. React, Node.js, PostgreSQL" : "e.g. stakeholder management, roadmaps"}
               maxLength={500}
-              className={fieldClass}
             />
           </Field>
           <div className="sm:col-span-2">
@@ -253,7 +242,7 @@ export default function NewInterviewForm({ defaultQuestionCount, defaultType = "
                 onChange={update("jobDescription")}
                 placeholder="Paste the job posting, or describe the responsibilities."
                 maxLength={5000}
-                className={cn(fieldClass, "min-h-[120px]")}
+                className="min-h-[132px]"
               />
             </Field>
           </div>
@@ -271,8 +260,8 @@ export default function NewInterviewForm({ defaultQuestionCount, defaultType = "
                 <label
                   key={id}
                   className={cn(
-                    "relative flex cursor-pointer gap-3 rounded-xl border border-white/10 bg-white/[0.02] p-4 transition-colors hover:border-white/20 hover:bg-white/[0.05] has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring",
-                    selected && "border-primary/60 bg-primary/10 hover:border-primary/60 hover:bg-primary/10"
+                    "relative flex cursor-pointer gap-3.5 rounded-xl border border-white/[0.08] bg-black/20 p-4 transition-[border-color,background-color,transform] duration-300 ease-out-expo hover:-translate-y-0.5 hover:border-white/15 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring/70",
+                    selected && "border-primary/50 bg-primary/[0.07] hover:border-primary/50"
                   )}
                 >
                   <input
@@ -285,34 +274,34 @@ export default function NewInterviewForm({ defaultQuestionCount, defaultType = "
                   />
                   <span
                     className={cn(
-                      "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/5 text-muted-foreground",
-                      selected && "bg-primary/20 text-primary"
+                      "grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-white/[0.05] text-muted-foreground transition-colors duration-300",
+                      selected && "bg-primary/15 text-ember-2"
                     )}
                   >
                     <Icon className="h-5 w-5" aria-hidden="true" />
                   </span>
-                  <span>
-                    <span className="block font-semibold">{option.label}</span>
-                    <span className="mt-0.5 block text-sm text-muted-foreground">{option.description}</span>
+                  <span className="pr-4">
+                    <span className="block font-medium">{option.label}</span>
+                    <span className="mt-0.5 block text-sm leading-snug text-muted-foreground">{option.description}</span>
                   </span>
-                  {selected && <CircleCheck className="absolute right-3 top-3 h-4 w-4 text-primary" aria-hidden="true" />}
+                  {selected && <CircleCheck className="absolute right-3 top-3 h-4 w-4 text-ember-2" aria-hidden="true" />}
                 </label>
               );
             })}
           </div>
         </fieldset>
 
-        <div className="mt-8 grid gap-8 md:grid-cols-2">
+        <div className="mt-9 grid gap-8 md:grid-cols-2">
           <fieldset>
             <legend className="mb-3 text-sm font-medium">Difficulty</legend>
-            <div className="grid grid-cols-3 gap-1 rounded-xl border border-white/10 bg-white/[0.02] p-1">
+            <div className="grid grid-cols-3 gap-1 rounded-full border border-white/[0.08] bg-black/20 p-1">
               {Object.entries(DIFFICULTIES).map(([id, option]) => (
                 <label
                   key={id}
                   title={option.description}
                   className={cn(
-                    "cursor-pointer rounded-lg px-3 py-2 text-center text-sm font-medium text-muted-foreground transition-colors hover:text-foreground has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring",
-                    values.difficulty === id && "bg-primary/15 text-foreground"
+                    "cursor-pointer rounded-full px-3 py-2 text-center text-sm font-medium text-muted-foreground transition-[background-color,color,box-shadow] duration-300 ease-out-expo hover:text-foreground has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring/70",
+                    values.difficulty === id && "bg-white/[0.09] text-foreground shadow-[inset_0_1px_0_rgb(255_255_255/0.08)]"
                   )}
                 >
                   <input
@@ -327,13 +316,13 @@ export default function NewInterviewForm({ defaultQuestionCount, defaultType = "
                 </label>
               ))}
             </div>
-            <p className="mt-2 text-xs text-muted-foreground">{DIFFICULTIES[values.difficulty].description}</p>
+            <p className="mt-2.5 text-xs text-muted-foreground">{DIFFICULTIES[values.difficulty].description}</p>
           </fieldset>
 
           <div>
             <label htmlFor="questionCount" className="mb-3 flex items-baseline justify-between text-sm font-medium">
               <span>Number of questions</span>
-              <span className="font-mono text-lg font-semibold text-primary">{values.questionCount}</span>
+              <span className="font-serif text-2xl italic text-ember-2">{values.questionCount}</span>
             </label>
             <input
               id="questionCount"
@@ -343,7 +332,7 @@ export default function NewInterviewForm({ defaultQuestionCount, defaultType = "
               step={1}
               value={values.questionCount}
               onChange={update("questionCount")}
-              className="w-full accent-cyan-400"
+              className="w-full rounded-full accent-[#ff813d] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-4 focus-visible:ring-offset-card"
             />
             <p className="mt-2 text-xs text-muted-foreground">
               About {Math.round(Number(values.questionCount) * 2.5)} minutes if you answer each in two to three minutes.
@@ -358,8 +347,8 @@ export default function NewInterviewForm({ defaultQuestionCount, defaultType = "
         description="Optional. The interviewer will ask about your real projects and experience."
       >
         {resume ? (
-          <div className="flex items-center gap-4 rounded-xl border border-emerald-400/30 bg-emerald-400/[0.06] p-4">
-            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-400/15 text-emerald-300">
+          <div className="flex items-center gap-4 rounded-xl border border-emerald-400/25 bg-emerald-400/[0.06] p-4">
+            <span className="grid h-10 w-10 place-items-center rounded-lg bg-emerald-400/15 text-emerald-300">
               <FileText className="h-5 w-5" aria-hidden="true" />
             </span>
             <div className="min-w-0 flex-1">
@@ -384,13 +373,15 @@ export default function NewInterviewForm({ defaultQuestionCount, defaultType = "
               chooseResume(event.dataTransfer.files?.[0]);
             }}
             className={cn(
-              "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-white/15 bg-white/[0.02] px-6 py-10 text-center transition-colors hover:border-primary/50 hover:bg-primary/[0.04] has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring",
-              dragging && "border-primary/70 bg-primary/10"
+              "group flex cursor-pointer flex-col items-center justify-center gap-2.5 rounded-xl border border-dashed border-white/15 bg-black/20 px-6 py-12 text-center transition-colors duration-300 hover:border-primary/40 hover:bg-primary/[0.04] has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring/70",
+              dragging && "border-primary/60 bg-primary/[0.08]"
             )}
           >
-            <Upload className="h-6 w-6 text-primary" aria-hidden="true" />
+            <span className="grid h-11 w-11 place-items-center rounded-xl bg-primary/10 text-ember-2 transition-transform duration-500 ease-out-expo group-hover:-translate-y-0.5">
+              <Upload className="h-5 w-5" aria-hidden="true" />
+            </span>
             <span className="font-medium">
-              Drop your resume here or <span className="text-primary underline underline-offset-4">browse</span>
+              Drop your resume here or <span className="text-ember-1 underline decoration-ember-2/50 underline-offset-4">browse</span>
             </span>
             <span className="text-sm text-muted-foreground">PDF, up to 4 MB</span>
             <input
@@ -410,12 +401,12 @@ export default function NewInterviewForm({ defaultQuestionCount, defaultType = "
       </Section>
 
       {error && (
-        <p role="alert" className="rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-200">
+        <p role="alert" className="rounded-xl border border-red-400/25 bg-red-500/10 px-4 py-3 text-sm text-red-200">
           {error}
         </p>
       )}
 
-      <div className="flex flex-col-reverse items-center justify-between gap-4 sm:flex-row">
+      <div className="flex flex-col-reverse items-center justify-between gap-4 pt-4 sm:flex-row">
         <p className="text-sm text-muted-foreground">
           {remainingToday === null
             ? "Generation takes about 10 seconds."

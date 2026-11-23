@@ -8,6 +8,7 @@ import { Download, LoaderCircle, Trash2, TriangleAlert, UserRound } from "lucide
 
 import { deleteMyData, exportMyData } from "@/actions/interview";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -100,11 +101,12 @@ export function DeleteAllButton() {
           <Trash2 /> Delete all my data
         </Button>
       </DialogTrigger>
-      <DialogContent className="border-white/10 bg-[#0b1020]">
+      <DialogContent>
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <TriangleAlert className="h-5 w-5 text-amber-300" aria-hidden="true" /> Delete all your data?
-          </DialogTitle>
+          <span className="grid h-11 w-11 place-items-center rounded-xl border border-red-400/25 bg-red-400/10">
+            <TriangleAlert className="h-5 w-5 text-red-300" aria-hidden="true" />
+          </span>
+          <DialogTitle className="mt-2">Delete all your data?</DialogTitle>
           <DialogDescription>
             Every interview, answer, piece of feedback and report you have will be permanently deleted. This can&apos;t be undone. Your
             sign-in account stays; delete it from Manage account if you want to.
@@ -112,14 +114,14 @@ export function DeleteAllButton() {
         </DialogHeader>
         <label className="block text-sm">
           Type <span className="font-mono font-semibold">DELETE</span> to confirm
-          <input
+          <Input
             value={confirmation}
             onChange={(event) => setConfirmation(event.target.value)}
             autoComplete="off"
-            className="mt-2 h-10 w-full rounded-lg border border-white/10 bg-white/[0.04] px-3 font-mono focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="mt-2 font-mono"
           />
         </label>
-        <DialogFooter className="gap-2">
+        <DialogFooter>
           <Button variant="glass" onClick={() => setOpen(false)} disabled={pending}>
             Cancel
           </Button>

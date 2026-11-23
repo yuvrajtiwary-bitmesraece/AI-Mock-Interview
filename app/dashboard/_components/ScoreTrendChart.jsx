@@ -4,10 +4,10 @@ import { useEffect, useRef, useState } from "react";
 
 import { formatDisplayDate } from "@/utils/dates";
 
-// Series color: cyan-600, validated for the dark chart surface (OKLCH L inside
-// the dark band, chroma >= 0.1, >= 3:1 contrast) with the dataviz validator.
-const LINE_COLOR = "#0891b2";
-const SURFACE = "#0c0e15";
+// Series colour: the brand orange (--ember-2), about 8:1 against the dark card,
+// well above the 3:1 a chart line needs.
+const LINE_COLOR = "#ff813d";
+const SURFACE = "#0e0e11";
 const GRID = "rgb(255 255 255 / 0.08)";
 const HEIGHT = 220;
 const MARGIN = { top: 16, right: 40, bottom: 28, left: 28 };
@@ -77,7 +77,7 @@ export default function ScoreTrendChart({ points }) {
 
             {points.length > 1 && (
               <>
-                <path d={areaPath} fill={LINE_COLOR} fillOpacity="0.1" />
+                <path d={areaPath} fill={LINE_COLOR} fillOpacity="0.08" />
                 <path d={linePath} fill="none" stroke={LINE_COLOR} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
               </>
             )}
@@ -121,7 +121,7 @@ export default function ScoreTrendChart({ points }) {
         {point && (
           <div
             role="status"
-            className="pointer-events-none absolute z-10 w-max max-w-[220px] -translate-x-1/2 -translate-y-full rounded-lg border border-white/10 bg-[#0b1020]/95 px-3 py-2 shadow-xl"
+            className="pointer-events-none absolute z-10 w-max max-w-[220px] -translate-x-1/2 -translate-y-full rounded-xl border border-white/10 bg-[#141417]/95 px-3 py-2 shadow-[0_16px_40px_-12px_rgb(0_0_0/0.8)]"
             style={{ left: x(active), top: y(point.score) - 12 }}
           >
             <p className="text-base font-semibold">
@@ -135,7 +135,7 @@ export default function ScoreTrendChart({ points }) {
       </div>
 
       <details className="mt-3 text-sm">
-        <summary className="cursor-pointer text-muted-foreground hover:text-foreground">View as a table</summary>
+        <summary className="cursor-pointer text-muted-foreground transition-colors duration-300 hover:text-foreground">View as a table</summary>
         <table className="mt-3 w-full text-left">
           <thead className="text-xs text-muted-foreground">
             <tr>
