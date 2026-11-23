@@ -113,6 +113,21 @@ export function answersSignature(rows) {
     .join("|");
 }
 
+/** How long after the last answer the report page may wait for the report being written in the background. */
+export const REPORT_WAIT_WINDOW_MS = 15_000;
+
+/**
+ * How long the report page should wait, in ms, for the coaching report that
+ * saveAnswer starts writing in the background once every question has an
+ * answer (0: don't wait). It only waits when the last answer was saved
+ * moments ago, so the report is probably still being written.
+ */
+export function reportWaitMs(rows, questionCount, now = Date.now()) {
+  if (rows.length === 0 || rows.length < questionCount) return 0;
+  const lastSavedAt = Math.max(...rows.map((row) => new Date(row.createdOn ?? 0).getTime() || 0));
+  return Math.min(REPORT_WAIT_WINDOW_MS, Math.max(0, lastSavedAt + REPORT_WAIT_WINDOW_MS - now));
+}
+
 /** A 0-5 score as a whole percentage, or null. */
 export function scorePercent(score) {
   return Number.isFinite(score) ? Math.round((score / 5) * 100) : null;

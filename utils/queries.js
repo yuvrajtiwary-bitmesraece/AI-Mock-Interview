@@ -121,6 +121,45 @@ export async function getAllUserData(viewer) {
   }));
 }
 
+/**
+ * The interview with `mockId` and its saved answers (oldest first), if `viewer`
+ * owns it. Both reads run at the same time, which saves a database round trip;
+ * the answers are only returned when the interview turns out to be the viewer's.
+ */
+export async function getOwnedInterviewWithAnswers(viewer, mockId) {
+  if (!viewer || typeof mockId !== "string" || mockId.length > 64) return { interview: null, answers: [] };
+
+  const [interview, answers] = await Promise.all([getOwnedInterview(viewer, mockId), getAnswersForInterview(mockId)]);
+  return interview ? { interview, answers } : { interview: null, answers: [] };
+}
+
+/**
+ * Waits up to `timeoutMs` for the interview's coaching report with `signature`
+ * to be saved (saveAnswer writes it in the background) and returns it, or null
+ * if it isn't saved in time. Never throws: the caller can always fall back to
+ * writing the report itself. Check ownership before calling.
+ */
+export async function waitForReport(mockId, signature, timeoutMs) {
+  const deadline = Date.now() + timeoutMs;
+  let logged = false;
+  while (Date.now() < deadline) {
+    await new Promise((resolve) => setTimeout(resolve, 700));
+    try {
+      const [row] = await getDb()
+        .select({ report: MockInterview.report })
+        .from(MockInterview)
+        .where(eq(MockInterview.mockId, mockId))
+        .limit(1);
+      if (row?.report?.signature === signature) return row.report;
+    } catch (error) {
+      // Checked again on the next round; logged once.
+      if (!logged) console.error("[report] checking for the prepared report failed:", error);
+      logged = true;
+    }
+  }
+  return null;
+}
+
 /** Saved answers for an interview, oldest first. Check ownership before calling. */
 export async function getAnswersForInterview(mockId) {
   return withRetry(() =>

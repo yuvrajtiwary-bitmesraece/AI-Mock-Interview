@@ -28,7 +28,9 @@ const scoreFill = (score) =>
 /** Animated level bars, like a voice being recorded. */
 function Waveform({ bars = WAVE, className }) {
   return (
-    <div className={cn("flex items-center gap-[3px]", className)}>
+    // overflow-hidden gives the moving bars known bounds, so the browser doesn't
+    // move everything painted after them onto separate layers.
+    <div className={cn("flex items-center gap-[3px] overflow-hidden", className)}>
       {bars.map((height, index) => (
         <span
           key={index}
@@ -86,10 +88,10 @@ export function ProductWindow() {
               <div className="mt-6 rounded-xl border border-white/[0.07] bg-white/[0.02] p-4">
                 <div className="flex items-center gap-3">
                   <span className="relative flex h-2.5 w-2.5">
-                    <span className="absolute inset-0 animate-ping rounded-full bg-red-500/60" />
+                    <span className="absolute -inset-1 animate-pulse rounded-full bg-red-500/30" />
                     <span className="relative h-2.5 w-2.5 rounded-full bg-red-500" />
                   </span>
-                  <Waveform className="h-8 flex-1 justify-between" bars={[...WAVE, ...WAVE.slice(0, 14)]} />
+                  <Waveform className="h-8 flex-1 justify-between" bars={[...WAVE, ...WAVE.slice(0, 4)]} />
                   <span className="font-mono text-xs text-muted-foreground">0:42</span>
                 </div>
                 <p className="mt-4 text-sm leading-relaxed text-foreground/75">

@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 
 import { formatDisplayDate, getCreatedDate, parseLegacyDate, toLegacyDateString } from "../dates.js";
 import { DEFAULT_DAILY_LIMITS, getDailyLimit, limitReachedMessage, utcDay } from "../limits.js";
-import { parseModelList } from "../models.js";
+import { orderByCooldown, parseModelList } from "../models.js";
 import { buildAnswerReviewPrompt, buildQuestionsPrompt, sanitizeForPrompt } from "../prompts.js";
 import { isTransientNetworkError, withRetry } from "../retry.js";
 
@@ -156,5 +156,31 @@ describe("parseModelList", () => {
   it("falls back when the value is empty", () => {
     assert.deepEqual(parseModelList(undefined, fallback), fallback);
     assert.deepEqual(parseModelList(" , ", fallback), fallback);
+  });
+});
+
+describe("orderByCooldown", () => {
+  const models = ["a", "b", "c"];
+
+  it("keeps the configured order when nothing is cooling down", () => {
+    assert.deepEqual(orderByCooldown(models, new Map(), 1000), ["a", "b", "c"]);
+  });
+
+  it("moves models that failed recently to the end, in their configured order", () => {
+    const coolingUntil = new Map([
+      ["a", 2000],
+      ["b", 3000],
+    ]);
+    assert.deepEqual(orderByCooldown(models, coolingUntil, 1000), ["c", "a", "b"]);
+  });
+
+  it("puts a model back in its place once its cooldown has passed", () => {
+    assert.deepEqual(orderByCooldown(models, new Map([["a", 1000]]), 1000), ["a", "b", "c"]);
+  });
+
+  it("doesn't change the list it was given", () => {
+    const list = [...models];
+    orderByCooldown(list, new Map([["a", 5000]]), 1000);
+    assert.deepEqual(list, ["a", "b", "c"]);
   });
 });

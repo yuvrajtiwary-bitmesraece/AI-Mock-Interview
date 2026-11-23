@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 
 const BASE = [
   "relative inline-flex shrink-0 select-none items-center justify-center gap-2 whitespace-nowrap rounded-full font-medium",
-  "transition-[transform,background-color,border-color,color,box-shadow,filter] duration-300 ease-out-expo active:scale-[0.97]",
+  "transition-[transform,background-color,border-color,color,box-shadow,filter] duration-200 ease-out-expo active:scale-[0.97] active:duration-75",
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
   "disabled:pointer-events-none disabled:opacity-45",
   "[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",

@@ -19,7 +19,41 @@ const MICROPHONE_ERRORS = new Set(["not-allowed", "service-not-allowed", "audio-
 
 const WAVE_BARS = [0, 120, 240, 360, 480, 600, 720];
 
+// What the reviewer is doing, shown in turn while the answer is being reviewed.
+const REVIEW_STEPS = ["Reading your answer", "Scoring it on four skills", "Writing tips and a stronger version"];
+
 const joinText = (...parts) => parts.map((part) => part.trim()).filter(Boolean).join(" ");
+
+/**
+ * Stands in for the feedback card while Gemini reviews the answer: the same
+ * shape, plus what is happening right now, so the wait feels shorter.
+ */
+function ReviewProgress() {
+  const [step, setStep] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => setStep((current) => Math.min(current + 1, REVIEW_STEPS.length - 1)), 1600);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div role="status" aria-live="polite" className="mt-6 animate-page-in rounded-xl border border-white/[0.07] bg-black/20 p-5">
+      <p className="flex items-center gap-2.5 text-sm text-foreground/85">
+        <LoaderCircle className="h-4 w-4 animate-spin text-ember-2" aria-hidden="true" />
+        {REVIEW_STEPS[step]}…
+      </p>
+      <div className="mt-5 grid gap-x-6 gap-y-4 sm:grid-cols-2" aria-hidden="true">
+        {Array.from({ length: 4 }, (_, index) => (
+          <div key={index} className="space-y-2">
+            <div className="skeleton h-3 w-24" />
+            <div className="skeleton h-1.5 rounded-full" />
+          </div>
+        ))}
+      </div>
+      <div className="skeleton mt-5 h-14 rounded-lg" aria-hidden="true" />
+    </div>
+  );
+}
 
 /**
  * Where the candidate answers one question, by voice or by typing, then
@@ -238,7 +272,7 @@ export default function AnswerComposer({ mockId, questionIndex, initialText = ""
             )}
             <span className="sr-only">{recording ? "Stop recording" : "Start recording"}</span>
           </button>
-          <div className="flex h-6 items-center gap-1" aria-hidden="true">
+          <div className="flex h-6 items-center gap-1 overflow-hidden" aria-hidden="true">
             {WAVE_BARS.map((delay) => (
               <span
                 key={delay}
@@ -302,6 +336,8 @@ export default function AnswerComposer({ mockId, questionIndex, initialText = ""
           </Button>
         </div>
       </div>
+
+      {status === "submitting" && <ReviewProgress />}
     </section>
   );
 }

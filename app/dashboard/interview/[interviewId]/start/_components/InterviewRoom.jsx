@@ -85,7 +85,7 @@ function QuestionCard({ question, index, total }) {
   };
 
   return (
-    <section className="surface animate-fade-up p-6 sm:p-8" aria-labelledby="current-question">
+    <section className="surface animate-page-in p-6 sm:p-8" aria-labelledby="current-question">
       <div className="mb-5 flex flex-wrap items-center gap-2.5">
         <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
           Question {index + 1} of {total}
@@ -106,7 +106,7 @@ function QuestionCard({ question, index, total }) {
         )}
       </div>
       {showTip && question.tip && (
-        <p className="mt-5 animate-fade-up rounded-xl border border-amber-300/20 bg-amber-300/[0.06] p-4 text-sm leading-relaxed text-amber-50/90">
+        <p className="mt-5 animate-page-in rounded-xl border border-amber-300/20 bg-amber-300/[0.06] p-4 text-sm leading-relaxed text-amber-50/90">
           {question.tip}
         </p>
       )}
@@ -118,7 +118,7 @@ function QuestionCard({ question, index, total }) {
 function ResultCard({ result, onRetry, onNext, nextLabel, feedbackHref }) {
   const { review, metrics, score, answer } = result;
   return (
-    <section className="surface animate-fade-up space-y-7 p-6 sm:p-7" aria-label="Feedback on your answer" aria-live="polite">
+    <section className="surface animate-page-in space-y-7 p-6 sm:p-7" aria-label="Feedback on your answer" aria-live="polite">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <h3 className="text-lg font-semibold tracking-tight">Feedback</h3>

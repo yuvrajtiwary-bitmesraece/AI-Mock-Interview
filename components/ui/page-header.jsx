@@ -14,7 +14,7 @@ export function Accent({ children, className }) {
  */
 export function PageHeader({ back, eyebrow, title, description, actions, className }) {
   return (
-    <header className={cn("animate-fade-up", className)}>
+    <header className={cn("animate-page-in", className)}>
       {back && (
         <Link
           href={back.href}

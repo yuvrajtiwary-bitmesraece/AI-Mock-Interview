@@ -11,10 +11,11 @@ import "./globals.css";
 // Open-source fonts (SIL Open Font License). next/font downloads them at build
 // time and serves them from this site, so no request ever goes to Google.
 const sans = Geist({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
+// Only the italic is used (accent words), so only the italic is downloaded.
 const serif = Instrument_Serif({
   subsets: ["latin"],
   weight: "400",
-  style: ["normal", "italic"],
+  style: "italic",
   variable: "--font-serif",
   display: "swap",
 });

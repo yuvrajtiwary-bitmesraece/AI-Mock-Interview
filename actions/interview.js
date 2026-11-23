@@ -16,6 +16,7 @@
 import { randomUUID } from "node:crypto";
 import { and, eq, inArray, or } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 
 import { getViewer } from "@/utils/auth";
 import { toLegacyDateString } from "@/utils/dates";
@@ -35,7 +36,7 @@ import {
   cleanTranscript,
   questionsSchema,
 } from "@/utils/prompts";
-import { getAllUserData, getAnswersForInterview, getOwnedInterview, ownedBy } from "@/utils/queries";
+import { getAllUserData, getAnswersForInterview, getOwnedInterview, getOwnedInterviewWithAnswers, ownedBy } from "@/utils/queries";
 import { normalizeQuestions, parseInterviewQuestions } from "@/utils/questions";
 import { answersSignature, latestAnswersByIndex, normalizeReport, normalizeReview } from "@/utils/report";
 import { readResume } from "@/utils/resume";
@@ -338,6 +339,10 @@ async function saveAnswerUnguarded({ mockId, questionIndex, userAnswer, mode, du
     return fail("Could not save your answer. Please try again.");
   }
 
+  // If that was the last unanswered question, write the coaching report now,
+  // after this response is sent, so it's ready when the candidate opens it.
+  after(() => prepareReport(viewer, interview));
+
   revalidatePath(`/dashboard/interview/${interview.mockId}/feedback`);
   return { success: true, review, metrics };
 }
@@ -352,11 +357,11 @@ export async function generateReport(mockId, { force = false } = {}) {
 
 async function generateReportUnguarded(mockId, force) {
   const viewer = await getViewer();
-  const interview = await getOwnedInterview(viewer, mockId);
+  const { interview, answers: rows } = await getOwnedInterviewWithAnswers(viewer, mockId);
   if (!interview) return fail("Interview not found.");
 
   const questions = parseInterviewQuestions(interview.jsonMockResp);
-  const answers = [...latestAnswersByIndex(await getAnswersForInterview(interview.mockId), questions).values()];
+  const answers = [...latestAnswersByIndex(rows, questions).values()];
   if (answers.length === 0) return fail("Answer at least one question to get a report.");
 
   const signature = answersSignature(answers);
@@ -364,8 +369,18 @@ async function generateReportUnguarded(mockId, force) {
     return { success: true, report: interview.report };
   }
 
+  const result = await writeReport({ viewer, interview, answers, signature });
+  return result.error ? fail(result.error) : { success: true, report: result.report };
+}
+
+/**
+ * Asks Gemini for the coaching report on `answers` and saves it on the
+ * interview. Returns `{ report }` or `{ error }`. Used by generateReport and
+ * by the background preparation after the last answer.
+ */
+async function writeReport({ viewer, interview, answers, signature }) {
   const quota = await consumeDailyQuota(viewer.id, "report");
-  if (!quota.allowed) return fail(limitReachedMessage("report", quota.limit));
+  if (!quota.allowed) return { error: limitReachedMessage("report", quota.limit) };
 
   let report;
   try {
@@ -384,19 +399,39 @@ async function generateReportUnguarded(mockId, force) {
     });
     report = { ...normalizeReport(reply), signature, generatedAt: new Date().toISOString() };
   } catch (error) {
-    console.error("[generateReport] Gemini request failed:", error);
+    console.error("[report] Gemini request failed:", error);
     await refundDailyQuota(viewer.id, "report");
-    return fail(aiErrorMessage(error));
+    return { error: aiErrorMessage(error) };
   }
 
   try {
     await getDb().update(MockInterview).set({ report }).where(eq(MockInterview.mockId, interview.mockId));
   } catch (error) {
-    // The report is still shown; it will just be generated again next time.
-    console.error("[generateReport] saving the report failed:", error);
+    // The report is still returned; it will just be generated again next time.
+    console.error("[report] saving the report failed:", error);
   }
 
-  return { success: true, report };
+  return { report };
+}
+
+/**
+ * Runs after saveAnswer has responded. Once every question has an answer, it
+ * writes the coaching report ahead of time, so the report page opens with it
+ * already there. Failures are only logged: the report page can still write
+ * the report itself.
+ */
+async function prepareReport(viewer, interview) {
+  try {
+    const questions = parseInterviewQuestions(interview.jsonMockResp);
+    const answers = [...latestAnswersByIndex(await getAnswersForInterview(interview.mockId), questions).values()];
+    if (answers.length === 0 || answers.length < questions.length) return;
+
+    const signature = answersSignature(answers);
+    if (interview.report?.signature === signature) return;
+    await writeReport({ viewer, interview, answers, signature });
+  } catch (error) {
+    console.error("[report] preparing the report failed:", error);
+  }
 }
 
 /** Starts a new attempt with the same questions and settings. No AI request is needed. */

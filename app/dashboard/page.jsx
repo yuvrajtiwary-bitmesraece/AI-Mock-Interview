@@ -128,7 +128,7 @@ export default async function Dashboard() {
 
   return (
     <div className="space-y-8">
-      <header className="flex animate-fade-up flex-wrap items-end justify-between gap-6 pb-2">
+      <header className="flex animate-page-in flex-wrap items-end justify-between gap-6 pb-2">
         <div>
           <p className="eyebrow">
             <span className="h-px w-6 bg-gradient-to-r from-transparent to-ember-2" aria-hidden="true" />

@@ -50,7 +50,7 @@ export function AuthShell({ children }) {
 
       <section className="flex flex-col items-center justify-center px-4 py-12">
         <Logo className="mb-10 lg:hidden" />
-        <div className="animate-fade-up">{children}</div>
+        <div className="animate-page-in">{children}</div>
         <p className="mt-8 text-center text-xs text-muted-foreground">
           By continuing you agree to the{" "}
           <Link href="/terms" className="text-foreground/80 underline underline-offset-4 hover:text-foreground">

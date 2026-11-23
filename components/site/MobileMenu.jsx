@@ -37,7 +37,7 @@ export function MobileMenu({ links }) {
         id="mobile-menu"
         inert={!open}
         className={cn(
-          "absolute inset-x-3 top-[calc(100%+0.5rem)] origin-top rounded-3xl border border-white/[0.08] bg-[hsl(240_8%_6%/0.92)] p-2 shadow-[0_24px_60px_-20px_rgb(0_0_0/0.9)] backdrop-blur-xl transition-[opacity,transform,visibility] duration-500 ease-out-expo sm:inset-x-4",
+          "absolute inset-x-3 top-[calc(100%+0.5rem)] origin-top rounded-3xl border border-white/[0.08] bg-[hsl(240_8%_6%/0.97)] p-2 shadow-[0_24px_60px_-20px_rgb(0_0_0/0.9)] transition-[opacity,transform,visibility] duration-300 ease-out-expo sm:inset-x-4",
           open ? "visible translate-y-0 scale-100 opacity-100" : "invisible -translate-y-2 scale-[0.98] opacity-0"
         )}
       >
