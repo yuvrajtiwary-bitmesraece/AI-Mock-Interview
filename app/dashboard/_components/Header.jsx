@@ -19,13 +19,16 @@ const NAV_ITEMS = [
   { name: "Settings", href: "/dashboard/settings", icon: Settings, isActive: (path) => path === "/dashboard/settings" },
 ];
 
-/** The app's top bar: a floating pill with the main sections and the account menu. */
+/**
+ * The app's top bar: a floating pill with the main sections and the account
+ * menu. Nearly opaque rather than blurred, so scrolling stays cheap.
+ */
 export default function Header() {
   const pathname = usePathname();
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 px-3 pt-3 sm:px-4 sm:pt-4 print:hidden">
-      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 rounded-full border border-white/[0.08] bg-[hsl(240_8%_6%/0.72)] pl-4 pr-2 shadow-[0_12px_40px_-16px_rgb(0_0_0/0.9)] backdrop-blur-xl backdrop-saturate-150 sm:pl-5">
+      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 rounded-full border border-white/[0.08] bg-[hsl(240_8%_6%/0.9)] pl-4 pr-2 shadow-[0_12px_40px_-16px_rgb(0_0_0/0.9)] sm:pl-5">
         <Logo href="/dashboard" nameClassName="max-[420px]:hidden" />
 
         <nav aria-label="Main" className="flex items-center gap-1">

@@ -1,21 +1,22 @@
-/** Placeholder shown while a dashboard page loads its data on the server. */
+import { Bone, HeaderBones, PageSkeleton } from "@/components/ui/page-skeleton";
+
+/** Shown at once when opening the dashboard, while the server loads your progress. */
 export default function DashboardLoading() {
   return (
-    <div aria-busy="true" aria-label="Loading" className="space-y-10">
-      <div className="space-y-3">
-        <div className="skeleton h-11 w-72 rounded-xl" />
-        <div className="skeleton h-5 w-96 max-w-full" />
+    <PageSkeleton label="Loading your dashboard" className="space-y-4">
+      <div className="flex items-end justify-between gap-6">
+        <HeaderBones back={false} />
+        <Bone className="mb-6 hidden h-11 w-44 rounded-full sm:block" />
       </div>
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {Array.from({ length: 4 }, (_, index) => (
-          <div key={index} className="skeleton h-32 rounded-2xl" />
+          <Bone key={index} className="h-36 rounded-2xl" />
         ))}
       </div>
-      <div className="grid gap-4 md:grid-cols-2">
-        {Array.from({ length: 4 }, (_, index) => (
-          <div key={index} className="skeleton h-48 rounded-2xl" />
-        ))}
+      <div className="grid gap-4 lg:grid-cols-3">
+        <Bone className="h-80 rounded-2xl lg:col-span-2" />
+        <Bone className="h-80 rounded-2xl" />
       </div>
-    </div>
+    </PageSkeleton>
   );
 }

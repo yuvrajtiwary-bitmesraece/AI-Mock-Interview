@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, ChevronDown, Gauge, MessageSquareText, Mic, Play, Timer } from "lucide-react";
@@ -10,10 +11,10 @@ import { cn } from "@/lib/utils";
 import { getViewer } from "@/utils/auth";
 import { formatDisplayDate, getCreatedDate } from "@/utils/dates";
 import { difficultyLabel, interviewTypeLabel } from "@/utils/interview-options";
-import { getAnswersForInterview, getOwnedInterview } from "@/utils/queries";
+import { getOwnedInterviewWithAnswers, waitForReport } from "@/utils/queries";
 import { parseInterviewQuestions } from "@/utils/questions";
 import { parseRating } from "@/utils/rating";
-import { answersSignature, latestAnswersByIndex, normalizeReview, summarizeAnswers } from "@/utils/report";
+import { answersSignature, latestAnswersByIndex, normalizeReview, reportWaitMs, summarizeAnswers } from "@/utils/report";
 import { formatDuration } from "@/utils/speech";
 
 import AiReport from "./_components/AiReport";
@@ -134,18 +135,32 @@ function QuestionReport({ index, question, row, mockId }) {
   );
 }
 
+/**
+ * The coaching report once the background job has saved it (saveAnswer starts
+ * one after the last answer). If it isn't saved in time, AiReport asks for it.
+ */
+async function PreparedReport({ mockId, signature, waitMs }) {
+  const report = await waitForReport(mockId, signature, waitMs);
+  return <AiReport mockId={mockId} initialReport={report} />;
+}
+
 export default async function InterviewReportPage({ params }) {
   const { interviewId } = await params;
 
   // 404 for interviews that don't exist or belong to someone else.
-  const interview = await getOwnedInterview(await getViewer(), interviewId);
+  const { interview, answers } = await getOwnedInterviewWithAnswers(await getViewer(), interviewId);
   if (!interview) notFound();
 
   const questions = parseInterviewQuestions(interview.jsonMockResp);
-  const latest = latestAnswersByIndex(await getAnswersForInterview(interview.mockId), questions);
+  const latest = latestAnswersByIndex(answers, questions);
   const rows = [...latest.values()];
   const summary = summarizeAnswers(rows);
-  const cachedReport = interview.report?.signature === answersSignature(rows) ? interview.report : null;
+  const signature = answersSignature(rows);
+  const cachedReport = interview.report?.signature === signature ? interview.report : null;
+  // If the last answer was saved moments ago, its report is probably still
+  // being written in the background: wait for that one (the rest of the page
+  // shows straight away) instead of asking Gemini for a second one.
+  const waitMs = cachedReport ? 0 : reportWaitMs(rows, questions.length);
   const unanswered = questions.length - rows.length;
 
   return (
@@ -221,7 +236,13 @@ export default async function InterviewReportPage({ params }) {
             </div>
           </section>
 
-          <AiReport mockId={interview.mockId} initialReport={cachedReport} />
+          {waitMs > 0 ? (
+            <Suspense fallback={<AiReport mockId={interview.mockId} initialReport={null} waiting />}>
+              <PreparedReport mockId={interview.mockId} signature={signature} waitMs={waitMs} />
+            </Suspense>
+          ) : (
+            <AiReport mockId={interview.mockId} initialReport={cachedReport} />
+          )}
         </>
       )}
 

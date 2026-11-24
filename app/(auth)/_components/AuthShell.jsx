@@ -1,7 +1,31 @@
 import Link from "next/link";
+import { ClerkLoading } from "@clerk/nextjs";
 import { CircleCheck } from "lucide-react";
 
 import { Logo } from "@/components/brand/Logo";
+import { Bone } from "@/components/ui/page-skeleton";
+
+/**
+ * Stands in for Clerk's sign-in card while Clerk's script loads (a second or
+ * more on a slow phone), so the page never shows an empty column.
+ */
+function AuthCardSkeleton() {
+  return (
+    <div role="status" aria-label="Loading sign-in" className="w-[25rem] max-w-[calc(100vw-2rem)] rounded-2xl border border-white/10 bg-[#111113] p-8 shadow-2xl shadow-black/60">
+      <Bone className="mx-auto h-5 w-44" />
+      <Bone className="mx-auto mt-3 h-3.5 w-56" />
+      <Bone className="mt-8 h-10 rounded-xl" />
+      <div className="my-6 flex items-center gap-3" aria-hidden="true">
+        <span className="h-px flex-1 bg-white/10" />
+        <span className="h-px flex-1 bg-white/10" />
+      </div>
+      <Bone className="h-3.5 w-24" />
+      <Bone className="mt-2.5 h-10 rounded-xl" />
+      <Bone className="mt-6 h-10 rounded-xl" />
+      <Bone className="mx-auto mt-8 h-3.5 w-48" />
+    </div>
+  );
+}
 
 const SELLING_POINTS = [
   "Questions tailored to your role, level and resume",
@@ -50,7 +74,12 @@ export function AuthShell({ children }) {
 
       <section className="flex flex-col items-center justify-center px-4 py-12">
         <Logo className="mb-10 lg:hidden" />
-        <div className="animate-fade-up">{children}</div>
+        <div className="animate-page-in">
+          <ClerkLoading>
+            <AuthCardSkeleton />
+          </ClerkLoading>
+          {children}
+        </div>
         <p className="mt-8 text-center text-xs text-muted-foreground">
           By continuing you agree to the{" "}
           <Link href="/terms" className="text-foreground/80 underline underline-offset-4 hover:text-foreground">

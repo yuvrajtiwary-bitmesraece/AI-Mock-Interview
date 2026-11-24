@@ -7,6 +7,8 @@ import {
   latestAnswersByIndex,
   normalizeReport,
   normalizeReview,
+  REPORT_WAIT_WINDOW_MS,
+  reportWaitMs,
   scorePercent,
   summarizeAnswers,
 } from "../report.js";
@@ -169,5 +171,31 @@ describe("review and report prompts", () => {
     });
     assert.match(prompt, /Answer 1 \(scored 4\/5\)/);
     assert.match(prompt, /Answer 2/);
+  });
+});
+
+describe("reportWaitMs", () => {
+  const now = Date.UTC(2026, 10, 24, 12, 0, 0);
+  const savedAgo = (ms) => ({ createdOn: new Date(now - ms) });
+
+  it("waits out the rest of the window when the last answer was just saved", () => {
+    assert.equal(reportWaitMs([savedAgo(60_000), savedAgo(2_000)], 2, now), REPORT_WAIT_WINDOW_MS - 2_000);
+  });
+
+  it("doesn't wait once the window has passed", () => {
+    assert.equal(reportWaitMs([savedAgo(REPORT_WAIT_WINDOW_MS + 1)], 1, now), 0);
+  });
+
+  it("doesn't wait while questions are still unanswered, or with no answers", () => {
+    assert.equal(reportWaitMs([savedAgo(1_000)], 3, now), 0);
+    assert.equal(reportWaitMs([], 0, now), 0);
+  });
+
+  it("doesn't wait for older answers without a timestamp", () => {
+    assert.equal(reportWaitMs([{ createdOn: null }, { createdOn: "not a date" }], 2, now), 0);
+  });
+
+  it("never waits longer than the window, even if the clock is off", () => {
+    assert.equal(reportWaitMs([savedAgo(-60_000)], 1, now), REPORT_WAIT_WINDOW_MS);
   });
 });

@@ -11,6 +11,9 @@ const token = (name) => `hsl(var(--${name}) / <alpha-value>)`;
  */
 const config = {
   darkMode: "class",
+  // hover: styles only apply where there is a real pointer. On a touch screen a
+  // tap would otherwise leave buttons and cards stuck in their hover state.
+  future: { hoverOnlyWhenSupported: true },
   content: ["./app/**/*.{js,jsx,mdx}", "./components/**/*.{js,jsx,mdx}"],
   theme: {
     container: {
@@ -66,6 +69,11 @@ const config = {
           from: { opacity: "0" },
           to: { opacity: "1" },
         },
+        // App screens and their parts: short, so a click feels instant.
+        "page-in": {
+          from: { opacity: "0", transform: "translateY(6px)" },
+          to: { opacity: "1", transform: "none" },
+        },
         float: {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-6px)" },
@@ -81,8 +89,9 @@ const config = {
         },
       },
       animation: {
-        "fade-up": "fade-up 0.9s cubic-bezier(0.16, 1, 0.3, 1) both",
-        "fade-in": "fade-in 1.2s cubic-bezier(0.16, 1, 0.3, 1) both",
+        "fade-up": "fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both",
+        "fade-in": "fade-in 0.9s cubic-bezier(0.16, 1, 0.3, 1) both",
+        "page-in": "page-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both",
         float: "float 7s ease-in-out infinite",
         wave: "wave 1.2s ease-in-out infinite",
         glow: "glow 4s ease-in-out infinite",

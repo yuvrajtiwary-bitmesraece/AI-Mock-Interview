@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, CircleCheck, CircleDashed, FileText, Lock, ShieldCheck, Sparkles, TriangleAlert } from "lucide-react";
 
+import { AppLink } from "@/components/site/AppLink";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -25,16 +26,38 @@ const SKILLS = [
 const scoreFill = (score) =>
   score >= 5 ? "bg-emerald-400" : score >= 4 ? "bg-[linear-gradient(90deg,hsl(var(--ember-1)),hsl(var(--ember-2)))]" : "bg-amber-300";
 
-/** Animated level bars, like a voice being recorded. */
-function Waveform({ bars = WAVE, className }) {
+// The bars move in this many interleaved groups (bar 0, 4, 8... together).
+// Each group is one animated layer, so the browser animates four layers
+// however many bars there are; one layer per bar kept slower devices busy on
+// every frame.
+const WAVE_GROUPS = 4;
+
+/**
+ * Animated level bars, like a voice being recorded. `spread` stretches them
+ * across the full width; otherwise they sit 3px apart from the left.
+ */
+function Waveform({ bars = WAVE, spread = false, className }) {
+  const last = Math.max(1, bars.length - 1);
   return (
-    <div className={cn("flex items-center gap-[3px]", className)}>
-      {bars.map((height, index) => (
-        <span
-          key={index}
-          className="w-[3px] origin-center animate-wave rounded-full bg-gradient-to-t from-ember-2 to-ember-1"
-          style={{ height: `${Math.round(height * 100)}%`, animationDelay: `${index * 70}ms` }}
-        />
+    // overflow-hidden gives the moving bars known bounds, so the browser doesn't
+    // move everything painted after them onto separate layers.
+    <div className={cn("relative overflow-hidden", className)}>
+      {Array.from({ length: WAVE_GROUPS }, (_, group) => (
+        <div key={group} className="absolute inset-0 origin-center animate-wave" style={{ animationDelay: `${group * 300}ms` }}>
+          {bars.map((height, index) =>
+            index % WAVE_GROUPS === group ? (
+              <span
+                key={index}
+                className="absolute w-[3px] rounded-full bg-gradient-to-t from-ember-2 to-ember-1"
+                style={{
+                  left: spread ? `calc((100% - 3px) * ${(index / last).toFixed(4)})` : `${index * 6}px`,
+                  top: `${Math.round((1 - height) * 50)}%`,
+                  height: `${Math.round(height * 100)}%`,
+                }}
+              />
+            ) : null
+          )}
+        </div>
       ))}
     </div>
   );
@@ -86,10 +109,10 @@ export function ProductWindow() {
               <div className="mt-6 rounded-xl border border-white/[0.07] bg-white/[0.02] p-4">
                 <div className="flex items-center gap-3">
                   <span className="relative flex h-2.5 w-2.5">
-                    <span className="absolute inset-0 animate-ping rounded-full bg-red-500/60" />
+                    <span className="absolute -inset-1 animate-pulse rounded-full bg-red-500/30" />
                     <span className="relative h-2.5 w-2.5 rounded-full bg-red-500" />
                   </span>
-                  <Waveform className="h-8 flex-1 justify-between" bars={[...WAVE, ...WAVE.slice(0, 14)]} />
+                  <Waveform className="h-8 flex-1" spread bars={[...WAVE, ...WAVE.slice(0, 4)]} />
                   <span className="font-mono text-xs text-muted-foreground">0:42</span>
                 </div>
                 <p className="mt-4 text-sm leading-relaxed text-foreground/75">
@@ -368,9 +391,15 @@ export function PlanCard({ plan }) {
       </ul>
       <div className="mt-auto pt-9">
         <Button asChild variant={cta.variant ?? "glass"} size="lg" className="w-full">
-          <Link href={cta.href} {...(cta.external ? EXTERNAL : {})}>
-            {cta.label} <ArrowRight />
-          </Link>
+          {cta.external ? (
+            <Link href={cta.href} {...EXTERNAL}>
+              {cta.label} <ArrowRight />
+            </Link>
+          ) : (
+            <AppLink href={cta.href}>
+              {cta.label} <ArrowRight />
+            </AppLink>
+          )}
         </Button>
       </div>
     </div>

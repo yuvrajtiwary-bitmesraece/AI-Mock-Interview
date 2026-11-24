@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { CircleCheck, RefreshCw, Sparkles, Target, TrendingUp } from "lucide-react";
+import { CircleCheck, LoaderCircle, RefreshCw, Sparkles, Target, TrendingUp } from "lucide-react";
 
 import { generateReport } from "@/actions/interview";
 import { Button } from "@/components/ui/button";
+import { actionErrorMessage, classifyActionError, toastActionError } from "@/lib/action-error";
 import { cn } from "@/lib/utils";
 import { READINESS } from "@/utils/report";
 
@@ -14,9 +15,14 @@ const TONES = {
   danger: "border-red-400/30 bg-red-400/10 text-red-200",
 };
 
+/** Stands in for the report while Gemini writes it, and says what's happening. */
 function ReportSkeleton() {
   return (
-    <div className="space-y-4" aria-busy="true" aria-label="Writing your report">
+    <div className="space-y-4" role="status" aria-busy="true" aria-label="Writing your report">
+      <p className="flex items-center gap-2.5 text-sm text-foreground/85">
+        <LoaderCircle className="h-4 w-4 animate-spin text-ember-2" aria-hidden="true" />
+        Your coach is reading every answer. This usually takes a few seconds.
+      </p>
       <div className="skeleton h-7 w-3/4" />
       <div className="skeleton h-4 w-full" />
       <div className="skeleton h-4 w-5/6" />
@@ -26,6 +32,12 @@ function ReportSkeleton() {
       </div>
     </div>
   );
+}
+
+/** The result to show when the generateReport call itself threw (offline, out-of-date page...). */
+function failedCall(error) {
+  if (classifyActionError(error) === "stale") toastActionError(error);
+  return { success: false, error: actionErrorMessage(error, "Could not write your report. Please try again.") };
 }
 
 /** Stores the result of a generateReport call in component state. */
@@ -42,23 +54,24 @@ function applyResult(result, { setReport, setStatus, setError }) {
 /**
  * The AI coaching report. Shows the cached report when the answers haven't
  * changed since it was written; otherwise asks the server to write one.
+ * With `waiting`, it only shows the loading state, while the page waits for
+ * the report that's already being written in the background.
  */
-export default function AiReport({ mockId, initialReport }) {
+export default function AiReport({ mockId, initialReport, waiting = false }) {
   const [report, setReport] = useState(initialReport);
   const [status, setStatus] = useState(initialReport ? "ready" : "loading");
   const [error, setError] = useState("");
   const requestedRef = useRef(false);
 
-
   // Write the report on first visit (the ref stops a second request in development).
   useEffect(() => {
-    if (initialReport || requestedRef.current) return;
+    if (waiting || initialReport || requestedRef.current) return;
     requestedRef.current = true;
     const setters = { setReport, setStatus, setError };
     generateReport(mockId)
       .then((result) => applyResult(result, setters))
-      .catch(() => applyResult(null, setters));
-  }, [initialReport, mockId]);
+      .catch((error) => applyResult(failedCall(error), setters));
+  }, [waiting, initialReport, mockId]);
 
   const regenerate = async () => {
     setStatus("loading");
@@ -66,8 +79,8 @@ export default function AiReport({ mockId, initialReport }) {
     const setters = { setReport, setStatus, setError };
     try {
       applyResult(await generateReport(mockId, { force: true }), setters);
-    } catch {
-      applyResult(null, setters);
+    } catch (error) {
+      applyResult(failedCall(error), setters);
     }
   };
 

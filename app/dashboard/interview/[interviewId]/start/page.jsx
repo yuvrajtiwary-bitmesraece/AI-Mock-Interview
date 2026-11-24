@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { getViewer } from "@/utils/auth";
-import { getAnswersForInterview, getOwnedInterview } from "@/utils/queries";
+import { getOwnedInterviewWithAnswers } from "@/utils/queries";
 import { parseInterviewQuestions } from "@/utils/questions";
 import { parseRating } from "@/utils/rating";
 import { latestAnswersByIndex, normalizeReview } from "@/utils/report";
@@ -15,7 +15,7 @@ export default async function InterviewRoomPage({ params, searchParams }) {
   const { q } = await searchParams;
 
   // 404 for interviews that don't exist or belong to someone else.
-  const interview = await getOwnedInterview(await getViewer(), interviewId);
+  const { interview, answers } = await getOwnedInterviewWithAnswers(await getViewer(), interviewId);
   if (!interview) notFound();
 
   const questions = parseInterviewQuestions(interview.jsonMockResp);
@@ -23,7 +23,7 @@ export default async function InterviewRoomPage({ params, searchParams }) {
 
   // Answers from earlier visits, so the room shows what's already done.
   const saved = {};
-  for (const [index, row] of latestAnswersByIndex(await getAnswersForInterview(interview.mockId), questions)) {
+  for (const [index, row] of latestAnswersByIndex(answers, questions)) {
     saved[index] = {
       answer: row.userAnswer ?? "",
       score: parseRating(row.rating),

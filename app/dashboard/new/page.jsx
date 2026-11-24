@@ -1,6 +1,6 @@
 import { Accent, PageHeader } from "@/components/ui/page-header";
 import { getViewer } from "@/utils/auth";
-import { INTERVIEW_TYPES, QUESTION_COUNT } from "@/utils/interview-options";
+import { QUESTION_COUNT, isInterviewType } from "@/utils/interview-options";
 import { getUsageToday } from "@/utils/usage";
 
 import NewInterviewForm from "./_components/NewInterviewForm";
@@ -42,7 +42,7 @@ export default async function NewInterviewPage({ searchParams }) {
 
       <NewInterviewForm
         defaultQuestionCount={defaultQuestionCount()}
-        defaultType={type in INTERVIEW_TYPES ? type : "technical"}
+        requestedType={isInterviewType(type) ? type : null}
         remainingToday={remaining}
       />
     </div>

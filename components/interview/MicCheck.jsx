@@ -15,7 +15,7 @@ const BAR_COUNT = 18;
  */
 export function MicCheck() {
   const [status, setStatus] = useState("idle"); // idle | listening | denied | unsupported
-  const [level, setLevel] = useState(0); // 0 to 1
+  const [lit, setLit] = useState(0); // how many level bars are lit
   const [heard, setHeard] = useState(false);
   const stopRef = useRef(null);
 
@@ -23,7 +23,7 @@ export function MicCheck() {
     stopRef.current?.();
     stopRef.current = null;
     setStatus("idle");
-    setLevel(0);
+    setLit(0);
   };
 
   const start = async () => {
@@ -40,6 +40,10 @@ export function MicCheck() {
 
       const samples = new Uint8Array(analyser.fftSize);
       let frame;
+      let lastLit = -1;
+      let heardOnce = false;
+      // Runs every frame, but only re-renders when a bar turns on or off:
+      // that keeps the meter smooth on slow phones.
       const measure = () => {
         analyser.getByteTimeDomainData(samples);
         let sum = 0;
@@ -47,9 +51,16 @@ export function MicCheck() {
           const value = (sample - 128) / 128;
           sum += value * value;
         }
-        const next = Math.min(1, Math.sqrt(sum / samples.length) * 5);
-        setLevel(next);
-        if (next > 0.15) setHeard(true);
+        const level = Math.min(1, Math.sqrt(sum / samples.length) * 5);
+        const nextLit = Math.ceil(level * BAR_COUNT);
+        if (nextLit !== lastLit) {
+          lastLit = nextLit;
+          setLit(nextLit);
+        }
+        if (level > 0.15 && !heardOnce) {
+          heardOnce = true;
+          setHeard(true);
+        }
         frame = requestAnimationFrame(measure);
       };
       measure();
@@ -79,7 +90,7 @@ export function MicCheck() {
     <div className="space-y-4">
       <div className="flex h-12 items-end gap-1" aria-hidden="true">
         {Array.from({ length: BAR_COUNT }, (_, index) => {
-          const active = status === "listening" && level * BAR_COUNT > index;
+          const active = status === "listening" && lit > index;
           return (
             <span
               key={index}

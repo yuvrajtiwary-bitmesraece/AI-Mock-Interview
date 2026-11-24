@@ -59,7 +59,10 @@ describe("parseInterviewSettings", () => {
       { jobExperience: "51" },
       { jobExperience: "-1" },
       { interviewType: "trivia" },
+      { interviewType: "toString" },
+      { interviewType: "constructor" },
       { difficulty: "impossible" },
+      { difficulty: "__proto__" },
       { questionCount: "2" },
       { questionCount: "11" },
       { company: "c".repeat(121) },
@@ -82,6 +85,13 @@ describe("parseInterviewSettings", () => {
     assert.equal(interviewTypeLabel("behavioral"), "Behavioral");
     assert.ok(interviewTips(undefined).length > 0);
     for (const type of Object.keys(INTERVIEW_TYPES)) assert.ok(interviewTips(type).length > 0, type);
+  });
+
+  it("treats inherited object keys as unknown, never as a type", () => {
+    for (const name of ["toString", "constructor", "__proto__", "hasOwnProperty"]) {
+      assert.equal(interviewTypeLabel(name), "Technical", name);
+      assert.ok(Array.isArray(interviewTips(name)), name);
+    }
   });
 });
 

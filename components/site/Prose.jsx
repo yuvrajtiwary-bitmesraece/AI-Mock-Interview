@@ -2,7 +2,7 @@
 
 export function PageTitle({ title, updated }) {
   return (
-    <header className="mb-12 animate-fade-up">
+    <header className="mb-12 animate-page-in">
       <p className="eyebrow">
         <span className="h-px w-6 bg-gradient-to-r from-transparent to-ember-2" aria-hidden="true" />
         Legal

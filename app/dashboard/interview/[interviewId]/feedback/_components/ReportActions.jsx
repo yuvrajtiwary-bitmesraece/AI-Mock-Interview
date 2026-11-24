@@ -6,7 +6,9 @@ import { toast } from "sonner";
 import { LoaderCircle, Printer, RotateCcw } from "lucide-react";
 
 import { retakeInterview } from "@/actions/interview";
+import { startNavigationProgress } from "@/components/site/NavigationProgress";
 import { Button } from "@/components/ui/button";
+import { toastActionError } from "@/lib/action-error";
 
 /** Opens the print dialog with every section expanded ("Save as PDF" works too). */
 export function PrintButton() {
@@ -34,12 +36,13 @@ export function RetakeButton({ mockId }) {
     try {
       const result = await retakeInterview(mockId);
       if (result?.success) {
+        startNavigationProgress();
         router.push(`/dashboard/interview/${result.mockId}`);
         return;
       }
       toast.error(result?.error ?? "Could not start a new attempt.");
-    } catch {
-      toast.error("Something went wrong. Please try again.");
+    } catch (error) {
+      toastActionError(error, "Could not start a new attempt. Please try again.");
     }
     setPending(false);
   };

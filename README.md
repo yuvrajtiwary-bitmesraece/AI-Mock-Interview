@@ -193,6 +193,7 @@ app/
       feedback/          Interview report and AI coach summary
   opengraph-image.jsx    Generated social card; robots.js, sitemap.js, manifest.js for SEO and PWA
 components/              UI kit, brand, landing page illustrations, interview widgets and site chrome
+lib/                     Class names, unsent-answer drafts and messages for failed requests (browser)
 drizzle/                 Versioned SQL migrations
 utils/
   gemini.js              Gemini client with model fallback and timeouts (server-only)
@@ -202,7 +203,7 @@ utils/
   interview-options.js   Interview types, difficulty, templates and form validation
   report.js, progress.js, speech.js  Scoring, reports, dashboard stats, delivery metrics
   __tests__/             Unit tests
-proxy.js                 Requires sign-in for /dashboard (Next.js 16 "proxy")
+proxy.js                 Clerk middleware for the dashboard, sign-in and sign-up; requires sign-in for /dashboard
 verdict/                 Verdict, the sandboxed code judge in Go (in progress; see verdict/README.md)
 ```
 

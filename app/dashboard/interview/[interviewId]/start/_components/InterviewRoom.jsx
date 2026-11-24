@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
-import Webcam from "react-webcam";
 import { toast } from "sonner";
 import {
   ArrowLeft,
@@ -12,6 +12,7 @@ import {
   Check,
   Flag,
   Lightbulb,
+  LoaderCircle,
   RotateCcw,
   Volume2,
   VolumeX,
@@ -25,6 +26,12 @@ import { interviewTips, interviewTypeLabel } from "@/utils/interview-options";
 import { averageRating } from "@/utils/rating";
 
 import AnswerComposer from "./AnswerComposer";
+
+// The camera library is only downloaded when someone turns the camera on.
+const Webcam = dynamic(() => import("react-webcam"), {
+  ssr: false,
+  loading: () => <LoaderCircle className="h-6 w-6 animate-spin text-muted-foreground" aria-label="Starting the camera" />,
+});
 
 /** Numbered buttons for jumping between questions; answered ones show a check. */
 function QuestionNav({ total, index, results, onSelect }) {
@@ -85,7 +92,7 @@ function QuestionCard({ question, index, total }) {
   };
 
   return (
-    <section className="surface animate-fade-up p-6 sm:p-8" aria-labelledby="current-question">
+    <section className="surface animate-page-in p-6 sm:p-8" aria-labelledby="current-question">
       <div className="mb-5 flex flex-wrap items-center gap-2.5">
         <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
           Question {index + 1} of {total}
@@ -106,7 +113,7 @@ function QuestionCard({ question, index, total }) {
         )}
       </div>
       {showTip && question.tip && (
-        <p className="mt-5 animate-fade-up rounded-xl border border-amber-300/20 bg-amber-300/[0.06] p-4 text-sm leading-relaxed text-amber-50/90">
+        <p className="mt-5 animate-page-in rounded-xl border border-amber-300/20 bg-amber-300/[0.06] p-4 text-sm leading-relaxed text-amber-50/90">
           {question.tip}
         </p>
       )}
@@ -118,7 +125,7 @@ function QuestionCard({ question, index, total }) {
 function ResultCard({ result, onRetry, onNext, nextLabel, feedbackHref }) {
   const { review, metrics, score, answer } = result;
   return (
-    <section className="surface animate-fade-up space-y-7 p-6 sm:p-7" aria-label="Feedback on your answer" aria-live="polite">
+    <section className="surface animate-page-in space-y-7 p-6 sm:p-7" aria-label="Feedback on your answer" aria-live="polite">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <h3 className="text-lg font-semibold tracking-tight">Feedback</h3>
@@ -166,19 +173,15 @@ function ResultCard({ result, onRetry, onNext, nextLabel, feedbackHref }) {
 
 function CameraPanel() {
   const [on, setOn] = useState(false);
-  const webcamRef = useRef(null);
 
-  const turnOff = () => {
-    webcamRef.current?.stream?.getTracks().forEach((track) => track.stop());
-    setOn(false);
-  };
+  // Unmounting the webcam releases the camera.
+  const turnOff = () => setOn(false);
 
   return (
     <section className="surface overflow-hidden" aria-label="Camera">
       <div className="grid aspect-video place-items-center bg-black/40">
         {on ? (
           <Webcam
-            ref={webcamRef}
             mirrored
             audio={false}
             className="h-full w-full object-cover"

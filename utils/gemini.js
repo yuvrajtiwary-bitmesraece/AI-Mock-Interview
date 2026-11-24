@@ -2,12 +2,12 @@ import "server-only";
 
 import { ApiError, GoogleGenAI, ThinkingLevel } from "@google/genai";
 
-import { parseModelList } from "./models.js";
+import { orderByCooldown, parseModelList } from "./models.js";
 
 /**
  * Models are tried in this order. If one is overloaded (503), rate-limited
  * (429), retired (404), rejects the request (400), times out or returns broken
- * JSON, the next one is used.
+ * JSON, the next one is used, and a model that failed recently goes last.
  * Override with GEMINI_MODELS, e.g. GEMINI_MODELS=gemini-2.5-flash,gemini-3.5-flash-lite
  */
 export const DEFAULT_MODELS = ["gemini-3.5-flash-lite", "gemini-2.5-flash", "gemini-3.1-flash-lite"];
@@ -26,6 +26,20 @@ const TOTAL_BUDGET_MS = 50_000;
 // 400 is included because feature support differs between models (one model
 // may reject a setting another accepts); 404 means the model was retired.
 const RETRYABLE_STATUS = new Set([400, 404, 408, 429, 500, 502, 503, 504]);
+
+// A model that is overloaded, rate-limited, retired or too slow is tried last
+// for five minutes (about one interview), so later requests don't wait on the
+// same failure: an overloaded model can take 4 to 8 seconds just to answer
+// 503. The list lives as long as the server instance does. A 400 isn't
+// counted, because it depends on the request rather than the model's health.
+const COOLDOWN_MS = 5 * 60_000;
+const COOLDOWN_STATUS = new Set([404, 408, 429, 500, 502, 503, 504]);
+const coolingUntil = new Map();
+
+function shouldCoolDown(error) {
+  if (error instanceof ApiError) return COOLDOWN_STATUS.has(error.status);
+  return error?.name === "AbortError" || error?.name === "TimeoutError";
+}
 
 function resolveApiKey() {
   if (process.env.GEMINI_API_KEY) {
@@ -96,7 +110,7 @@ async function generate({ prompt, schema, system, files = [], models, temperatur
   const startedAt = Date.now();
   let lastError;
 
-  for (const model of models) {
+  for (const model of orderByCooldown(models, coolingUntil)) {
     const remainingMs = TOTAL_BUDGET_MS - (Date.now() - startedAt);
     if (remainingMs < 3_000) break;
 
@@ -120,9 +134,12 @@ async function generate({ prompt, schema, system, files = [], models, temperatur
         throw Object.assign(new Error(`Gemini returned no text (reason: ${reason})`), { name: "EmptyResponseError" });
       }
       // Parse here so invalid JSON also moves on to the next model.
-      return schema ? JSON.parse(text) : text;
+      const result = schema ? JSON.parse(text) : text;
+      coolingUntil.delete(model);
+      return result;
     } catch (error) {
       lastError = error;
+      if (shouldCoolDown(error)) coolingUntil.set(model, Date.now() + COOLDOWN_MS);
       const status = error instanceof ApiError ? error.status : error?.name;
       if (!shouldTryNextModel(error)) break;
       console.warn(`[gemini] ${model} failed (${status}); trying the next model.`);

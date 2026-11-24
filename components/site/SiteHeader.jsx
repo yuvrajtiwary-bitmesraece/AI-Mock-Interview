@@ -14,13 +14,14 @@ export const NAV_LINKS = [
 ];
 
 /**
- * Top bar for the public pages: a floating pill. Its small blurred backdrop is
- * cheap to draw, unlike blur behind whole sections.
+ * Top bar for the public pages: a floating pill. It is nearly opaque instead
+ * of blurring what's behind it: a backdrop blur has to be recomputed on every
+ * frame while the page scrolls.
  */
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 px-3 pt-3 sm:px-4 sm:pt-4">
-      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 rounded-full border border-white/[0.08] bg-[hsl(240_8%_6%/0.72)] pl-4 pr-2 shadow-[0_12px_40px_-16px_rgb(0_0_0/0.9)] backdrop-blur-xl backdrop-saturate-150 sm:pl-5">
+      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 rounded-full border border-white/[0.08] bg-[hsl(240_8%_6%/0.9)] pl-4 pr-2 shadow-[0_12px_40px_-16px_rgb(0_0_0/0.9)] sm:pl-5">
         <Logo />
 
         <nav aria-label="Main" className="hidden items-center lg:flex">

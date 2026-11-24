@@ -31,10 +31,13 @@ import {
   SkillsVisual,
   VoiceVisual,
 } from "@/components/landing/visuals";
+import { AppLink } from "@/components/site/AppLink";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PauseWhenHidden } from "@/components/ui/pause-when-hidden";
+import { RevealObserver } from "@/components/ui/reveal-observer";
 import { cn } from "@/lib/utils";
 import { SITE } from "@/utils/site";
 
@@ -264,6 +267,7 @@ export default function LandingPage() {
   return (
     <>
       <SiteHeader />
+      <RevealObserver />
       <main id="main">
         {/* Hero */}
         <section className="relative overflow-clip">
@@ -297,9 +301,9 @@ export default function LandingPage() {
 
             <div className="mt-10 flex animate-fade-up flex-wrap items-center justify-center gap-3" style={{ animationDelay: "240ms" }}>
               <Button asChild size="xl">
-                <Link href="/dashboard/new">
+                <AppLink href="/dashboard/new">
                   Start practicing free <ArrowRight />
-                </Link>
+                </AppLink>
               </Button>
               <Button asChild variant="glass" size="xl">
                 <Link href="#how-it-works">See how it works</Link>
@@ -317,16 +321,16 @@ export default function LandingPage() {
               ))}
             </ul>
 
-            <div className="mt-16 animate-fade-in sm:mt-20" style={{ animationDelay: "420ms" }}>
+            <PauseWhenHidden className="mt-16 sm:mt-20">
               <ProductWindow />
-            </div>
+            </PauseWhenHidden>
           </div>
         </section>
 
         {/* Kinds of interview */}
         <section aria-label="Interview kinds and example roles" className="py-12">
           <p className="text-center text-[13px] text-muted-foreground">Rehearse any round, for any role</p>
-          <div className="marquee mt-6 overflow-clip">
+          <PauseWhenHidden className="marquee mt-6 overflow-clip">
             <ul className="marquee-track gap-3 pr-3">
               {[...ROUNDS, ...ROUNDS].map((round, index) => (
                 <li
@@ -338,7 +342,7 @@ export default function LandingPage() {
                 </li>
               ))}
             </ul>
-          </div>
+          </PauseWhenHidden>
         </section>
 
         {/* Features */}
@@ -354,19 +358,22 @@ export default function LandingPage() {
             Not just a score. Every answer comes back with what worked, what to fix and what a stronger answer sounds like.
           </SectionHeading>
 
-          <div className="mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
+          <PauseWhenHidden className="mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
             {FEATURES.map(({ icon: Icon, title, text, visual: Visual, span }) => (
-              <article key={title} className={cn("reveal surface surface-hover flex flex-col gap-6 p-6 sm:p-7", span)}>
-                <Visual />
-                <div className="mt-auto">
-                  <h3 className="flex items-center gap-2 font-semibold">
-                    <Icon className="h-4 w-4 text-ember-2" aria-hidden="true" /> {title}
-                  </h3>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{text}</p>
-                </div>
-              </article>
+              // The reveal sits on a wrapper, so it doesn't override the card's own hover transition.
+              <div key={title} className={cn("reveal", span)}>
+                <article className="surface surface-hover flex h-full flex-col gap-6 p-6 sm:p-7">
+                  <Visual />
+                  <div className="mt-auto">
+                    <h3 className="flex items-center gap-2 font-semibold">
+                      <Icon className="h-4 w-4 text-ember-2" aria-hidden="true" /> {title}
+                    </h3>
+                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{text}</p>
+                  </div>
+                </article>
+              </div>
             ))}
-          </div>
+          </PauseWhenHidden>
         </section>
 
         {/* How it works */}
@@ -544,7 +551,7 @@ export default function LandingPage() {
 
         {/* Final call to action */}
         <section className="container pb-28">
-          <div className="reveal relative overflow-clip rounded-[2rem] border border-white/[0.08] bg-[#0c0c0f] px-6 py-20 text-center sm:px-12 sm:py-24">
+          <PauseWhenHidden className="reveal relative overflow-clip rounded-[2rem] border border-white/[0.08] bg-[#0c0c0f] px-6 py-20 text-center sm:px-12 sm:py-24">
             <div
               aria-hidden="true"
               className="pointer-events-none absolute inset-x-0 -bottom-1/2 mx-auto h-[28rem] max-w-3xl animate-glow rounded-full bg-[radial-gradient(closest-side,hsl(var(--ember-2)/0.32),hsl(var(--ember-3)/0.12)_60%,transparent)]"
@@ -558,12 +565,12 @@ export default function LandingPage() {
                 Set up a mock interview in a minute and get feedback on your very first answer.
               </p>
               <Button asChild size="xl" className="mt-10">
-                <Link href="/dashboard/new">
+                <AppLink href="/dashboard/new">
                   Start practicing free <ArrowRight />
-                </Link>
+                </AppLink>
               </Button>
             </div>
-          </div>
+          </PauseWhenHidden>
         </section>
       </main>
       <SiteFooter />
