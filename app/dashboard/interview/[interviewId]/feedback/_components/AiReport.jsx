@@ -5,6 +5,7 @@ import { CircleCheck, LoaderCircle, RefreshCw, Sparkles, Target, TrendingUp } fr
 
 import { generateReport } from "@/actions/interview";
 import { Button } from "@/components/ui/button";
+import { actionErrorMessage, classifyActionError, toastActionError } from "@/lib/action-error";
 import { cn } from "@/lib/utils";
 import { READINESS } from "@/utils/report";
 
@@ -31,6 +32,12 @@ function ReportSkeleton() {
       </div>
     </div>
   );
+}
+
+/** The result to show when the generateReport call itself threw (offline, out-of-date page...). */
+function failedCall(error) {
+  if (classifyActionError(error) === "stale") toastActionError(error);
+  return { success: false, error: actionErrorMessage(error, "Could not write your report. Please try again.") };
 }
 
 /** Stores the result of a generateReport call in component state. */
@@ -63,7 +70,7 @@ export default function AiReport({ mockId, initialReport, waiting = false }) {
     const setters = { setReport, setStatus, setError };
     generateReport(mockId)
       .then((result) => applyResult(result, setters))
-      .catch(() => applyResult(null, setters));
+      .catch((error) => applyResult(failedCall(error), setters));
   }, [waiting, initialReport, mockId]);
 
   const regenerate = async () => {
@@ -72,8 +79,8 @@ export default function AiReport({ mockId, initialReport, waiting = false }) {
     const setters = { setReport, setStatus, setError };
     try {
       applyResult(await generateReport(mockId, { force: true }), setters);
-    } catch {
-      applyResult(null, setters);
+    } catch (error) {
+      applyResult(failedCall(error), setters);
     }
   };
 

@@ -2,13 +2,15 @@
 
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Keyboard, LoaderCircle, Mic, RotateCcw, Send, Sparkles, Square } from "lucide-react";
+import { History, Keyboard, LoaderCircle, Mic, RotateCcw, Send, Sparkles, Square } from "lucide-react";
 
 import { saveAnswer, transcribeAnswer } from "@/actions/interview";
 import { useAudioRecorder } from "@/components/interview/useAudioRecorder";
 import { useSpeechRecognition } from "@/components/interview/useSpeechRecognition";
 import { useRecordingSupport, useSpeechLanguage, useSpeechSupport } from "@/components/interview/useSpeechSupport";
 import { Button } from "@/components/ui/button";
+import { toastActionError } from "@/lib/action-error";
+import { useDraft, writeDraft } from "@/lib/drafts";
 import { cn } from "@/lib/utils";
 import { MAX_RECORDING_SECONDS } from "@/utils/audio";
 import { countWords, formatDuration } from "@/utils/speech";
@@ -63,17 +65,28 @@ function ReviewProgress() {
  * stops, which is far more accurate than the browser's speech recognition,
  * especially for accents and technical terms. Where the browser supports it,
  * its recognizer shows a live preview while the candidate speaks.
+ *
+ * Unsent text is kept as a draft (lib/drafts.js), so a reload, a crash, a
+ * discarded tab or a switch to another question doesn't lose it.
  */
 export default function AnswerComposer({ mockId, questionIndex, initialText = "", onSaved }) {
   const canRecord = useRecordingSupport();
   const livePreview = useSpeechSupport();
   const speechLanguage = useSpeechLanguage();
 
-  const [chosenMode, setChosenMode] = useState(null);
-  const mode = chosenMode ?? (canRecord === false ? "text" : "voice");
+  const draftKey = `answer:${mockId}:${questionIndex}`;
+  const draft = useDraft(draftKey);
+  // null = untouched: show the draft if there is one, else the starting text.
+  const [voiceText, setVoiceText] = useState(null);
+  const [typed, setTyped] = useState(null);
+  const startingText = draft?.text ?? initialText;
+  const voiceValue = voiceText ?? startingText;
+  const typedValue = typed ?? startingText;
+  const restored = Boolean(draft?.text) && voiceText === null && typed === null;
 
-  const [voiceText, setVoiceText] = useState(initialText);
-  const [typed, setTyped] = useState(initialText);
+  const [chosenMode, setChosenMode] = useState(null);
+  const mode = chosenMode ?? (draft?.mode === "text" || canRecord === false ? "text" : "voice");
+
   const [status, setStatus] = useState("idle"); // idle | starting | recording | transcribing | submitting
   const [transcribed, setTranscribed] = useState(false);
   const [seconds, setSeconds] = useState(0);
@@ -101,15 +114,35 @@ export default function AnswerComposer({ mockId, questionIndex, initialText = ""
 
   const busy = status !== "idle";
   const recording = status === "recording";
-  // While recording, the text box is read-only, so voiceText is the text from before this recording.
-  const shownVoiceText = recording ? joinText(voiceText, preview.transcript) : voiceText;
-  const answer = mode === "voice" ? shownVoiceText : typed;
+  // While recording, the text box is read-only, so voiceValue is the text from before this recording.
+  const shownVoiceText = recording ? joinText(voiceValue, preview.transcript) : voiceValue;
+  const answer = mode === "voice" ? shownVoiceText : typedValue;
   const words = countWords(answer);
 
+  // Keep the unsent answer as a draft once it has been edited. It is cleared
+  // when the answer is saved, and left alone while it is being submitted.
+  const edited = voiceText !== null || typed !== null || chosenMode !== null;
+  useEffect(() => {
+    if (!edited || status === "submitting") return;
+    writeDraft(draftKey, answer.trim() ? { text: answer, mode } : null);
+  }, [edited, status, draftKey, answer, mode]);
+
+  // A recording only exists in this tab until it is transcribed: ask before
+  // the page is closed or reloaded in the middle of one.
+  useEffect(() => {
+    if (status !== "recording" && status !== "transcribing") return undefined;
+    const warn = (event) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [status]);
+
   const stopRecording = async () => {
-    // voiceText can't change while recording, so this is the text from before the recording,
+    // voiceValue can't change while recording, so this is the text from before the recording,
     // even when the five-minute auto-stop calls this from an earlier render.
-    const base = voiceText;
+    const base = voiceValue;
     clearTimeout(autoStopRef.current);
     preview.stop();
     const previewText = preview.getTranscript();
@@ -137,8 +170,8 @@ export default function AnswerComposer({ mockId, questionIndex, initialText = ""
       } else {
         toast.error(`${result?.error ?? "Transcription failed."} You can edit the text, or type your answer.`);
       }
-    } catch {
-      toast.error("Couldn't transcribe your answer. Check your connection, then try again or type your answer.");
+    } catch (error) {
+      toastActionError(error, "Couldn't transcribe your answer. Try again, or type your answer.");
     }
     setStatus("idle");
   };
@@ -167,8 +200,8 @@ export default function AnswerComposer({ mockId, questionIndex, initialText = ""
   const switchMode = (next) => {
     if (next === mode || busy) return;
     // Carry the text over, so switching never loses what was said or typed.
-    if (next === "text") setTyped(voiceText);
-    else setVoiceText(typed);
+    if (next === "text") setTyped(voiceValue);
+    else setVoiceText(typedValue);
     setChosenMode(next);
   };
 
@@ -178,6 +211,7 @@ export default function AnswerComposer({ mockId, questionIndex, initialText = ""
     setSeconds(0);
     setTranscribed(false);
     typingStartedRef.current = null;
+    writeDraft(draftKey, null);
   };
 
   const submit = async () => {
@@ -194,13 +228,14 @@ export default function AnswerComposer({ mockId, questionIndex, initialText = ""
     try {
       const result = await saveAnswer({ mockId, questionIndex, userAnswer: text, mode, durationSec });
       if (result?.success) {
+        writeDraft(draftKey, null);
         onSaved({ answer: text, score: result.review.rating, review: result.review, metrics: result.metrics });
         return;
       }
       toast.error(result?.error ?? "Could not review your answer. Please try again.");
     } catch (error) {
       console.error("saveAnswer failed:", error);
-      toast.error("Something went wrong. Check your connection and try again.");
+      toastActionError(error, "Couldn't send your answer. Your text is kept: try again in a moment.");
     }
     setStatus("idle");
   };
@@ -306,14 +341,20 @@ export default function AnswerComposer({ mockId, questionIndex, initialText = ""
         }}
         placeholder={mode === "voice" ? "Your answer appears here. You can edit it before submitting." : "Type your answer as you would say it in the interview…"}
         rows={mode === "voice" ? 5 : 8}
+        // 16px text on phones: iOS zooms the page into any smaller text field you tap.
         className={cn(
-          "w-full resize-y rounded-xl border border-white/10 bg-black/25 p-4 text-[15px] leading-relaxed shadow-[inset_0_1px_2px_rgb(0_0_0/0.35)] transition-[border-color,box-shadow] duration-300 ease-out-expo placeholder:text-muted-foreground/70 hover:border-white/15 focus:outline-none focus-visible:border-primary/60 focus-visible:ring-4 focus-visible:ring-primary/15 disabled:opacity-60",
+          "w-full resize-y rounded-xl border border-white/10 bg-black/25 p-4 text-base leading-relaxed shadow-[inset_0_1px_2px_rgb(0_0_0/0.35)] transition-[border-color,box-shadow] duration-300 ease-out-expo placeholder:text-muted-foreground/70 hover:border-white/15 focus:outline-none focus-visible:border-primary/60 focus-visible:ring-4 focus-visible:ring-primary/15 disabled:opacity-60 sm:text-[15px]",
           recording && "text-foreground/70"
         )}
       />
       {mode === "voice" && transcribed && !busy && (
         <p className="mt-2.5 flex items-center gap-1.5 text-xs text-ember-1">
           <Sparkles className="h-3.5 w-3.5" aria-hidden="true" /> Transcribed by Gemini. The recording isn&apos;t stored.
+        </p>
+      )}
+      {restored && !busy && (
+        <p className="mt-2.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+          <History className="h-3.5 w-3.5" aria-hidden="true" /> Your unsent answer was kept. Edit it or submit it.
         </p>
       )}
 

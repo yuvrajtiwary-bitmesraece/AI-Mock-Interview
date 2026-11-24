@@ -4,12 +4,14 @@ import { ArrowUpRight, Github } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { SITE } from "@/utils/site";
 
+import { AppLink } from "./AppLink";
+
 const COLUMNS = [
   {
     title: "Product",
     links: [
-      { label: "Start practicing", href: "/dashboard/new" },
-      { label: "Dashboard", href: "/dashboard" },
+      { label: "Start practicing", href: "/dashboard/new", app: true },
+      { label: "Dashboard", href: "/dashboard", app: true },
       { label: "How it works", href: "/#how-it-works" },
       { label: "Plans", href: "/#plans" },
       { label: "FAQ", href: "/#faq" },
@@ -37,6 +39,12 @@ const COLUMNS = [
 
 const EXTERNAL = { target: "_blank", rel: "noopener noreferrer" };
 
+/** A footer link: external sites open in a new tab, app pages load in full (see AppLink). */
+function LinkTag({ link, ...props }) {
+  if (link.app) return <AppLink href={link.href} {...props} />;
+  return <Link href={link.href} {...(link.external ? EXTERNAL : {})} {...props} />;
+}
+
 export function SiteFooter() {
   return (
     <footer className="relative overflow-clip border-t border-white/[0.06]">
@@ -62,9 +70,8 @@ export function SiteFooter() {
               <ul className="mt-4 space-y-3">
                 {column.links.map((link) => (
                   <li key={link.label}>
-                    <Link
-                      href={link.href}
-                      {...(link.external ? EXTERNAL : {})}
+                    <LinkTag
+                      link={link}
                       className="group inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors duration-300 hover:text-foreground"
                     >
                       {link.label}
@@ -74,7 +81,7 @@ export function SiteFooter() {
                           aria-hidden="true"
                         />
                       )}
-                    </Link>
+                    </LinkTag>
                   </li>
                 ))}
               </ul>

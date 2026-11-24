@@ -11,6 +11,9 @@ const token = (name) => `hsl(var(--${name}) / <alpha-value>)`;
  */
 const config = {
   darkMode: "class",
+  // hover: styles only apply where there is a real pointer. On a touch screen a
+  // tap would otherwise leave buttons and cards stuck in their hover state.
+  future: { hoverOnlyWhenSupported: true },
   content: ["./app/**/*.{js,jsx,mdx}", "./components/**/*.{js,jsx,mdx}"],
   theme: {
     container: {

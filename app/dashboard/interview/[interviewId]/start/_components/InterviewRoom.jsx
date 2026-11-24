@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
-import Webcam from "react-webcam";
 import { toast } from "sonner";
 import {
   ArrowLeft,
@@ -12,6 +12,7 @@ import {
   Check,
   Flag,
   Lightbulb,
+  LoaderCircle,
   RotateCcw,
   Volume2,
   VolumeX,
@@ -25,6 +26,12 @@ import { interviewTips, interviewTypeLabel } from "@/utils/interview-options";
 import { averageRating } from "@/utils/rating";
 
 import AnswerComposer from "./AnswerComposer";
+
+// The camera library is only downloaded when someone turns the camera on.
+const Webcam = dynamic(() => import("react-webcam"), {
+  ssr: false,
+  loading: () => <LoaderCircle className="h-6 w-6 animate-spin text-muted-foreground" aria-label="Starting the camera" />,
+});
 
 /** Numbered buttons for jumping between questions; answered ones show a check. */
 function QuestionNav({ total, index, results, onSelect }) {
@@ -166,19 +173,15 @@ function ResultCard({ result, onRetry, onNext, nextLabel, feedbackHref }) {
 
 function CameraPanel() {
   const [on, setOn] = useState(false);
-  const webcamRef = useRef(null);
 
-  const turnOff = () => {
-    webcamRef.current?.stream?.getTracks().forEach((track) => track.stop());
-    setOn(false);
-  };
+  // Unmounting the webcam releases the camera.
+  const turnOff = () => setOn(false);
 
   return (
     <section className="surface overflow-hidden" aria-label="Camera">
       <div className="grid aspect-video place-items-center bg-black/40">
         {on ? (
           <Webcam
-            ref={webcamRef}
             mirrored
             audio={false}
             className="h-full w-full object-cover"

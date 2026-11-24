@@ -31,6 +31,7 @@ import {
   SkillsVisual,
   VoiceVisual,
 } from "@/components/landing/visuals";
+import { AppLink } from "@/components/site/AppLink";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { Badge } from "@/components/ui/badge";
@@ -300,9 +301,9 @@ export default function LandingPage() {
 
             <div className="mt-10 flex animate-fade-up flex-wrap items-center justify-center gap-3" style={{ animationDelay: "240ms" }}>
               <Button asChild size="xl">
-                <Link href="/dashboard/new">
+                <AppLink href="/dashboard/new">
                   Start practicing free <ArrowRight />
-                </Link>
+                </AppLink>
               </Button>
               <Button asChild variant="glass" size="xl">
                 <Link href="#how-it-works">See how it works</Link>
@@ -564,9 +565,9 @@ export default function LandingPage() {
                 Set up a mock interview in a minute and get feedback on your very first answer.
               </p>
               <Button asChild size="xl" className="mt-10">
-                <Link href="/dashboard/new">
+                <AppLink href="/dashboard/new">
                   Start practicing free <ArrowRight />
-                </Link>
+                </AppLink>
               </Button>
             </div>
           </PauseWhenHidden>

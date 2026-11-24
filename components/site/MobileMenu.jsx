@@ -6,6 +6,8 @@ import { Menu, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
+import { AppLink } from "./AppLink";
+
 /** The navigation menu on screens too narrow for the header links. */
 export function MobileMenu({ links }) {
   const [open, setOpen] = useState(false);
@@ -52,13 +54,13 @@ export function MobileMenu({ links }) {
               {link.label}
             </Link>
           ))}
-          <Link
+          <AppLink
             href="/sign-in"
             onClick={() => setOpen(false)}
             className="block rounded-2xl px-4 py-3 text-[15px] text-muted-foreground transition-colors duration-300 hover:bg-white/[0.05] hover:text-foreground sm:hidden"
           >
             Sign in
-          </Link>
+          </AppLink>
         </nav>
       </div>
     </div>

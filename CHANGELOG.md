@@ -12,12 +12,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Verdict, a sandboxed code judge in Go** ([`verdict/`](verdict/), in progress). This is Stage A of [its spec](verdict/docs/SPEC.md). A runner compiles and runs C++17 submissions inside locked-down Docker containers: no network, a read-only filesystem, a non-root user without capabilities, and limits on CPU, memory, processes and output. Results come back signed with HMAC. It also adds the `verdictctl` CLI and the first problem of the bank, Budget Windows. It is tested with the race detector, fuzzing and Docker integration tests on x64 and arm64. The coding round in the app will use it in a later release.
 - **A coding-round preview on the landing page.** It shows a real local run of Verdict and links to its code. The judge isn't on the live site yet, because it needs a server that can run Docker.
 - **Plans on the landing page.** Free is everything live today. Pro (coming soon) adds coding rounds, AI review of your code, core CS packs and longer interviews. Campus (planned) is for placement cells. Pro and Campus have no price and no checkout: nothing is for sale. [docs/PLANS.md](docs/PLANS.md) has the details.
+- **Nothing you type is lost.** Unsent answers and the new-interview form are kept as drafts in the tab, so a reload, a crash, switching to another question or the browser discarding the tab (common on low-memory phones) doesn't lose them. A notice shows while the connection is down, and the browser asks before you close a page in the middle of a recording.
+- **Lite mode for low-end devices.** Devices that report little memory or few cores, or that use Data Saver, get the same design without looping or entrance animation. Any other device that can't keep the page above 25 frames a second switches to it for the rest of the visit.
+- **A loading bar** at the top of the window starts the moment a link is clicked, so every click responds at once, even on a slow connection.
 
 ### Changed
 
 - **A complete redesign, "Ember".** It brings a new logo and app icons, a warm ember-on-black palette, Geist with Instrument Serif accents, and a floating header with a mobile menu. The landing page is new: a product preview, a grid of feature cards, the plans and an FAQ with smooth accordions. Every app screen is restyled too.
 - Motion stays light: each section fades up once, the first time it scrolls into view, and looping decorations pause while they're off screen. Nothing blurs what's behind it, so scrolling stays smooth, and everything respects the reduced-motion setting.
 - **Faster and smoother.** The coaching report is written in the background as soon as the last answer is saved, so "Finish interview" opens a finished report. If you get there first, the page waits for that report instead of asking Gemini for a second one. Every dashboard page shows its layout the moment you click. The report and the interview room load the interview and its answers at the same time, and submitting an answer shows what the AI is doing. A Gemini model that is overloaded or rate-limited is tried last for five minutes, so later requests don't wait on the same failure. Buttons, hovers and page transitions respond faster, and the featured plan's border, the headers and the hero cost less to draw.
+- **Clerk only runs where it's needed.** Sign-in, sign-up and the dashboard load Clerk; the home, privacy and terms pages don't, which takes about 300 KB of JavaScript off the first page most visitors see. Clerk's middleware ([`proxy.js`](proxy.js)) skips those pages too, so they come straight from the CDN cache, and a first visit is no longer redirected through Clerk's servers before the page loads. The header reads Clerk's session cookie to show "Dashboard" to signed-in visitors, and links into the app load the page in full, so Clerk can renew the session on the way in.
+- Deleting an interview removes it from the dashboard at once (it comes back if the delete fails), and searching your interviews stays responsive on slow devices. Sign-in and sign-up show a placeholder card while Clerk loads, instead of an empty column.
+- The landing page's waveforms animate as four layers instead of one per bar, which was most of the work the page did while idle. The camera library only downloads when the camera is turned on, the microphone test redraws only when its level changes, and the mono font is no longer preloaded.
+- **Errors say what to do.** A lost connection, or a page left open while a new version went live, gets its own message, the latter with a Reload button. An error on a dashboard page keeps the header, "Try again" fetches the page's data again, and a page whose script files were replaced by a deploy reloads itself once.
 - The UI components (button, badge, input, text area and dialog) are rewritten from scratch. The dialog is built on the browser's native `<dialog>`.
 - The copyright notice in LICENSE now lists only the current author, because none of the original project's code remains.
 - The FAQ explains the plans and when the coding round is coming. The header and footer link to the new sections, and the tech stack on the landing page lists Go and Docker.
@@ -29,6 +36,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - The dashboard says "1 question answered" instead of "1 questions answered".
+- Tapping a text field no longer zooms the page on iPhones: fields use 16px text on phones, Clerk's included. Hover effects no longer stick after a tap on touch screens.
+- Pages no longer crash on the next click after Chrome's Translate or a browser extension has changed their text.
 
 ## [1.2.0] - 2026-11-22
 

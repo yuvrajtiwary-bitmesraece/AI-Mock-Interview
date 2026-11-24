@@ -15,6 +15,8 @@ export function RevealObserver() {
   useEffect(() => {
     if (typeof IntersectionObserver === "undefined") return undefined;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return undefined;
+    // Lite mode (app/layout.js) shows every section at once.
+    if (document.documentElement.hasAttribute("data-lite")) return undefined;
 
     const elements = [...document.querySelectorAll(".reveal:not(.is-visible)")];
     const observer = new IntersectionObserver(

@@ -133,16 +133,19 @@
       0 30px 60px -30px rgb(0 0 0 / 0.85);
   }
 
-  /* Hover lift for clickable cards. */
+  /* Hover lift for clickable cards. Only where there is a real pointer: on a
+     touch screen, a tap would leave the card stuck in its hover state. */
   .surface-hover {
     transition:
       border-color 0.25s var(--ease-out),
       background-color 0.25s var(--ease-out),
       transform 0.3s var(--ease-out);
   }
-  .surface-hover:hover {
-    @apply border-white/[0.14] bg-white/[0.04];
-    transform: translateY(-2px);
+  @media (hover: hover) and (pointer: fine) {
+    .surface-hover:hover {
+      @apply border-white/[0.14] bg-white/[0.04];
+      transform: translateY(-2px);
+    }
   }
 
   /* The brand gradient, as text. */
@@ -192,8 +195,10 @@
     width: max-content;
     animation: marquee 48s linear infinite;
   }
-  .marquee:hover .marquee-track {
-    animation-play-state: paused;
+  @media (hover: hover) and (pointer: fine) {
+    .marquee:hover .marquee-track {
+      animation-play-state: paused;
+    }
   }
 
   /* Looping decorations stop while they're off screen (components/ui/pause-when-hidden.jsx),
@@ -367,6 +372,67 @@
 /* The page behind an open dialog doesn't scroll. */
 html:has(.dialog[open]) {
   overflow: hidden;
+}
+
+/* The bar at the top of the window while the next page loads
+   (components/site/NavigationProgress.jsx). Only transform and opacity
+   change, so the browser animates it without redrawing the page. */
+.nav-progress {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 70;
+  height: 2px;
+  pointer-events: none;
+  opacity: 0;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  background: linear-gradient(90deg, hsl(var(--ember-1)), hsl(var(--ember-2)) 60%, hsl(var(--ember-3)));
+  box-shadow: 0 0 10px hsl(var(--ember-2) / 0.6);
+}
+
+/* Quick at first, then slower and slower: it never looks stuck, and never
+   finishes before the page does. */
+.nav-progress[data-state="loading"] {
+  opacity: 1;
+  transform: scaleX(0.9);
+  transition:
+    transform 10s cubic-bezier(0.05, 0.75, 0.15, 1),
+    opacity 0.15s;
+}
+
+.nav-progress[data-state="done"] {
+  opacity: 0;
+  transform: scaleX(1);
+  transition:
+    transform 0.2s var(--ease-out),
+    opacity 0.3s 0.15s;
+}
+
+/* iOS zooms the page into any text field under 16px when it's tapped, Clerk's
+   included (the app's own fields are 16px on phones in components/ui/input.jsx). */
+@media (max-width: 639px) {
+  .cl-formFieldInput,
+  .cl-otpCodeFieldInput {
+    font-size: 16px !important;
+  }
+}
+
+/*
+ * Lite mode: set by the boot script in app/layout.js on low-end devices, or by
+ * components/site/SmoothnessGuard.jsx when a device can't keep the page
+ * smooth. The same design, without looping decoration or entrance motion, so
+ * the device spends its time on scrolling and taps. Loading spinners and the
+ * page-load bar still move: they say something is happening.
+ */
+[data-lite] :is(.animate-wave, .animate-ping, .animate-pulse, .animate-glow, .animate-float, .animate-fade-up, .animate-fade-in, .animate-page-in, .marquee-track, .settle),
+[data-lite] .skeleton::after {
+  animation: none !important;
+}
+
+[data-lite] .reveal {
+  opacity: 1 !important;
+  transform: none !important;
+  transition: none !important;
 }
 
 /* Respect the operating system's "reduce motion" setting everywhere. */

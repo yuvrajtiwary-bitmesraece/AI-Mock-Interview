@@ -1,10 +1,10 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
-import Webcam from "react-webcam";
 import { toast } from "sonner";
-import { Camera, CameraOff, CircleAlert, CircleCheck, FileText, Lightbulb, Play, ShieldCheck } from "lucide-react";
+import { Camera, CameraOff, CircleAlert, CircleCheck, FileText, Lightbulb, LoaderCircle, Play, ShieldCheck } from "lucide-react";
 
 import { MicCheck } from "@/components/interview/MicCheck";
 import { useRecordingSupport, useSpeechSupport } from "@/components/interview/useSpeechSupport";
@@ -12,6 +12,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Accent, PageHeader } from "@/components/ui/page-header";
 import { difficultyLabel, interviewTips, interviewTypeLabel } from "@/utils/interview-options";
+
+// The camera library is only downloaded when someone turns the preview on.
+const Webcam = dynamic(() => import("react-webcam"), {
+  ssr: false,
+  loading: () => <LoaderCircle className="h-6 w-6 animate-spin text-muted-foreground" aria-label="Starting the camera" />,
+});
 
 const STEPS = [
   { title: "Hear the question", text: "Read it on screen, or have it read aloud." },
@@ -22,15 +28,11 @@ const STEPS = [
 /** The screen before the interview: what to expect, tips, and a camera and microphone check. */
 export default function InterviewLobby({ interview, questionCount }) {
   const [cameraOn, setCameraOn] = useState(false);
-  const webcamRef = useRef(null);
   const canRecord = useRecordingSupport();
   const livePreview = useSpeechSupport();
 
-  const stopCamera = () => {
-    // `stream` is null until the camera has started, so guard against it.
-    webcamRef.current?.stream?.getTracks().forEach((track) => track.stop());
-    setCameraOn(false);
-  };
+  // Unmounting the webcam releases the camera.
+  const stopCamera = () => setCameraOn(false);
 
   const minutes = Math.max(5, Math.round(questionCount * 2.5));
   const years = `${interview.jobExperience} ${interview.jobExperience === "1" ? "year" : "years"} of experience`;
@@ -127,7 +129,6 @@ export default function InterviewLobby({ interview, questionCount }) {
               <div className="grid aspect-video place-items-center overflow-hidden rounded-xl border border-white/[0.08] bg-black/40">
                 {cameraOn ? (
                   <Webcam
-                    ref={webcamRef}
                     mirrored
                     audio={false}
                     onUserMediaError={() => {

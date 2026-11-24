@@ -1,3 +1,5 @@
+import { AuthProvider } from "@/components/auth/AuthProvider";
+
 import Header from "./_components/Header";
 
 // AI requests (server actions) run inside these pages. Allow up to 60 seconds,
@@ -13,11 +15,13 @@ export const metadata = {
 /** Every signed-in page: the floating header and a padded content column. */
 export default function DashboardLayout({ children }) {
   return (
-    <div className="min-h-dvh">
-      <Header />
-      <main id="main" className="container pb-24 pt-28 sm:pt-32 print:pt-0">
-        {children}
-      </main>
-    </div>
+    <AuthProvider>
+      <div className="min-h-dvh">
+        <Header />
+        <main id="main" className="container pb-24 pt-28 sm:pt-32 print:pt-0">
+          {children}
+        </main>
+      </div>
+    </AuthProvider>
   );
 }

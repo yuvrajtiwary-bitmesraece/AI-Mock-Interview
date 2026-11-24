@@ -2,10 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { toast } from "sonner";
-import { ArrowRight, FileText, LoaderCircle, Play, Trash2, TriangleAlert } from "lucide-react";
+import { ArrowRight, FileText, Play, Trash2, TriangleAlert } from "lucide-react";
 
-import { deleteInterview } from "@/actions/interview";
 import { ScoreBadge } from "@/components/interview/feedback-ui";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,10 +19,13 @@ import {
 import { formatDisplayDate } from "@/utils/dates";
 import { difficultyLabel, interviewTypeLabel } from "@/utils/interview-options";
 
-/** One interview on the dashboard: its settings, progress, score and next step. */
-export default function InterviewItemCard({ interview, onDeleted }) {
+/**
+ * One interview on the dashboard: its settings, progress, score and next step.
+ * Deleting closes the dialog at once; the list (InterviewList) removes the
+ * card and restores it if the delete fails.
+ */
+export default function InterviewItemCard({ interview, onDelete }) {
   const [open, setOpen] = useState(false);
-  const [deleting, setDeleting] = useState(false);
 
   const { mockId, answeredCount, questionCount } = interview;
   const base = `/dashboard/interview/${mockId}`;
@@ -33,21 +34,9 @@ export default function InterviewItemCard({ interview, onDeleted }) {
   const created = formatDisplayDate(interview.createdOn ? new Date(interview.createdOn) : null);
   const years = `${interview.jobExperience} ${interview.jobExperience === "1" ? "year" : "years"}`;
 
-  const remove = async () => {
-    setDeleting(true);
-    try {
-      const result = await deleteInterview(mockId);
-      if (result?.success) {
-        toast.success("Interview deleted.");
-        setOpen(false);
-        onDeleted(mockId);
-        return;
-      }
-      toast.error(result?.error ?? "Could not delete the interview.");
-    } catch {
-      toast.error("Something went wrong. Please try again.");
-    }
-    setDeleting(false);
+  const remove = () => {
+    setOpen(false);
+    onDelete(interview);
   };
 
   return (
@@ -121,11 +110,11 @@ export default function InterviewItemCard({ interview, onDeleted }) {
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
-              <Button variant="glass" onClick={() => setOpen(false)} disabled={deleting}>
+              <Button variant="glass" onClick={() => setOpen(false)}>
                 Cancel
               </Button>
-              <Button variant="destructive" onClick={remove} disabled={deleting}>
-                {deleting ? <LoaderCircle className="animate-spin" /> : <Trash2 />} Delete
+              <Button variant="destructive" onClick={remove}>
+                <Trash2 /> Delete
               </Button>
             </DialogFooter>
           </DialogContent>

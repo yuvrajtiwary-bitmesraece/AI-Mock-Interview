@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Download, LoaderCircle, Trash2, TriangleAlert, UserRound } from "lucide-react";
 
 import { deleteMyData, exportMyData } from "@/actions/interview";
+import { startNavigationProgress } from "@/components/site/NavigationProgress";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -18,6 +19,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { toastActionError } from "@/lib/action-error";
 
 /** Opens Clerk's account screen (name, email, password, connected accounts). */
 export function ManageAccountButton() {
@@ -49,8 +51,8 @@ export function ExportButton() {
       link.click();
       URL.revokeObjectURL(url);
       toast.success(`Exported ${result.data.interviews.length} interviews.`);
-    } catch {
-      toast.error("Something went wrong. Please try again.");
+    } catch (error) {
+      toastActionError(error, "Could not export your data. Please try again.");
     } finally {
       setPending(false);
     }
@@ -77,13 +79,14 @@ export function DeleteAllButton() {
       if (result?.success) {
         toast.success(`Deleted ${result.deletedInterviews} ${result.deletedInterviews === 1 ? "interview" : "interviews"} and all related data.`);
         setOpen(false);
+        startNavigationProgress();
         router.push("/dashboard");
         router.refresh();
         return;
       }
       toast.error(result?.error ?? "Could not delete your data.");
-    } catch {
-      toast.error("Something went wrong. Please try again.");
+    } catch (error) {
+      toastActionError(error, "Could not delete your data. Please try again.");
     }
     setPending(false);
   };

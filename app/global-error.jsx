@@ -4,9 +4,10 @@ import "./globals.css";
 
 /**
  * The last-resort error page, used only when the root layout itself fails. It
- * replaces the whole document, so it renders its own <html> and <body>.
+ * replaces the whole document, so it renders its own <html> and <body>, and its
+ * button reloads the page from scratch rather than re-rendering the broken one.
  */
-export default function GlobalError({ error, reset }) {
+export default function GlobalError({ error }) {
   return (
     <html lang="en" className="dark">
       <body className="flex min-h-dvh items-center justify-center px-6 text-center">
@@ -16,7 +17,7 @@ export default function GlobalError({ error, reset }) {
           {error?.digest && <p className="mt-2 font-mono text-xs text-muted-foreground">Error ID: {error.digest}</p>}
           <button
             type="button"
-            onClick={() => reset()}
+            onClick={() => window.location.reload()}
             className="mt-7 rounded-full bg-foreground px-6 py-2.5 text-sm font-medium text-background transition-colors hover:bg-white"
           >
             Reload

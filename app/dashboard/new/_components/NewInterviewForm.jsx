@@ -19,15 +19,20 @@ import {
 } from "lucide-react";
 
 import { createInterview } from "@/actions/interview";
+import { startNavigationProgress } from "@/components/site/NavigationProgress";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { actionErrorMessage, classifyActionError, toastActionError } from "@/lib/action-error";
+import { useDraft, writeDraft } from "@/lib/drafts";
 import { cn } from "@/lib/utils";
 import {
   DIFFICULTIES,
   INTERVIEW_TYPES,
   QUESTION_COUNT,
   TEMPLATES,
+  isDifficulty,
+  isInterviewType,
   parseInterviewSettings,
 } from "@/utils/interview-options";
 import { RESUME_MAX_BYTES } from "@/utils/resume";
@@ -39,6 +44,25 @@ const TYPE_ICONS = {
   hr: HeartHandshake,
   mixed: Shuffle,
 };
+
+const DRAFT_KEY = "new-interview";
+
+/**
+ * The saved draft's fields that are still valid, so an old or edited draft can
+ * never put the form in a state it can't show (the server validates again).
+ */
+function validDraft(draft) {
+  if (!draft || typeof draft !== "object") return {};
+  const fields = {};
+  for (const name of ["jobPosition", "company", "techStacks", "jobDescription", "jobExperience"]) {
+    if (typeof draft[name] === "string") fields[name] = draft[name];
+  }
+  if (isInterviewType(draft.interviewType)) fields.interviewType = draft.interviewType;
+  if (isDifficulty(draft.difficulty)) fields.difficulty = draft.difficulty;
+  const count = Number(draft.questionCount);
+  if (Number.isInteger(count) && count >= QUESTION_COUNT.min && count <= QUESTION_COUNT.max) fields.questionCount = count;
+  return fields;
+}
 
 function formatBytes(bytes) {
   return bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / 1024 / 1024).toFixed(1)} MB`;
@@ -87,19 +111,30 @@ function progressMessages(values, hasResume) {
   ];
 }
 
-export default function NewInterviewForm({ defaultQuestionCount, defaultType = "technical", remainingToday }) {
+/**
+ * The new-interview form. What's typed is kept as a draft (lib/drafts.js), so
+ * a reload or a discarded tab doesn't lose a pasted job description.
+ * `requestedType` comes from a ?type= link and wins over the draft's type.
+ */
+export default function NewInterviewForm({ defaultQuestionCount, requestedType = null, remainingToday }) {
   const router = useRouter();
   const fileInputRef = useRef(null);
-  const [values, setValues] = useState({
+  const draft = useDraft(DRAFT_KEY);
+  // null = untouched: show the defaults with the saved draft on top.
+  const [edited, setEdited] = useState(null);
+  const values = edited ?? {
     jobPosition: "",
     company: "",
     techStacks: "",
     jobDescription: "",
     jobExperience: "",
-    interviewType: defaultType,
+    interviewType: "technical",
     difficulty: "medium",
     questionCount: defaultQuestionCount,
-  });
+    ...validDraft(draft),
+    ...(requestedType ? { interviewType: requestedType } : {}),
+  };
+  const setValues = (changes) => setEdited((current) => ({ ...(current ?? values), ...changes }));
   const [resume, setResume] = useState(null);
   const [dragging, setDragging] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -116,11 +151,16 @@ export default function NewInterviewForm({ defaultQuestionCount, defaultType = "
     return () => clearInterval(timer);
   }, [submitting]);
 
-  const update = (name) => (event) => setValues((current) => ({ ...current, [name]: event.target.value }));
+  // Keep the form as a draft once something has been changed.
+  useEffect(() => {
+    if (edited) writeDraft(DRAFT_KEY, edited);
+  }, [edited]);
+
+  const update = (name) => (event) => setValues({ [name]: event.target.value });
 
   const applyTemplate = (template) => {
     const { name, ...fields } = template;
-    setValues((current) => ({ ...current, ...fields }));
+    setValues(fields);
     setError("");
     toast.success(`Filled in "${name}". Adjust anything you like.`);
   };
@@ -163,14 +203,18 @@ export default function NewInterviewForm({ defaultQuestionCount, defaultType = "
     try {
       const result = await createInterview(formData);
       if (result?.success) {
+        writeDraft(DRAFT_KEY, null);
         toast.success("Your interview is ready.");
+        startNavigationProgress();
         router.push(`/dashboard/interview/${result.mockId}`);
         return; // keep the loading state until the next page loads
       }
       setError(result?.error ?? "Could not create the interview. Please try again.");
     } catch (submitError) {
       console.error("Failed to create interview:", submitError);
-      setError("Something went wrong. Check your connection and try again.");
+      // An out-of-date page also gets a Reload button; the form comes back from the draft.
+      if (classifyActionError(submitError) === "stale") toastActionError(submitError);
+      setError(actionErrorMessage(submitError, "Something went wrong. Check your connection and try again."));
     }
     setSubmitting(false);
   };

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowLeft, LayoutDashboard } from "lucide-react";
 
 import { Logo } from "@/components/brand/Logo";
+import { AppLink } from "@/components/site/AppLink";
 import { Button } from "@/components/ui/button";
 
 export const metadata = { title: "Page not found" };
@@ -18,9 +19,9 @@ export default function NotFound() {
       </p>
       <div className="relative mt-10 flex flex-wrap justify-center gap-3">
         <Button asChild size="lg">
-          <Link href="/dashboard">
+          <AppLink href="/dashboard">
             <LayoutDashboard /> Go to dashboard
-          </Link>
+          </AppLink>
         </Button>
         <Button asChild variant="glass" size="lg">
           <Link href="/">

@@ -68,13 +68,23 @@ export const DEFAULT_SETTINGS = {
   questionCount: QUESTION_COUNT.default,
 };
 
+// Own keys only: `"toString" in INTERVIEW_TYPES` is true as well, and a value
+// like that would get past validation and break the pages that use it.
+const hasOwn = (object, key) => typeof key === "string" && Object.prototype.hasOwnProperty.call(object, key);
+
+/** True for one of the INTERVIEW_TYPES ids. */
+export const isInterviewType = (value) => hasOwn(INTERVIEW_TYPES, value);
+
+/** True for one of the DIFFICULTIES ids. */
+export const isDifficulty = (value) => hasOwn(DIFFICULTIES, value);
+
 /** Display label for a stored type, including interviews created before types existed. */
 export function interviewTypeLabel(type) {
-  return INTERVIEW_TYPES[type]?.label ?? INTERVIEW_TYPES.technical.label;
+  return isInterviewType(type) ? INTERVIEW_TYPES[type].label : INTERVIEW_TYPES.technical.label;
 }
 
 export function difficultyLabel(difficulty) {
-  return DIFFICULTIES[difficulty]?.label ?? DIFFICULTIES.medium.label;
+  return isDifficulty(difficulty) ? DIFFICULTIES[difficulty].label : DIFFICULTIES.medium.label;
 }
 
 /** One-click presets for the new interview form. */
@@ -160,8 +170,8 @@ export function parseInterviewSettings(input) {
     return { ok: false, error: `Keep the job description under ${LIMITS.jobDescription} characters.` };
   }
 
-  if (!(interviewType in INTERVIEW_TYPES)) return { ok: false, error: "Choose an interview type." };
-  if (!(difficulty in DIFFICULTIES)) return { ok: false, error: "Choose a difficulty." };
+  if (!isInterviewType(interviewType)) return { ok: false, error: "Choose an interview type." };
+  if (!isDifficulty(difficulty)) return { ok: false, error: "Choose a difficulty." };
 
   if (INTERVIEW_TYPES[interviewType].needsTechStack && techStacks.length === 0) {
     return { ok: false, error: `Add the tech stack or skills for a ${INTERVIEW_TYPES[interviewType].label.toLowerCase()} interview.` };
@@ -222,5 +232,5 @@ export const INTERVIEW_TIPS = {
 };
 
 export function interviewTips(type) {
-  return INTERVIEW_TIPS[type] ?? INTERVIEW_TIPS.technical;
+  return hasOwn(INTERVIEW_TIPS, type) ? INTERVIEW_TIPS[type] : INTERVIEW_TIPS.technical;
 }
